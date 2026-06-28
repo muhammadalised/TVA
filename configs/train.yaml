@@ -1,0 +1,26 @@
+arch_de: bilstm_b
+arch_en: blconv_b
+aug: true # whether to perform data augmentation for train set
+cache: true # whether to cache the whole dataset into rams
+checkpoint: null
+device: cuda
+dir_dataset: ../data/tva/onhw_words500_wd_word_rh
+dir_tokenizer: ../data/tva/onhw_words500_wd_word_rh/tokenizers/bpe500
+dir_work: ../results/tva/rewi/rewi_b__bpe500__onhw_words500_wd_word_rh
+epoch: 300
+epoch_warmup: 30
+freq_eval: 1 # frequency (epoch) to evaulate model performance on val set
+freq_log: 300 # frequency (iteration) to log information
+freq_save: 0 # frequency (epoch) to save model checkpoint
+idx_fold: -1 # cross validation fold index. 0 for non-cross validation. -1 for train for all cross-validation folds automatically
+len_seq: 0 # 0 if no limitation
+lr: 0.001
+num_channel: 13
+num_concat: 0
+num_worker: 16
+seed: 42
+size_batch: 64
+test: false
+tokenizer: bpe
+
+categories: ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Ä", "Ö", "Ü", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "ä", "ö", "ü", "ß"] # including seperation label "" for CTC

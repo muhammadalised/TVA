@@ -1,0 +1,11 @@
+jiwer
+Levenshtein
+loguru
+matplotlib
+numpy
+PyYAML
+scipy
+thop
+tokenizers
+tqdm
+# torch
