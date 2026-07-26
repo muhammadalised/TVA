@@ -167,3 +167,7 @@ cython_debug/
 /temp*
 .agents
 .codex
+
+data/
+results/
+THESIS_PROJECT.md

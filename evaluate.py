@@ -127,7 +127,7 @@ def main(path_cfg: str) -> None:
     Args:
         path_cfg: Path to the configuration YAML file.
     '''
-    with open(path_cfg, 'r') as f:
+    with open(path_cfg, 'r', encoding='utf-8') as f:
         cfgs = yaml.safe_load(f)
 
     os.makedirs(cfgs['dir_work'], exist_ok=True)

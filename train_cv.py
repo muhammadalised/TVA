@@ -39,7 +39,7 @@ def train_cv(cfgs: dict, path_main: str) -> None:
                 '-1', str(i)
             )
 
-        with open(path_temp, 'w') as f:
+        with open(path_temp, 'w', encoding='utf-8') as f:
             yaml.safe_dump(cfgs_new, f, allow_unicode=True)
 
         command.append(f'python {path_main} -c {path_temp}')
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    with open(args.config, 'r') as f:
+    with open(args.config, 'r', encoding='utf-8') as f:
         cfgs = yaml.safe_load(f)
 
     assert (

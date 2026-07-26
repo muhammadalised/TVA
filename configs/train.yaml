@@ -4,9 +4,9 @@ aug: true # whether to perform data augmentation for train set
 cache: true # whether to cache the whole dataset into rams
 checkpoint: null
 device: cuda
-dir_dataset: ../data/tva/onhw_words500_wd_word_rh
-dir_tokenizer: ../data/tva/onhw_words500_wd_word_rh/tokenizers/bpe500
-dir_work: ../results/tva/rewi/rewi_b__bpe500__onhw_words500_wd_word_rh
+dir_dataset: data/tva/onhw_words500_wd_word_rh
+dir_tokenizer: data/tva/onhw_words500_wd_word_rh/tokenizers/bpe500
+dir_work: results/tva/rewi/rewi_b__bpe500__onhw_words500_wd_word_rh
 epoch: 300
 epoch_warmup: 30
 freq_eval: 1 # frequency (epoch) to evaulate model performance on val set

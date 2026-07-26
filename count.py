@@ -119,7 +119,7 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    with open(args.config, 'r') as f:
+    with open(args.config, 'r', encoding='utf-8') as f:
         cfgs = yaml.safe_load(f)
         cfgs = argparse.Namespace(**cfgs)
 
