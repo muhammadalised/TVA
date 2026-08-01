@@ -163,6 +163,7 @@ cython_debug/
 
 .DS_Store
 *.code-workspace
+configs/*.local.yaml
 /resources
 /temp*
 .agents
@@ -170,4 +171,3 @@ cython_debug/
 
 data/
 results/
-THESIS_PROJECT.md

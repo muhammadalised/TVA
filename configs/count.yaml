@@ -2,11 +2,11 @@ arch_de: bilstm_b
 arch_en: blconv_b
 aug: false # whether to perform data augmentation for train set
 cache: false # whether to cache the whole dataset into rams
-checkpoint:  ../results/tva/rewi/rewi_b__bigram200_concat2__onhw_words500_wi_word_rh/0/checkpoints/275.pth
+checkpoint: results/tva/rewi/rewi_b__bigram200_concat2__onhw_words500_wi_word_rh/0/checkpoints/275.pth
 device: cuda
-dir_dataset: ../data/tva/onhw_words500_wi_word_rh
-dir_tokenizer: ../data/tva/onhw_words500_wi_word_rh/tokenizers/bigram200
-dir_work: ../results/tva/rewi/rewi_b__bigram200_concat2__onhw_words500_wi_word_rh
+dir_dataset: data/tva/onhw_words500_wi_word_rh
+dir_tokenizer: data/tva/onhw_words500_wi_word_rh/tokenizers/bigram200
+dir_work: results/tva/rewi/rewi_b__bigram200_concat2__onhw_words500_wi_word_rh
 epoch: 300
 epoch_warmup: 30
 freq_eval: 1 # frequency (epoch) to evaulate model performance on val set
