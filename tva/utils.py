@@ -4,7 +4,38 @@ import random
 import numpy as np
 import torch
 
-__all__ = ['seed_everything', 'seed_worker', 'sec2time']
+__all__ = [
+    'get_random_state',
+    'restore_random_state',
+    'seed_everything',
+    'seed_worker',
+    'sec2time',
+]
+
+
+def get_random_state() -> dict:
+    '''Capture random-number generator states used during training.'''
+    return {
+        'numpy': np.random.get_state(),
+        'python': random.getstate(),
+        'torch': torch.get_rng_state(),
+        'torch_cuda': (
+            torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
+        ),
+    }
+
+
+def restore_random_state(state: dict | None) -> None:
+    '''Restore random-number generator states from a checkpoint.'''
+    if not state:
+        return
+
+    random.setstate(state['python'])
+    np.random.set_state(state['numpy'])
+    torch.set_rng_state(state['torch'])
+
+    if torch.cuda.is_available() and state.get('torch_cuda') is not None:
+        torch.cuda.set_rng_state_all(state['torch_cuda'])
 
 
 def seed_everything(seed: int = 42) -> None:

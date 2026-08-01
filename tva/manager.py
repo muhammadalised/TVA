@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import shutil
 import time
 from datetime import datetime
 
@@ -149,8 +150,12 @@ class RunManager:
         state_model: dict | None = None,
         state_optimizer: dict | None = None,
         state_lr_scheduler: dict | None = None,
+        state_scaler: dict | None = None,
+        state_random: dict | None = None,
+        state_dataloader_generator: torch.Tensor | None = None,
+        save_numbered: bool = False,
     ) -> None:
-        '''Save the model, optimizer, and scheduler states to a checkpoint.
+        '''Atomically save all state required to resume training.
 
         Args:
             state_model: State dictionary of the model. Defaults to None.
@@ -158,17 +163,39 @@ class RunManager:
                 None.
             state_lr_scheduler: State dictionary of the learning rate
                 scheduler. Defaults to None.
+            state_scaler: Mixed-precision gradient scaler state.
+            state_random: Python, NumPy, PyTorch, and CUDA random states.
+            state_dataloader_generator: Training DataLoader generator state.
+            save_numbered: Also retain a checkpoint named after the epoch.
         '''
-        torch.save(
-            {
-                'epoch': self.epoch,
-                'lr_scheduler': state_lr_scheduler,
-                'model': state_model,
-                'optimizer': state_optimizer,
-            },
-            os.path.join(self.dir_ckp, f'{self.epoch}.pth'),
+        checkpoint = {
+            'dataloader_generator': state_dataloader_generator,
+            'epoch': self.epoch,
+            'lr_scheduler': state_lr_scheduler,
+            'metrics': self.metrics,
+            'model': state_model,
+            'optimizer': state_optimizer,
+            'random': state_random,
+            'scaler': state_scaler,
+        }
+
+        path_latest = os.path.join(self.dir_ckp, 'latest.pth')
+        path_temp = f'{path_latest}.tmp'
+        torch.save(checkpoint, path_temp)
+        os.replace(path_temp, path_latest)
+
+        if save_numbered:
+            path_numbered = os.path.join(
+                self.dir_ckp, f'{self.epoch}.pth'
+            )
+            path_numbered_temp = f'{path_numbered}.tmp'
+            shutil.copyfile(path_latest, path_numbered_temp)
+            os.replace(path_numbered_temp, path_numbered)
+
+        logger.info(
+            f'Saved resumable checkpoint after epoch {self.epoch} '
+            f'to {path_latest}'
         )
-        logger.info(f'Saved checkpoint of epoch {self.epoch}')
 
     def save_results(self) -> None:
         '''Save the cached metrics and predictions to JSON files.'''

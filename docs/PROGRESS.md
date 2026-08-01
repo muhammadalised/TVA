@@ -102,3 +102,17 @@ only 16 training examples and is not a thesis result.
 
 Set up the CUDA environment on the RTX 4060 laptop and run a short GPU test
 before starting the full WD/RH fold-0 B0 experiment.
+
+## 2026-08-02 — Resumable checkpointing
+
+- Extended the repository's model-only checkpoints to preserve the optimizer,
+  learning-rate scheduler, mixed-precision scaler, completed epoch, metric
+  history, random-number generators, and DataLoader shuffle generator.
+- Training now writes `latest.pth` atomically after every completed epoch.
+  Numbered milestone checkpoints continue to follow `freq_save`.
+- Older model-only checkpoint files remain usable for loading weights, but are
+  clearly logged as non-resumable.
+- A controlled CPU test trained epochs 0 and 1, then launched a fresh process
+  from the saved epoch-0 checkpoint. The new process correctly began at epoch
+  1 and reproduced the uninterrupted run's learning rates and batch losses
+  exactly. This validates deterministic continuation for the tested setup.

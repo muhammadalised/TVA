@@ -201,5 +201,31 @@ directory and upload it to the matching folder under
 8. Upload a compressed backup after the run has finished.
 
 Do not use Google Drive to synchronize source code between machines; GitHub is
-the source of truth for code. Do not move an unfinished run between machines
-until full resumable checkpointing has been implemented and tested.
+the source of truth for code. Prefer resuming an unfinished run on the same
+machine and with the same software environment.
+
+## Resuming interrupted training
+
+Every completed epoch atomically updates this recovery checkpoint:
+
+```text
+<dir_work>/<fold>/checkpoints/latest.pth
+```
+
+The checkpoint contains the model, optimizer, learning-rate scheduler,
+mixed-precision scaler, completed epoch, metric history, and random states.
+Numbered milestone checkpoints are additionally retained according to
+`freq_save`.
+
+To resume, set `checkpoint` in the same experiment configuration while leaving
+`epoch` at the original total number of intended epochs:
+
+```yaml
+checkpoint: results/thesis/baselines/B0_char_wd_rh/0/checkpoints/latest.pth
+epoch: 300
+```
+
+Then run the normal training command. The log must state the next epoch, for
+example `continuing at epoch 75`. An older checkpoint containing only model
+weights can still be loaded, but it starts a new optimizer and schedule and is
+therefore not a true resume.

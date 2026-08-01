@@ -16,7 +16,12 @@ from tva.loss import CTCLoss
 from tva.tokenizers import get_tokenizer
 from tva.manager import RunManager
 from tva.model import BaseModel
-from tva.utils import seed_everything, seed_worker
+from tva.utils import (
+    get_random_state,
+    restore_random_state,
+    seed_everything,
+    seed_worker,
+)
 from tva.visualize import visualize
 
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -75,11 +80,6 @@ def train_one_epoch(
         )
 
     manager.summarize_epoch()
-
-    # save checkpoints every freq_save epoch
-    if manager.check_step(epoch + 1, 'save'):
-        manager.save_checkpoint(model.state_dict())
-
 
 def test(
     dataloader: DataLoader,
@@ -188,6 +188,7 @@ def main(cfgs: argparse.Namespace) -> None:
             cfgs.num_concat,
             getattr(cfgs, 'max_train_samples', 0),
         )
+        generator_train = torch.Generator().manual_seed(cfgs.seed)
         dataloader_train = DataLoader(
             dataset_train,
             cfgs.size_batch,
@@ -195,7 +196,7 @@ def main(cfgs: argparse.Namespace) -> None:
             num_workers=cfgs.num_worker,
             collate_fn=fn_collate,
             worker_init_fn=seed_worker,
-            generator=torch.Generator().manual_seed(cfgs.seed),
+            generator=generator_train,
         )
         optimizer = torch.optim.AdamW(model.parameters(), cfgs.lr)
         scaler = GradScaler('cuda', enabled=amp_enabled)
@@ -219,11 +220,41 @@ def main(cfgs: argparse.Namespace) -> None:
             [len(dataloader_train) * cfgs.epoch_warmup],
         )
 
-    # load checkpoint for testing if given
+    # Load model weights for testing, or the complete state when resuming.
     if cfgs.checkpoint:
-        ckp = torch.load(cfgs.checkpoint, weights_only=False)
+        ckp = torch.load(
+            cfgs.checkpoint,
+            map_location=device,
+            weights_only=False,
+        )
         model.load_state_dict(ckp['model'], strict=False)
-        manager.log(f'Load checkpoint from {cfgs.checkpoint}')
+
+        state_complete = all(
+            ckp.get(key) is not None
+            for key in ('optimizer', 'lr_scheduler')
+        )
+        if not cfgs.test and state_complete:
+            optimizer.load_state_dict(ckp['optimizer'])
+            lr_scheduler.load_state_dict(ckp['lr_scheduler'])
+
+            if ckp.get('scaler') is not None:
+                scaler.load_state_dict(ckp['scaler'])
+            if ckp.get('dataloader_generator') is not None:
+                generator_train.set_state(ckp['dataloader_generator'])
+            if ckp.get('metrics') is not None:
+                manager.metrics = ckp['metrics']
+
+            restore_random_state(ckp.get('random'))
+            epoch_start = ckp['epoch'] + 1
+            manager.log(
+                f'Resumed training from {cfgs.checkpoint}; '
+                f'continuing at epoch {epoch_start}.'
+            )
+        else:
+            manager.log(
+                f'Loaded model weights from {cfgs.checkpoint}. '
+                'Training state was not restored.'
+            )
 
     # start running
     for e in range(epoch_start, cfgs.epoch):
@@ -256,6 +287,15 @@ def main(cfgs: argparse.Namespace) -> None:
                 manager,
                 ctc_decoder,
                 e,
+            )
+            manager.save_checkpoint(
+                model.state_dict(),
+                optimizer.state_dict(),
+                lr_scheduler.state_dict(),
+                scaler.state_dict(),
+                get_random_state(),
+                generator_train.get_state(),
+                manager.check_step(e + 1, 'save'),
             )
 
     if not cfgs.test:
