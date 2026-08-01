@@ -31,6 +31,7 @@ def train_one_epoch(
     lr_scheduler: torch.optim.lr_scheduler.SequentialLR,
     manager: RunManager,
     epoch: int,
+    amp_enabled: bool,
 ) -> None:
     '''Train model for 1 epoch.
 
@@ -43,6 +44,7 @@ def train_one_epoch(
         lr_scheduler: Learning rate scheduler.
         manager: Running manager instance.
         epoch: Current epoch number.
+        amp_enabled: Whether CUDA mixed precision should be used.
     '''
     manager.initialize_epoch(epoch, len(dataloader), False)
     model.train()
@@ -52,7 +54,11 @@ def train_one_epoch(
 
         optimizer.zero_grad()
 
-        with torch.autocast('cuda', torch.float16):
+        with torch.autocast(
+            device_type=torch.device(manager.cfgs.device).type,
+            dtype=torch.float16,
+            enabled=amp_enabled,
+        ):
             out = model(x)
             loss = fn_loss(
                 out.permute((1, 0, 2)), y, len_x // model.ratio_ds, len_y
@@ -136,6 +142,12 @@ def main(cfgs: argparse.Namespace) -> None:
     # initialize the environment
     manager = RunManager(cfgs)
     seed_everything(cfgs.seed)
+    device = torch.device(cfgs.device)
+    amp_enabled = device.type == 'cuda'
+    manager.log(
+        f'Using device {device.type}; CUDA mixed precision '
+        f'{"enabled" if amp_enabled else "disabled"}.'
+    )
     tokenizer = get_tokenizer(cfgs.tokenizer)
     tokenizer.load(os.path.join(cfgs.dir_tokenizer, f'{cfgs.idx_fold}.json'))
     ctc_decoder = BestPath(tokenizer)
@@ -153,6 +165,7 @@ def main(cfgs: argparse.Namespace) -> None:
         cfgs.idx_fold,
         cfgs.len_seq,
         cache=cfgs.cache,
+        max_samples=getattr(cfgs, 'max_val_samples', 0),
     )
     dataloader_test = DataLoader(
         dataset_test,
@@ -173,6 +186,7 @@ def main(cfgs: argparse.Namespace) -> None:
             cfgs.aug,
             cfgs.cache,
             cfgs.num_concat,
+            getattr(cfgs, 'max_train_samples', 0),
         )
         dataloader_train = DataLoader(
             dataset_train,
@@ -184,7 +198,7 @@ def main(cfgs: argparse.Namespace) -> None:
             generator=torch.Generator().manual_seed(cfgs.seed),
         )
         optimizer = torch.optim.AdamW(model.parameters(), cfgs.lr)
-        scaler = GradScaler()
+        scaler = GradScaler('cuda', enabled=amp_enabled)
         lr_scheduler = SequentialLR(
             optimizer,
             [
@@ -195,7 +209,11 @@ def main(cfgs: argparse.Namespace) -> None:
                 ),
                 CosineAnnealingLR(
                     optimizer,
-                    len(dataloader_train) * (cfgs.epoch - cfgs.epoch_warmup),
+                    max(
+                        1,
+                        len(dataloader_train)
+                        * (cfgs.epoch - cfgs.epoch_warmup),
+                    ),
                 ),
             ],
             [len(dataloader_train) * cfgs.epoch_warmup],
@@ -229,6 +247,7 @@ def main(cfgs: argparse.Namespace) -> None:
                 lr_scheduler,
                 manager,
                 e,
+                amp_enabled,
             )
             test(
                 dataloader_test,

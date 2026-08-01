@@ -69,6 +69,7 @@ class HRDataset(Dataset):
         aug: Whether to apply online data augmentation. Defaults to False.
         cache: Whether to cache loaded data in memory. Defaults to False.
         num_concat: Number of additional samples to concatenate. Defaults to 0.
+        max_samples: Maximum samples to load. A value of 0 uses the full fold.
 
     Attributes:
         dir_ds: Root directory of the dataset.
@@ -78,6 +79,7 @@ class HRDataset(Dataset):
         len_seq: Target sequence length for padding.
         cache: Memory caching flag.
         num_concat: Number of additional samples to concatenate.
+        max_samples: Maximum number of annotations kept for a quick test.
         augs: List of active augmentation transforms.
         annos: List of annotation entries for the fold.
         data_cache: In-memory storage for cached data.
@@ -94,6 +96,7 @@ class HRDataset(Dataset):
         aug: bool = False,
         cache: bool = False,
         num_concat: int = 0,
+        max_samples: int = 0,
     ) -> None:
         self.dir_ds = os.path.dirname(path_anno)
         self.tokenizer = tokenizer
@@ -117,6 +120,11 @@ class HRDataset(Dataset):
         with open(path_anno, 'r') as f:
             annos = json.load(f)
             self.annos = annos['annotations'][str(idx_fold)]
+
+        # A small deterministic subset is useful for quick development tests.
+        # A value of 0 keeps the complete fold for scientific experiments.
+        if max_samples > 0:
+            self.annos = self.annos[:max_samples]
 
         # group indices by writer for concatenation
         if self.num_concat > 0:

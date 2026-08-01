@@ -66,3 +66,39 @@ datasets.
   They use the same valid 60-token vocabulary and passed encode/decode checks
   for all 25,199 train-plus-validation labels in every fold.
 - Character-tokenizer preparation for both WD/RH and WI/RH is complete.
+
+## 2026-08-01 — B0 configurations and local CPU smoke test
+
+### Completed
+
+- Added dedicated fold-0 B0 character-baseline configurations for the WD/RH
+  and WI/RH datasets under `configs/thesis/`.
+- Made mixed precision device-aware: CUDA training uses mixed precision, while
+  CPU training runs in normal precision.
+- Added optional `max_train_samples` and `max_val_samples` configuration keys.
+  Missing or zero values keep the complete dataset, so scientific experiment
+  configurations are unaffected.
+- Updated the ignored Mac-local configuration to use 16 training samples,
+  eight validation samples, batch size two, and one epoch.
+- Protected the learning-rate scheduler against a zero-length cosine phase in
+  a one-epoch development test.
+
+### Smoke-test result
+
+The complete WD/RH fold-0 pipeline ran successfully on the Mac CPU:
+
+- eight training batches and four validation batches completed;
+- the model received the raw 13-channel signals;
+- character tokenization and CTC loss worked;
+- backward propagation and optimizer updates completed;
+- validation decoding and CER/WER evaluation completed; and
+- metrics, predictions, a visualization, and a checkpoint were written under
+  `results/thesis/development/mac_cpu_smoke_char_wd/0/`.
+
+The smoke-test CER and WER were both 1.0. This is expected after one epoch on
+only 16 training examples and is not a thesis result.
+
+### Next step
+
+Set up the CUDA environment on the RTX 4060 laptop and run a short GPU test
+before starting the full WD/RH fold-0 B0 experiment.
