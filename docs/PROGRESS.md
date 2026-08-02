@@ -129,3 +129,38 @@ before starting the full WD/RH fold-0 B0 experiment.
   validation epochs. Restored metric history makes this rule resume-aware.
 - `latest.pth` remains the recovery checkpoint, while the best-CER checkpoint
   is the preferred model for forced alignment.
+
+## 2026-08-02 — Tokenizer-family scope clarification
+
+- Clarified that the thesis plans handwriting-aware Bigram, BPE, and Unigram
+  tokenizers, not only one motion-selected pair vocabulary.
+- Each proposed variant will be compared with its linguistic counterpart at a
+  matched vocabulary size; the character baseline remains the common reference.
+- Motion continuity is the primary token-selection evidence. Frequency,
+  occurrence count, and writer coverage are retained as reliability conditions.
+- Implementation remains staged: establish forced alignment and motion-aware
+  Bigram first, then reuse the shared evidence for BPE and Unigram.
+- Added method, decision, and proposal-planning documents so this clarification
+  is carried into the formal thesis proposal.
+
+## 2026-08-02 — WD/RH fold-0 character baseline
+
+- Completed 300 epochs of B0 character training on the RTX 4060 laptop.
+- Best validation CER was 0.127563 (12.76%) at epoch 286.
+- Best validation WER was 0.359809 (35.98%) at epoch 289.
+- The complete run was archived and backed up by the researcher. The final
+  `latest.pth` checkpoint was retained for initial forced-alignment work.
+- This run preceded automatic best-model checkpointing, so the exact weights
+  from epochs 286 and 289 are not available. This limitation is recorded in
+  `docs/EXPERIMENTS.md`.
+
+## 2026-08-02 — WI/RH fold-0 character baseline
+
+- Completed 300 epochs of B0 character training on the RTX 4060 laptop.
+- Best validation CER was 0.156041 (15.60%) at epoch 244.
+- Best validation WER was 0.279478 (27.95%) at epoch 269.
+- The WI run used automatic best-model checkpointing. Use `best_cer.pth`
+  from epoch 244 for WI forced-alignment development; retain `best_wer.pth`
+  for recognition comparison and `latest.pth` for resumable recovery.
+- WD/RH and WI/RH fold-0 character baselines are now complete, so development
+  can move to target-constrained CTC forced alignment.
