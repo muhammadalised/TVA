@@ -224,7 +224,10 @@ def main(cfgs: argparse.Namespace) -> None:
     if cfgs.checkpoint:
         ckp = torch.load(
             cfgs.checkpoint,
-            map_location=device,
+            # RNG and DataLoader generator states must remain CPU ByteTensors.
+            # Model and optimizer loaders copy their states to the parameter
+            # device afterwards.
+            map_location='cpu',
             weights_only=False,
         )
         model.load_state_dict(ckp['model'], strict=False)
@@ -240,7 +243,9 @@ def main(cfgs: argparse.Namespace) -> None:
             if ckp.get('scaler') is not None:
                 scaler.load_state_dict(ckp['scaler'])
             if ckp.get('dataloader_generator') is not None:
-                generator_train.set_state(ckp['dataloader_generator'])
+                generator_train.set_state(
+                    ckp['dataloader_generator'].cpu()
+                )
             if ckp.get('metrics') is not None:
                 manager.metrics = ckp['metrics']
 

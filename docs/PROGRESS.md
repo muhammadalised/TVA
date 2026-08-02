@@ -116,3 +116,8 @@ before starting the full WD/RH fold-0 B0 experiment.
   from the saved epoch-0 checkpoint. The new process correctly began at epoch
   1 and reproduced the uninterrupted run's learning rates and batch losses
   exactly. This validates deterministic continuation for the tested setup.
+- The first CUDA resume attempt exposed that loading the whole checkpoint
+  directly onto the GPU also moved RNG state tensors to CUDA, while PyTorch
+  requires CPU `ByteTensor` RNG states. Checkpoints now load through CPU and
+  defensively convert RNG and DataLoader generator states to CPU before
+  restoration. The existing checkpoint remains valid.
