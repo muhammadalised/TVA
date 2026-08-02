@@ -192,10 +192,47 @@ class RunManager:
             shutil.copyfile(path_latest, path_numbered_temp)
             os.replace(path_numbered_temp, path_numbered)
 
+        for tag in self._get_best_checkpoint_tags():
+            path_best = os.path.join(self.dir_ckp, f'best_{tag}.pth')
+            path_best_temp = f'{path_best}.tmp'
+            shutil.copyfile(path_latest, path_best_temp)
+            os.replace(path_best_temp, path_best)
+            logger.info(
+                f'Saved new best-{tag.upper()} checkpoint at epoch '
+                f'{self.epoch} to {path_best}'
+            )
+
         logger.info(
             f'Saved resumable checkpoint after epoch {self.epoch} '
             f'to {path_latest}'
         )
+
+    def _get_best_checkpoint_tags(self) -> list[str]:
+        '''Return metrics for which the current epoch is a strict new best.'''
+        result_current = self.metrics.get(self.epoch, {}).get('evaluation')
+        if not result_current:
+            return []
+
+        tags = []
+        metrics = {
+            'cer': 'character_error_rate',
+            'wer': 'word_error_rate',
+        }
+
+        for tag, metric in metrics.items():
+            values_previous = [
+                result['evaluation'][metric]
+                for epoch, result in self.metrics.items()
+                if isinstance(epoch, int)
+                and epoch < self.epoch
+                and 'evaluation' in result
+            ]
+            value_current = result_current[metric]
+
+            if not values_previous or value_current < min(values_previous):
+                tags.append(tag)
+
+        return tags
 
     def save_results(self) -> None:
         '''Save the cached metrics and predictions to JSON files.'''

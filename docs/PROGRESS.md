@@ -121,3 +121,11 @@ before starting the full WD/RH fold-0 B0 experiment.
   requires CPU `ByteTensor` RNG states. Checkpoints now load through CPU and
   defensively convert RNG and DataLoader generator states to CPU before
   restoration. The existing checkpoint remains valid.
+
+## 2026-08-02 — Validation-selected checkpoints
+
+- Added automatic `best_cer.pth` and `best_wer.pth` checkpoints.
+- Each file is replaced only for a strict improvement over all previous
+  validation epochs. Restored metric history makes this rule resume-aware.
+- `latest.pth` remains the recovery checkpoint, while the best-CER checkpoint
+  is the preferred model for forced alignment.
