@@ -13,6 +13,10 @@ import yaml
 
 from tva.alignment_analysis import AlignmentAnalysis, analyze_alignment
 from tva.alignment_plot import plot_alignment
+from tva.boundary_features import (
+    BoundaryFeatureAnalysis,
+    extract_boundary_features,
+)
 from tva.ctc_alignment import CTCAlignment, ctc_viterbi_align
 from tva.dataset import HRDataset
 from tva.decoder_ctc import BestPath
@@ -123,6 +127,7 @@ def save_analysis(
     greedy_prediction: str,
     alignment: CTCAlignment,
     analysis: AlignmentAnalysis,
+    boundary_features: BoundaryFeatureAnalysis,
 ) -> tuple[Path, Path]:
     '''Save reusable JSON metadata and return JSON/PNG output paths.'''
     output_dir = (
@@ -165,12 +170,38 @@ def save_analysis(
             'token_path': alignment.token_path,
         },
         'analysis': asdict(analysis),
+        'boundary_feature_analysis': asdict(boundary_features),
     }
 
     with open(path_json, 'w', encoding='utf-8') as file:
         json.dump(payload, file, ensure_ascii=False, indent=2)
 
     return path_json, path_plot
+
+
+def print_boundary_features(
+    features: BoundaryFeatureAnalysis,
+    window_ms: int = 100,
+) -> None:
+    '''Print the most interpretable features for one selected window size.'''
+    print(f'\nBoundary features ({window_ms} ms midpoint window)')
+    print('pair center force_min_rel low_force longest_low motion_dE margin agree')
+    print('---- ------ ------------- --------- ----------- --------- ------ -----')
+
+    for boundary in features.boundaries:
+        window = next(
+            item for item in boundary.windows if item.window_ms == window_ms
+        )
+        print(
+            f'{boundary.pair:^4} '
+            f'{boundary.center_input_sample:>6.1f} '
+            f'{window.force_min_relative:>9.3f} '
+            f'{window.low_force_fraction:>9.3f} '
+            f'{window.longest_low_force_ms:>11.1f} '
+            f'{window.motion_derivative_energy:>9.3f} '
+            f'{boundary.minimum_confidence_margin:>10.3f} '
+            f'{"yes" if boundary.both_anchors_agree_with_greedy else "NO":>5}'
+        )
 
 
 def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
@@ -257,6 +288,11 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
         num_raw_samples=raw_signal.shape[0],
         sample_rate_hz=sample_rate_hz,
     )
+    boundary_features = extract_boundary_features(
+        raw_signal=raw_signal,
+        normalized_signal=signal.numpy(),
+        alignment_analysis=analysis,
+    )
 
     path_json, path_plot = save_analysis(
         args,
@@ -268,6 +304,7 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
         greedy_prediction,
         alignment,
         analysis,
+        boundary_features,
     )
     plot_alignment(
         raw_signal=raw_signal,
@@ -306,6 +343,7 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
     )
 
     print_alignment(analysis)
+    print_boundary_features(boundary_features)
 
     if args.show_path:
         readable_path = [

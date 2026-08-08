@@ -30,6 +30,7 @@ def _shade_alignment(
     for boundary in analysis.boundaries:
         start_time = boundary.input_start_sample / rate
         end_time = boundary.input_end_sample / rate
+        center_time = boundary.center_input_sample / rate
 
         for axis in axes:
             if boundary.num_blank_frames:
@@ -47,6 +48,13 @@ def _shade_alignment(
                     linestyle=':',
                     linewidth=1,
                 )
+            axis.axvline(
+                center_time,
+                color='black',
+                alpha=0.25,
+                linestyle='--',
+                linewidth=0.8,
+            )
 
     top_axis = axes[0]
     for character in analysis.characters:
@@ -174,7 +182,7 @@ def plot_alignment(
         (
             'Green anchor: forced character agrees with local model choice.  '
             'Red: target constraint overrides it.  Orange: blank-frame '
-            'candidate boundary region.'
+            'candidate boundary region.  Dashed black: region midpoint.'
         ),
         fontsize=8,
     )

@@ -36,6 +36,12 @@ For every adjacent-character boundary, examine fixed windows before and after
 the estimated position. Candidate window sizes include 50, 100, and 150 ms at
 the dataset's 100 Hz sample rate.
 
+The implemented starting position is the midpoint between adjacent character
+emission anchors. The extractor currently saves all three window sizes and
+unweighted sensor measurements. A recording-adaptive provisional low-force
+threshold uses 10% of the recording's 90th-percentile raw force value. This is
+an inspectable development rule, not a frozen thesis threshold.
+
 Candidate feature groups are:
 
 - force/contact: low-force fraction, longest low-force duration, and force

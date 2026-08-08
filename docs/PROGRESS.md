@@ -218,3 +218,24 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Eight focused tests now pass, including mapping, confidence, and PNG creation.
   An end-to-end Mac smoke run also produced a valid JSON/PNG pair; scientific
   inspection must use the trained RTX checkpoint.
+
+## 2026-08-08 — Midpoint boundary feature extractor
+
+- Manual plots showed why the complete CTC blank region is too broad: long
+  regions can contain pen lifts or internal strokes unrelated to the actual
+  adjacent-character boundary.
+- Adopted the midpoint between adjacent character emission anchors as the
+  initial boundary location and implemented 50, 100, and 150 ms local windows.
+- Added unweighted raw-force, relative-force, low-force-duration, AF/AR/G
+  magnitude, and motion-derivative features for every window.
+- The provisional low-force threshold is 10% of each recording's raw-force
+  90th percentile. It is saved with the features and remains subject to
+  training-fold validation.
+- Each boundary also stores both neighbouring character probabilities,
+  confidence margins, their minima, and local greedy agreement. No final
+  acceptance filter or continuity score has been hard-coded.
+- The runner prints a compact 100 ms summary and writes all window sizes into
+  the JSON artifact. Dashed black plot lines mark boundary midpoints.
+- Eleven focused tests pass, including safe handling of an alignment window
+  that reaches model padding. The complete runner/JSON/PNG path succeeds with
+  the local smoke checkpoint.

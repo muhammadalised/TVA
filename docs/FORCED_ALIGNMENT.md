@@ -124,6 +124,39 @@ The JSON contains sample/checkpoint metadata, complete CTC paths, character
 diagnostics, approximate input positions, and candidate boundary regions. Raw
 sensor arrays remain in the dataset and are not duplicated in the JSON.
 
+## Boundary feature extraction
+
+The first automatic feature extractor uses the midpoint between adjacent
+character emission anchors. It measures separate 50, 100, and 150 ms windows
+around that point. Using local windows avoids treating a long CTC blank region
+as though every pen lift inside it belonged to the same character boundary.
+
+Each boundary stores alignment reliability from both neighbouring anchors:
+
+- aligned probabilities and confidence margins;
+- the minimum of the two values; and
+- whether both anchors agree with their local greedy classes.
+
+Each window stores transparent sensor measurements:
+
+- raw force minimum, mean, and centre value;
+- force values relative to the recording's 90th-percentile reference;
+- force-drop ratio;
+- fraction and longest duration below a provisional low-force threshold;
+- mean AF, AR, and G magnitudes; and
+- derivative energy across the nine AF/AR/G axes.
+
+The provisional low-force threshold is 10% of the recording-level force
+reference. It is saved in every JSON file so the calculation is reproducible.
+This value, the window size, the alignment-quality filter, and the eventual
+continuity score remain development choices; the extractor does not yet accept,
+reject, or rank a boundary.
+
+If model padding places an anchor outside the real sensor recording, the local
+window is clipped to valid raw samples and the boundary is explicitly marked as
+overlapping padding. Such cases can later be excluded rather than being
+mistaken for real zero-force data.
+
 ## Tests
 
 Run the focused tests from the repository root:
@@ -134,13 +167,15 @@ python -m unittest discover -s tests -v
 
 The tests cover ordinary and repeated characters, target-constrained decisions,
 invalid targets, insufficient frames, confidence diagnostics, IMU mapping,
-candidate boundary regions, and PNG creation.
+candidate boundary regions, force/motion window features, and PNG creation.
 
 ## Next development steps
 
-1. Run the updated single-sample tool with the trained WI best-CER checkpoint
-   and inspect several plots.
-2. Compare correct greedy predictions with red, target-forced characters.
-3. Decide and document an initial alignment-quality filter from development
-   examples only.
-4. Build the batched exporter after the single-sample representation is stable.
+1. Run the updated tool on the three inspected WI samples and compare their
+   boundary-feature tables with the plots.
+2. Inspect a broader training-fold development sample before selecting the
+   low-force rule, window size, or alignment-quality filter.
+3. Build the batched exporter after the single-sample feature representation is
+   stable.
+4. Aggregate reliable occurrence features by character pair before defining
+   the final continuity score.
