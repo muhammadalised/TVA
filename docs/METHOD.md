@@ -30,6 +30,12 @@ blank-frame regions, and saves synchronized sensor/confidence plots plus JSON.
 Manual validation and the final alignment-quality filter remain open. See
 `docs/FORCED_ALIGNMENT.md` for the interface and limitations.
 
+The batch exporter processes the training partition without augmentation and
+writes one occurrence record per adjacent-character boundary. Its scientific
+default is one sample per inference call because padding unequal word lengths
+can otherwise influence a bidirectional model. Interrupted exports are
+resumable at sample boundaries.
+
 ## 2. Boundary features
 
 For every adjacent-character boundary, examine fixed windows before and after

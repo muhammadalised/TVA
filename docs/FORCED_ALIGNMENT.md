@@ -167,15 +167,52 @@ python -m unittest discover -s tests -v
 
 The tests cover ordinary and repeated characters, target-constrained decisions,
 invalid targets, insufficient frames, confidence diagnostics, IMU mapping,
-candidate boundary regions, force/motion window features, and PNG creation.
+candidate boundary regions, force/motion window features, JSONL records,
+interrupted-export recovery, Unicode labels, and PNG creation.
+
+## Training-split boundary export
+
+`export_boundaries.py` applies the same alignment and feature extraction to a
+complete dataset split. The default split is `train`, because tokenizer
+statistics must be learned without looking at validation recordings. It writes
+one JSONL record per adjacent-character occurrence, plus a compact summary and
+a progress file.
+
+Run the WI/RH training-fold export on the RTX machine:
+
+```bash
+python export_boundaries.py \
+  --config configs/thesis/b0_char_wi_rh.yaml \
+  --checkpoint results/thesis/baselines/B0_char_wi_rh/0/checkpoints/best_cer.pth \
+  --device cuda
+```
+
+The default output is:
+
+```text
+results/thesis/boundary_exports/b0_char_wi_rh/fold0/train/boundaries.jsonl
+```
+
+Use `--max-samples 100 --overwrite` for a small development export. Use
+`--resume` after an interruption. Resume is sample-safe: the progress marker is
+written only after every boundary of that sample has been flushed, and any
+unfinished rows are removed before continuing.
+
+Inference defaults to batch size one. This avoids allowing zero-padding from
+other, longer words to influence the bidirectional LSTM output. A larger
+`--batch-size` is available for exploratory speed tests, but the final export
+should retain the reproducible default unless equivalence is demonstrated.
+
+Each boundary row contains sample and checkpoint provenance, the character
+pair, CTC blank information, alignment reliability, padding status, the
+recording-level force reference, and nested 50/100/150 ms sensor features. No
+continuity class or score is added at this stage.
 
 ## Next development steps
 
-1. Run the updated tool on the three inspected WI samples and compare their
-   boundary-feature tables with the plots.
-2. Inspect a broader training-fold development sample before selecting the
+1. Run a small WI training export and inspect its summary and a selection of
+   boundary rows.
+2. Inspect a broader training-fold sample before selecting the
    low-force rule, window size, or alignment-quality filter.
-3. Build the batched exporter after the single-sample feature representation is
-   stable.
-4. Aggregate reliable occurrence features by character pair before defining
+3. Aggregate reliable occurrence features by character pair before defining
    the final continuity score.

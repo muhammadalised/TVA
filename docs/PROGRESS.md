@@ -239,3 +239,25 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Eleven focused tests pass, including safe handling of an alignment window
   that reaches model padding. The complete runner/JSON/PNG path succeeds with
   the local smoke checkpoint.
+
+## 2026-08-08 — Training-split boundary exporter
+
+- The inspected `gerade`, `immer`, and `Ich` examples confirmed that local
+  force features distinguish obvious contact losses while long CTC blank
+  regions alone do not. Unreliable forced anchors remain explicitly visible.
+- Added `export_boundaries.py` to run the established alignment and feature
+  pipeline across a selected fold and write one JSONL row per adjacent-character
+  occurrence. It defaults to the training split so tokenizer evidence does not
+  leak from validation data.
+- Every record contains checkpoint/sample provenance, CTC measurements,
+  alignment reliability, padding status, and nested 50/100/150 ms force and
+  motion features. No continuity score or acceptance threshold is imposed.
+- Added a progress sidecar and sample-safe `--resume` behavior. Existing output
+  requires an explicit `--resume` or `--overwrite`, preventing accidental loss
+  or duplication.
+- The scientific inference default is batch size one because padding unequal
+  words can affect bidirectional LSTM predictions. Larger batches remain an
+  explicit exploratory option.
+- All 15 focused tests pass. A real three-sample CPU smoke export produced 12
+  boundary rows, and a second run resumed without duplication. A separate
+  two-sample export was also extended to three samples using `--resume`.
