@@ -53,6 +53,38 @@ The returned object also exposes:
 - `state_path`: expanded-target state selected at every frame; and
 - `token_path`: corresponding token ID selected at every frame.
 
+## Single-sample runner
+
+`align_sample.py` connects the alignment algorithm to a trained TVA character
+model and a real dataset sample. It deliberately processes only one sample so
+checkpoint loading, preprocessing, model inference, greedy decoding, and
+forced alignment remain easy to inspect.
+
+Run WI/RH fold 0 with its best-CER checkpoint:
+
+```bash
+python align_sample.py \
+  --config configs/thesis/b0_char_wi_rh.yaml \
+  --checkpoint results/thesis/baselines/B0_char_wi_rh/0/checkpoints/best_cer.pth \
+  --split val \
+  --sample-index 0 \
+  --device cuda
+```
+
+Run WD/RH fold 0 with the retained final checkpoint:
+
+```bash
+python align_sample.py \
+  --config configs/thesis/b0_char_wd_rh.yaml \
+  --checkpoint results/thesis/baselines/B0_char_wd_rh/0/checkpoints/latest.pth \
+  --split val \
+  --sample-index 0 \
+  --device cuda
+```
+
+Add `--show-path` when the complete frame-by-frame CTC path is useful for
+debugging. Without it, the runner prints a compact character-interval table.
+
 ## Current boundary
 
 This first implementation returns positions on the model-output timeline. It
@@ -76,9 +108,8 @@ decisions, invalid targets, and recordings with too few model frames.
 
 ## Next development steps
 
-1. Load a trained character checkpoint and run inference on a few fold-0
-   samples.
-2. Decode target IDs and alignment intervals into readable characters.
-3. Map output-frame intervals back to approximate raw IMU positions.
-4. Plot character intervals over selected IMU channels.
-5. Inspect successful and suspicious examples before defining confidence.
+1. Run the single-sample tool with the trained WI best-CER checkpoint and
+   inspect several fold-0 samples.
+2. Map output-frame intervals back to approximate raw IMU positions.
+3. Plot character intervals over selected IMU channels.
+4. Inspect successful and suspicious examples before defining confidence.

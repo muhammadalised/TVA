@@ -181,3 +181,18 @@ before starting the full WD/RH fold-0 B0 experiment.
 - The implementation currently stops at model-output frames. Loading real
   checkpoints, mapping frames to raw IMU positions, visualization, and an
   alignment-confidence definition are intentionally left for the next stage.
+
+## 2026-08-08 — Single-sample alignment runner
+
+- Added `align_sample.py` to connect a character configuration, checkpoint,
+  real dataset sample, model inference, greedy decoding, and constrained
+  Viterbi alignment in one readable command.
+- The runner prints sample metadata, the known label, greedy prediction,
+  timeline sizes, alignment scores, and one model-frame interval per target
+  character. An optional flag prints the complete frame-level token path.
+- Completed an end-to-end CPU check using the Mac WD smoke checkpoint and a
+  real processed validation sample. The run produced all six intervals for
+  `gerade`; its positions are only a software check because the smoke model was
+  trained for one epoch on 16 examples.
+- The next meaningful check uses the trained WI/RH fold-0 `best_cer.pth` on the
+  RTX machine.
