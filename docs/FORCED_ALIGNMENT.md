@@ -208,11 +208,44 @@ pair, CTC blank information, alignment reliability, padding status, the
 recording-level force reference, and nested 50/100/150 ms sensor features. No
 continuity class or score is added at this stage.
 
+## Pair-level descriptive analysis
+
+`analyze_boundaries.py` reads the completed JSONL export and calculates exact
+descriptive statistics globally and separately for every character pair. It is
+a CPU analysis and does not run the recognition model again:
+
+```bash
+python analyze_boundaries.py \
+  --input results/thesis/boundary_exports/b0_char_wi_rh/fold0/train/boundaries.jsonl \
+  --overwrite
+```
+
+The default output directory is `pair_analysis/` beside the input file. It
+contains:
+
+- `analysis_summary.json`: provenance, data-integrity totals, pair-support
+  distribution, and global statistics for every window;
+- `pair_overview.csv`: a compact table of the most interpretable pair
+  measurements; and
+- `pair_statistics.csv`: the full means, standard deviations, ranges, and
+  10th/25th/50th/75th/90th percentiles used for later scoring and ablations.
+
+Every pair/window is reported twice. The `all` subset contains every exported
+occurrence. The `agreement_nonpadding_unclipped` subset includes an occurrence
+only when both forced character anchors agree with the local model choice,
+neither anchor overlaps padding, and that sensor window is not clipped at the
+recording edge. This is a transparent quality subset, not the final alignment
+filter: it applies no probability or confidence-margin threshold.
+
+The `no_low_force_rate` is the fraction of occurrences whose complete local
+window remained above the provisional recording-relative force threshold. It
+is descriptive contact evidence and is not yet a continuity label.
+
 ## Next development steps
 
-1. Run a small WI training export and inspect its summary and a selection of
-   boundary rows.
-2. Inspect a broader training-fold sample before selecting the
-   low-force rule, window size, or alignment-quality filter.
-3. Aggregate reliable occurrence features by character pair before defining
-   the final continuity score.
+1. Inspect the full WI training-fold global statistics and compact pair table.
+2. Compare 50, 100, and 150 ms distributions before selecting the window size.
+3. Define and document the alignment-quality filter using these training-only
+   distributions.
+4. Define the first force-only and combined-motion continuity scores, followed
+   by planned ablations.

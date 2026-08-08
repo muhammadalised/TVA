@@ -81,6 +81,13 @@ statistics such as median and interquartile range. Retain count, alignment
 confidence, and writer coverage. All statistics and thresholds must come only
 from the fold's training partition.
 
+The implemented descriptive analysis reports all occurrences alongside a
+transparent agreement/non-padding/unclipped subset. It calculates means,
+standard deviations, ranges, and the 10th, 25th, 50th, 75th, and 90th
+percentiles for alignment, contact, and motion measurements at every window
+size. No probability threshold, margin threshold, window choice, feature
+weight, or continuity cutoff is selected by this analysis.
+
 ## 4. Handwriting-aware Bigram
 
 Keep all characters as fallback tokens. Reject pairs below minimum occurrence,

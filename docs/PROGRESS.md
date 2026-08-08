@@ -261,3 +261,26 @@ before starting the full WD/RH fold-0 B0 experiment.
 - All 15 focused tests pass. A real three-sample CPU smoke export produced 12
   boundary rows, and a second run resumed without duplication. A separate
   two-sample export was also extended to three samples using `--resume`.
+
+## 2026-08-08 — Pair-level descriptive analysis
+
+- The complete WI/RH fold-0 training export finished successfully: all 19,907
+  requested samples completed, producing 88,292 boundaries across 426 distinct
+  case-sensitive character pairs. Pair counts sum exactly to the boundary
+  total, and the implied average word length is 5.435 characters.
+- Added a streaming analysis tool that verifies provenance, window consistency,
+  boundary-ID uniqueness, and agreement with the exporter summary before
+  calculating statistics.
+- Added global and per-pair counts, sample/writer coverage, alignment-quality
+  rates, contact-preservation rates, and descriptive distributions for all
+  alignment, force, and motion measurements at 50, 100, and 150 ms.
+- Results are reported for all occurrences and for an explicitly named
+  agreement/non-padding/unclipped subset. The subset intentionally uses no
+  probability or confidence-margin threshold and is not presented as the final
+  reliability definition.
+- The analysis writes a JSON report, a compact pair overview CSV, and a full
+  statistics CSV. No continuity score, ranking, or tokenizer merge is created
+  yet.
+- All 18 focused tests pass. The tool also completed against the real local
+  smoke export, verified all 12 rows, and produced the three expected analysis
+  files.
