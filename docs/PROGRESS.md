@@ -196,3 +196,25 @@ before starting the full WD/RH fold-0 B0 experiment.
   trained for one epoch on 16 examples.
 - The next meaningful check uses the trained WI/RH fold-0 `best_cer.pth` on the
   RTX machine.
+
+## 2026-08-08 — Alignment diagnostics and visualization
+
+- Verified real WI/RH fold-0 alignments for `gerade`, `Juni`, `immer`, and
+  `Ich`. The repeated `mm` in `immer` was correctly separated by CTC blanks.
+- The examples showed that a good whole-path score can hide an uncertain
+  forced character, so the runner now reports character-level probability,
+  preferred class, competing probability, margin, and local greedy agreement.
+- Added approximate output-frame-to-model-input mapping using BLConv's 8x
+  temporal reduction, including explicit reporting of trailing samples that
+  do not form a complete output frame.
+- Added candidate boundary regions from the CTC blank frames between adjacent
+  character emission anchors. These are search regions, not claimed physical
+  boundaries.
+- Added synchronized PNG plots of normalized AF/AR/G magnitude, raw F values,
+  and model probabilities. Green anchors agree locally, red anchors are forced,
+  and orange spans are blank-frame regions.
+- Added reusable JSON artifacts with sample metadata, paths, confidence
+  diagnostics, approximate positions, and boundary regions.
+- Eight focused tests now pass, including mapping, confidence, and PNG creation.
+  An end-to-end Mac smoke run also produced a valid JSON/PNG pair; scientific
+  inspection must use the trained RTX checkpoint.

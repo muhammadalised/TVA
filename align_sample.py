@@ -1,12 +1,18 @@
 '''Run target-constrained CTC alignment for one handwriting sample.'''
 
 import argparse
+import json
 import os
+from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
 import yaml
 
+from tva.alignment_analysis import AlignmentAnalysis, analyze_alignment
+from tva.alignment_plot import plot_alignment
 from tva.ctc_alignment import CTCAlignment, ctc_viterbi_align
 from tva.dataset import HRDataset
 from tva.decoder_ctc import BestPath
@@ -64,24 +70,107 @@ def token_text(tokenizer: Any, token_id: int) -> str:
 
 
 def print_alignment(
-    alignment: CTCAlignment,
-    tokenizer: Any,
+    analysis: AlignmentAnalysis,
 ) -> None:
-    '''Print one readable row for every target character.'''
-    print('\nForced alignment (model-output frames)')
-    print('index  char  token_id  start  end  frames')
-    print('-----  ----  --------  -----  ---  ------')
+    '''Print character confidence and candidate boundary regions.'''
+    print('\nCharacter anchors and confidence')
+    print('index char frames  input_anchor aligned preferred margin  agrees')
+    print('----- ---- ------- ------------ ------- --------- ------- -------')
 
-    for token in alignment.tokens:
-        character = token_text(tokenizer, token.token_id)
-        print(
-            f'{token.target_index:>5}  '
-            f'{character:^4}  '
-            f'{token.token_id:>8}  '
-            f'{token.start_frame:>5}  '
-            f'{token.end_frame:>3}  '
-            f'{token.num_frames:>6}'
+    for character in analysis.characters:
+        frames = (
+            f'{character.model_start_frame}:{character.model_end_frame}'
         )
+        print(
+            f'{character.target_index:>5} '
+            f'{character.text:^4} '
+            f'{frames:>7} '
+            f'{character.anchor_input_sample:>12.1f} '
+            f'{character.aligned_probability:>7.3f} '
+            f'{character.preferred_text:^9} '
+            f'{character.confidence_margin:>7.3f} '
+            f'{"yes" if character.agrees_with_greedy else "NO":>7}'
+        )
+
+    print('\nCandidate boundary regions')
+    print('index pair model_frames input_samples blank_frames duration_ms')
+    print('----- ---- ------------ ------------- ------------ -----------')
+
+    for boundary in analysis.boundaries:
+        model_frames = (
+            f'{boundary.model_start_frame}:{boundary.model_end_frame}'
+        )
+        input_samples = (
+            f'{boundary.input_start_sample}:{boundary.input_end_sample}'
+        )
+        print(
+            f'{boundary.boundary_index:>5} '
+            f'{boundary.pair:^4} '
+            f'{model_frames:>12} '
+            f'{input_samples:>13} '
+            f'{boundary.num_blank_frames:>12} '
+            f'{boundary.duration_ms:>11.1f}'
+        )
+
+
+def save_analysis(
+    args: argparse.Namespace,
+    config: argparse.Namespace,
+    annotation: dict[str, Any],
+    dataset_info: dict[str, Any],
+    checkpoint_epoch: int | None,
+    known_label: str,
+    greedy_prediction: str,
+    alignment: CTCAlignment,
+    analysis: AlignmentAnalysis,
+) -> tuple[Path, Path]:
+    '''Save reusable JSON metadata and return JSON/PNG output paths.'''
+    output_dir = (
+        Path(args.output_dir)
+        / Path(args.config).stem
+        / f'fold{config.idx_fold}'
+        / args.split
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_stem = f'sample_{args.sample_index:05d}'
+    path_json = output_dir / f'{output_stem}.json'
+    path_plot = output_dir / f'{output_stem}.png'
+
+    payload = {
+        'schema_version': 1,
+        'sample': {
+            'config': args.config,
+            'checkpoint': args.checkpoint,
+            'checkpoint_epoch': checkpoint_epoch,
+            'split': args.split,
+            'fold': config.idx_fold,
+            'sample_index': args.sample_index,
+            'source_file': annotation['filename'],
+            'writer_id': annotation['id_writer'],
+            'known_label': known_label,
+            'greedy_prediction': greedy_prediction,
+        },
+        'dataset': {
+            'sample_rate_hz': dataset_info['rate_sample_target'],
+            'sensor_groups': dataset_info['sensors'],
+            'channel_indices': dataset_info['idxs_channel'],
+        },
+        'alignment': {
+            'log_score': alignment.log_score,
+            'mean_log_score': (
+                alignment.log_score / analysis.num_model_frames
+            ),
+            'expanded_target': alignment.expanded_target,
+            'state_path': alignment.state_path,
+            'token_path': alignment.token_path,
+        },
+        'analysis': asdict(analysis),
+    }
+
+    with open(path_json, 'w', encoding='utf-8') as file:
+        json.dump(payload, file, ensure_ascii=False, indent=2)
+
+    return path_json, path_plot
 
 
 def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
@@ -116,6 +205,9 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
     annotation_path = os.path.join(
         config.dir_dataset, f'{args.split}.json'
     )
+    with open(annotation_path, 'r', encoding='utf-8') as file:
+        dataset_document = json.load(file)
+
     dataset = HRDataset(
         annotation_path,
         tokenizer,
@@ -134,6 +226,14 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
 
     signal, target = dataset[args.sample_index]
     annotation = dataset.annos[args.sample_index]
+    path_raw_signal = os.path.join(
+        config.dir_dataset, annotation['filename']
+    )
+    raw_signal = np.loadtxt(
+        path_raw_signal,
+        delimiter=';',
+        dtype=np.float32,
+    )
 
     # HRDataset returns (time, channels); Conv1d expects (batch, channels, time).
     model_input = signal.transpose(0, 1).unsqueeze(0).to(device)
@@ -147,6 +247,37 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
     )
     greedy_prediction = BestPath(tokenizer).decode(probabilities)
     known_label = tokenizer.decode(target.tolist())
+    sample_rate_hz = float(dataset_document['info']['rate_sample_target'])
+    analysis = analyze_alignment(
+        alignment=alignment,
+        probabilities=probabilities,
+        token_to_text=lambda token_id: token_text(tokenizer, token_id),
+        downsampling_ratio=model.ratio_ds,
+        num_model_input_samples=signal.shape[0],
+        num_raw_samples=raw_signal.shape[0],
+        sample_rate_hz=sample_rate_hz,
+    )
+
+    path_json, path_plot = save_analysis(
+        args,
+        config,
+        annotation,
+        dataset_document['info'],
+        checkpoint_epoch,
+        known_label,
+        greedy_prediction,
+        alignment,
+        analysis,
+    )
+    plot_alignment(
+        raw_signal=raw_signal,
+        normalized_signal=signal.numpy(),
+        probabilities=probabilities,
+        analysis=analysis,
+        known_label=known_label,
+        greedy_prediction=greedy_prediction,
+        path_save=path_plot,
+    )
 
     print('Sample information')
     print(f'  configuration: {args.config}')
@@ -159,16 +290,22 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
     print(f'  writer ID:     {annotation["id_writer"]}')
     print(f'  known label:   {known_label}')
     print(f'  greedy output: {greedy_prediction}')
-    print(f'  IMU samples:   {signal.shape[0]}')
+    print(f'  raw IMU samples:   {raw_signal.shape[0]}')
+    print(f'  model input samples: {signal.shape[0]}')
     print(f'  model frames:  {probabilities.shape[0]}')
     print(f'  downsampling:  {model.ratio_ds}x')
+    print(f'  sample rate:   {sample_rate_hz:g} Hz')
+    print(
+        f'  trailing unmodeled samples: '
+        f'{analysis.trailing_unmodeled_samples}'
+    )
     print(f'  path log score: {alignment.log_score:.4f}')
     print(
         '  mean log score: '
         f'{alignment.log_score / probabilities.shape[0]:.4f}'
     )
 
-    print_alignment(alignment, tokenizer)
+    print_alignment(analysis)
 
     if args.show_path:
         readable_path = [
@@ -177,6 +314,10 @@ def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
         ]
         print('\nFrame-by-frame token path')
         print(' | '.join(readable_path))
+
+    print('\nSaved outputs')
+    print(f'  JSON: {path_json}')
+    print(f'  plot: {path_plot}')
 
     return alignment
 
@@ -219,6 +360,14 @@ def parse_args() -> argparse.Namespace:
         '--show-path',
         action='store_true',
         help='Also print the selected token at every model frame.',
+    )
+    parser.add_argument(
+        '--output-dir',
+        default='results/thesis/alignment_debug',
+        help=(
+            'Root directory for JSON and PNG outputs. Defaults to '
+            'results/thesis/alignment_debug.'
+        ),
     )
     return parser.parse_args()
 

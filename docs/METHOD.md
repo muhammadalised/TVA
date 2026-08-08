@@ -23,10 +23,12 @@ model's temporal downsampling ratio. Exclude or separately analyze low-confidenc
 alignments rather than treating all estimated boundaries as equally reliable.
 
 Implementation status on 2026-08-08: the standalone target-constrained Viterbi
-algorithm is implemented in `tva/ctc_alignment.py` and tested on transparent
-toy cases, including repeated characters. Real-checkpoint integration,
-output-to-IMU frame mapping, visualization, and confidence filtering remain the
-next validation steps. See `docs/FORCED_ALIGNMENT.md` for the interface.
+algorithm supports repeated characters and is connected to real checkpoints.
+The single-sample runner now reports local probability diagnostics, maps
+emission anchors approximately to model-input samples, identifies intervening
+blank-frame regions, and saves synchronized sensor/confidence plots plus JSON.
+Manual validation and the final alignment-quality filter remain open. See
+`docs/FORCED_ALIGNMENT.md` for the interface and limitations.
 
 ## 2. Boundary features
 
