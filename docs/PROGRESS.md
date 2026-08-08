@@ -164,3 +164,20 @@ before starting the full WD/RH fold-0 B0 experiment.
   for recognition comparison and `latest.pth` for resumable recovery.
 - WD/RH and WI/RH fold-0 character baselines are now complete, so development
   can move to target-constrained CTC forced alignment.
+
+## 2026-08-08 — Core CTC Viterbi alignment
+
+- Created the `forced-alignment` development branch from the documented
+  baseline state.
+- Added a standalone target-constrained CTC Viterbi implementation in
+  `tva/ctc_alignment.py`.
+- The implementation returns the expanded CTC target, best state/token path,
+  total log score, and a half-open model-frame interval for each known target
+  token.
+- Added five focused unit tests covering an ordinary two-character alignment,
+  repeated characters, target-constrained advancement, insufficient frames,
+  and an invalid blank inside the target.
+- All five tests pass on the Mac `tva-thesis` environment.
+- The implementation currently stops at model-output frames. Loading real
+  checkpoints, mapping frames to raw IMU positions, visualization, and an
+  alignment-confidence definition are intentionally left for the next stage.

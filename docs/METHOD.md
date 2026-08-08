@@ -22,6 +22,12 @@ Map encoder-frame positions back to approximate raw-signal positions using the
 model's temporal downsampling ratio. Exclude or separately analyze low-confidence
 alignments rather than treating all estimated boundaries as equally reliable.
 
+Implementation status on 2026-08-08: the standalone target-constrained Viterbi
+algorithm is implemented in `tva/ctc_alignment.py` and tested on transparent
+toy cases, including repeated characters. Real-checkpoint integration,
+output-to-IMU frame mapping, visualization, and confidence filtering remain the
+next validation steps. See `docs/FORCED_ALIGNMENT.md` for the interface.
+
 ## 2. Boundary features
 
 For every adjacent-character boundary, examine fixed windows before and after
