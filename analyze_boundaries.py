@@ -18,11 +18,18 @@ def analyze_boundaries(args: argparse.Namespace) -> None:
         else input_path.parent / 'pair_analysis'
     )
 
-    summary, pair_rows = analyze_boundary_jsonl(input_path)
-    summary_path, pair_path, overview_path = write_boundary_statistics(
+    summary, pair_rows, position_rows = analyze_boundary_jsonl(input_path)
+    (
+        summary_path,
+        pair_path,
+        overview_path,
+        position_path,
+        position_overview_path,
+    ) = write_boundary_statistics(
         output_dir,
         summary,
         pair_rows,
+        position_rows,
         overwrite=args.overwrite,
     )
 
@@ -41,9 +48,27 @@ def analyze_boundaries(args: argparse.Namespace) -> None:
     for window_ms, count in quality_by_window.items():
         rate = count / summary['total_boundaries']
         print(f'    {window_ms:>3} ms: {count} ({rate:.1%})')
+
+    print('  100 ms filtered contact preservation by position:')
+    for position in ('only', 'first', 'middle', 'final'):
+        row = next(
+            item for item in position_rows
+            if item['group_type'] == 'boundary_position'
+            and item['group_value'] == position
+            and item['window_ms'] == 100
+            and item['subset'] == SUBSET_AGREEMENT_FILTERED
+        )
+        rate = row['no_low_force_rate']
+        readable_rate = f'{rate:.1%}' if rate is not None else 'n/a'
+        print(
+            f'    {position:>6}: {row["occurrence_count"]} '
+            f'({readable_rate} contact preserved)'
+        )
     print(f'  JSON report: {summary_path}')
     print(f'  pair overview: {overview_path}')
-    print(f'  pair CSV:    {pair_path}')
+    print(f'  pair statistics: {pair_path}')
+    print(f'  position overview: {position_overview_path}')
+    print(f'  position statistics: {position_path}')
 
 
 def parse_args() -> argparse.Namespace:

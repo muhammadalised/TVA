@@ -88,6 +88,12 @@ percentiles for alignment, contact, and motion measurements at every window
 size. No probability threshold, margin threshold, window choice, feature
 weight, or continuity cutoff is selected by this analysis.
 
+Before ranking pairs, the same occurrence features are summarized by boundary
+position (`only`, `first`, `middle`, or `final`), left-character case, and their
+cross-product. This diagnostic checks whether apparently continuous uppercase
+pairs are actually explained by their usual word-initial position. The groups
+do not alter or reweight the exported measurements.
+
 ## 4. Handwriting-aware Bigram
 
 Keep all characters as fallback tokens. Reject pairs below minimum occurrence,

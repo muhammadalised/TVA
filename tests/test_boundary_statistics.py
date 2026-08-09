@@ -21,6 +21,8 @@ def make_row(
     overlaps_padding: bool = False,
     clipped_100: bool = False,
     force_100: float = 0.5,
+    boundary_index: int = 0,
+    num_boundaries: int = 3,
 ) -> dict:
     def window(window_ms: int, clipped: bool, force: float) -> dict:
         return {
@@ -51,6 +53,9 @@ def make_row(
         'sample_index': sample_index,
         'writer_id': writer_id,
         'pair': pair,
+        'left_character': pair[0],
+        'boundary_index': boundary_index,
+        'num_boundaries_in_sample': num_boundaries,
         'minimum_aligned_probability': 0.8,
         'minimum_confidence_margin': 0.6 if agrees else -0.2,
         'alignment_mean_log_score': -0.1,
@@ -71,13 +76,20 @@ class BoundaryStatisticsTest(unittest.TestCase):
             make_row('0:train:0:0', 'ab', 0, 1, force_100=0.5),
             make_row(
                 '0:train:1:0', 'ab', 1, 2,
-                agrees=False, force_100=0.0,
+                agrees=False, force_100=0.0, boundary_index=1,
             ),
             make_row(
                 '0:train:2:0', 'ab', 2, 1,
-                clipped_100=True, force_100=1.0,
+                clipped_100=True, force_100=1.0, boundary_index=2,
             ),
-            make_row('0:train:3:0', 'bc', 3, 2, force_100=0.4),
+            make_row(
+                '0:train:3:0', 'bc', 3, 2,
+                force_100=0.4, num_boundaries=1,
+            ),
+            make_row(
+                '0:train:4:0', 'Ab', 4, 2,
+                force_100=0.6, boundary_index=0, num_boundaries=2,
+            ),
         ]
         with open(path, 'w', encoding='utf-8') as file:
             for row in rows:
@@ -90,17 +102,17 @@ class BoundaryStatisticsTest(unittest.TestCase):
     def test_calculates_global_and_pair_subsets_without_margin_threshold(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_fixture(directory)
-            summary, pair_rows = analyze_boundary_jsonl(path)
+            summary, pair_rows, position_rows = analyze_boundary_jsonl(path)
 
-        self.assertEqual(summary['total_boundaries'], 4)
-        self.assertEqual(summary['unique_pairs'], 2)
+        self.assertEqual(summary['total_boundaries'], 5)
+        self.assertEqual(summary['unique_pairs'], 3)
         self.assertEqual(summary['total_writers'], 2)
 
         global_100 = summary['global_statistics']['100']
-        self.assertEqual(global_100['all']['occurrence_count'], 4)
+        self.assertEqual(global_100['all']['occurrence_count'], 5)
         self.assertEqual(
             global_100[SUBSET_AGREEMENT_FILTERED]['occurrence_count'],
-            2,
+            3,
         )
 
         ab_all = next(
@@ -129,13 +141,42 @@ class BoundaryStatisticsTest(unittest.TestCase):
         self.assertEqual(ab_filtered_50['occurrence_count'], 2)
         self.assertEqual(ab_filtered_100['occurrence_count'], 1)
 
+        positions_100 = {
+            row['group_value']: row['occurrence_count']
+            for row in position_rows
+            if row['group_type'] == 'boundary_position'
+            and row['window_ms'] == 100
+            and row['subset'] == SUBSET_AGREEMENT_FILTERED
+        }
+        self.assertEqual(positions_100, {
+            'only': 1,
+            'first': 2,
+            'middle': 0,
+            'final': 0,
+        })
+
+        first_uppercase = next(
+            row for row in position_rows
+            if row['group_type'] == 'boundary_position_x_left_case'
+            and row['group_value'] == 'first|uppercase'
+            and row['window_ms'] == 100
+            and row['subset'] == SUBSET_AGREEMENT_FILTERED
+        )
+        self.assertEqual(first_uppercase['occurrence_count'], 1)
+
     def test_writes_json_and_csv_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_fixture(directory)
-            summary, pair_rows = analyze_boundary_jsonl(path)
+            summary, pair_rows, position_rows = analyze_boundary_jsonl(path)
             output_dir = Path(directory) / 'analysis'
-            summary_path, pair_path, overview_path = write_boundary_statistics(
-                output_dir, summary, pair_rows
+            (
+                summary_path,
+                pair_path,
+                overview_path,
+                position_path,
+                position_overview_path,
+            ) = write_boundary_statistics(
+                output_dir, summary, pair_rows, position_rows
             )
 
             with open(summary_path, 'r', encoding='utf-8') as file:
@@ -144,15 +185,26 @@ class BoundaryStatisticsTest(unittest.TestCase):
                 saved_rows = list(csv.DictReader(file))
             with open(overview_path, 'r', encoding='utf-8') as file:
                 overview_rows = list(csv.DictReader(file))
+            with open(position_path, 'r', encoding='utf-8') as file:
+                position_statistics = list(csv.DictReader(file))
+            with open(position_overview_path, 'r', encoding='utf-8') as file:
+                position_overview = list(csv.DictReader(file))
 
-            self.assertEqual(saved_summary['total_boundaries'], 4)
-            self.assertEqual(len(saved_rows), 2 * 2 * 2)
-            self.assertEqual(saved_rows[0]['pair'], 'ab')
+            self.assertEqual(saved_summary['total_boundaries'], 5)
+            self.assertEqual(len(saved_rows), 3 * 2 * 2)
+            self.assertEqual(saved_rows[0]['pair'], 'Ab')
             self.assertEqual(len(overview_rows), len(saved_rows))
             self.assertLess(len(overview_rows[0]), len(saved_rows[0]))
+            self.assertEqual(len(position_statistics), 19 * 2 * 2)
+            self.assertEqual(len(position_overview), len(position_statistics))
+            self.assertLess(
+                len(position_overview[0]), len(position_statistics[0])
+            )
 
             with self.assertRaisesRegex(FileExistsError, '--overwrite'):
-                write_boundary_statistics(output_dir, summary, pair_rows)
+                write_boundary_statistics(
+                    output_dir, summary, pair_rows, position_rows
+                )
 
     def test_rejects_duplicate_boundary_ids(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -163,6 +215,23 @@ class BoundaryStatisticsTest(unittest.TestCase):
                 file.write(json.dumps(row) + '\n')
 
             with self.assertRaisesRegex(ValueError, 'Duplicate boundary'):
+                analyze_boundary_jsonl(path)
+
+    def test_rejects_an_invalid_boundary_position(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'boundaries.jsonl'
+            row = make_row(
+                'invalid-position',
+                'ab',
+                0,
+                1,
+                boundary_index=3,
+                num_boundaries=3,
+            )
+            with open(path, 'w', encoding='utf-8') as file:
+                file.write(json.dumps(row) + '\n')
+
+            with self.assertRaisesRegex(ValueError, 'Invalid boundary_index'):
                 analyze_boundary_jsonl(path)
 
 

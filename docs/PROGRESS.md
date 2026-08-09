@@ -284,3 +284,21 @@ before starting the full WD/RH fold-0 B0 experiment.
 - All 18 focused tests pass. The tool also completed against the real local
   smoke export, verified all 12 rows, and produced the three expected analysis
   files.
+
+## 2026-08-09 — Boundary-position and case diagnostics
+
+- Inspection of the full WI pair overview found a possible position confound:
+  supported pairs beginning with uppercase characters preserved contact more
+  often than supported lowercase pairs. Because uppercase characters normally
+  occur at the start of words, pair identity alone cannot explain this result.
+- Extended the existing analyzer to assign every occurrence one unambiguous
+  position: `only` for the sole boundary of a two-character word, otherwise
+  `first`, `middle`, or `final`.
+- Added Unicode-aware left-character case groups and position-by-case groups.
+  These are descriptive diagnostics and do not change the quality subset or
+  create a continuity score.
+- The analyzer now writes compact and full position-statistics CSV files in
+  addition to the existing JSON and pair tables. Existing boundary exports can
+  be reused; model inference and data re-export are not required.
+- All 19 focused tests pass. The updated analyzer also completed on the real
+  local smoke export and produced all five expected output files.

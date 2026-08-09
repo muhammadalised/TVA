@@ -41,6 +41,18 @@ SUBSET_ALL = 'all'
 SUBSET_AGREEMENT_FILTERED = 'agreement_nonpadding_unclipped'
 SUBSETS = (SUBSET_ALL, SUBSET_AGREEMENT_FILTERED)
 
+POSITION_VALUES = ('only', 'first', 'middle', 'final')
+CASE_VALUES = ('uppercase', 'lowercase', 'other')
+POSITION_GROUPS = {
+    'boundary_position': POSITION_VALUES,
+    'left_character_case': CASE_VALUES,
+    'boundary_position_x_left_case': tuple(
+        f'{position}|{case}'
+        for position in POSITION_VALUES
+        for case in CASE_VALUES
+    ),
+}
+
 PROVENANCE_FIELDS = (
     'schema_version',
     'config',
@@ -151,14 +163,14 @@ class GroupAccumulator:
 
     def flat_summary(
         self,
-        pair: str,
+        identity: dict[str, str],
         window_ms: int,
         subset: str,
         total_writers: int,
     ) -> dict[str, Any]:
         nested = self.nested_summary(total_writers)
         row = {
-            'pair': pair,
+            **identity,
             'window_ms': window_ms,
             'subset': subset,
             **{key: value for key, value in nested.items() if key != 'metrics'},
@@ -169,6 +181,32 @@ class GroupAccumulator:
                     continue
                 row[f'{metric_name}_{statistic_name}'] = value
         return row
+
+
+def _boundary_position(row: dict[str, Any]) -> str:
+    '''Give every boundary one mutually exclusive position within its word.'''
+    boundary_index = int(row['boundary_index'])
+    num_boundaries = int(row['num_boundaries_in_sample'])
+    if num_boundaries <= 0 or not 0 <= boundary_index < num_boundaries:
+        raise ValueError(
+            'Invalid boundary_index or num_boundaries_in_sample.'
+        )
+    if num_boundaries == 1:
+        return 'only'
+    if boundary_index == 0:
+        return 'first'
+    if boundary_index == num_boundaries - 1:
+        return 'final'
+    return 'middle'
+
+
+def _character_case(text: str) -> str:
+    '''Classify Unicode letters without assuming an English-only alphabet.'''
+    if text.isupper():
+        return 'uppercase'
+    if text.islower():
+        return 'lowercase'
+    return 'other'
 
 
 def _load_export_summary(input_path: Path) -> dict[str, Any] | None:
@@ -193,8 +231,12 @@ def _validate_provenance(
 
 def analyze_boundary_jsonl(
     input_path: str | Path,
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    '''Stream a boundary JSONL and return global plus per-pair summaries.'''
+) -> tuple[
+    dict[str, Any],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    '''Return global, pair, and position/case descriptive summaries.'''
     input_path = Path(input_path)
     source_summary = _load_export_summary(input_path)
     expected_rows = (
@@ -209,6 +251,9 @@ def analyze_boundary_jsonl(
     global_groups: dict[tuple[int, str], GroupAccumulator] = defaultdict(
         GroupAccumulator
     )
+    position_groups: dict[
+        tuple[str, str, int, str], GroupAccumulator
+    ] = defaultdict(GroupAccumulator)
     pair_counts: Counter[str] = Counter()
     sample_indices: set[int] = set()
     writer_ids: set[str] = set()
@@ -255,6 +300,15 @@ def analyze_boundary_jsonl(
             boundary_ids.add(boundary_id)
 
             pair = str(row['pair'])
+            position = _boundary_position(row)
+            left_case = _character_case(str(row['left_character']))
+            position_descriptors = {
+                'boundary_position': position,
+                'left_character_case': left_case,
+                'boundary_position_x_left_case': (
+                    f'{position}|{left_case}'
+                ),
+            }
             pair_counts[pair] += 1
             sample_indices.add(int(row['sample_index']))
             writer_ids.add(str(row['writer_id']))
@@ -264,6 +318,10 @@ def analyze_boundary_jsonl(
                 window = row['windows_ms'][str(window_ms)]
                 groups[(pair, window_ms, SUBSET_ALL)].add(row, window)
                 global_groups[(window_ms, SUBSET_ALL)].add(row, window)
+                for group_type, group_value in position_descriptors.items():
+                    position_groups[
+                        (group_type, group_value, window_ms, SUBSET_ALL)
+                    ].add(row, window)
 
                 include_in_agreement_subset = (
                     row['both_anchors_agree_with_greedy']
@@ -277,6 +335,18 @@ def analyze_boundary_jsonl(
                     global_groups[
                         (window_ms, SUBSET_AGREEMENT_FILTERED)
                     ].add(row, window)
+                    for (
+                        group_type,
+                        group_value,
+                    ) in position_descriptors.items():
+                        position_groups[
+                            (
+                                group_type,
+                                group_value,
+                                window_ms,
+                                SUBSET_AGREEMENT_FILTERED,
+                            )
+                        ].add(row, window)
 
     if row_count == 0 or provenance is None or window_sizes is None:
         raise ValueError('Boundary JSONL contains no records.')
@@ -318,9 +388,29 @@ def analyze_boundary_jsonl(
                 group = groups[(pair, window_ms, subset)]
                 pair_rows.append(
                     group.flat_summary(
-                        pair, window_ms, subset, total_writers
+                        {'pair': pair}, window_ms, subset, total_writers
                     )
                 )
+
+    position_rows = []
+    for group_type, group_values in POSITION_GROUPS.items():
+        for group_value in group_values:
+            for window_ms in window_sizes:
+                for subset in SUBSETS:
+                    group = position_groups[
+                        (group_type, group_value, window_ms, subset)
+                    ]
+                    position_rows.append(
+                        group.flat_summary(
+                            {
+                                'group_type': group_type,
+                                'group_value': group_value,
+                            },
+                            window_ms,
+                            subset,
+                            total_writers,
+                        )
+                    )
 
     pair_support = list(pair_counts.values())
     summary = {
@@ -341,6 +431,19 @@ def analyze_boundary_jsonl(
                 'clipped. No probability or margin threshold is applied.'
             ),
         },
+        'position_diagnostics': {
+            'boundary_position': {
+                'only': (
+                    'The word has exactly one boundary, so it is both first '
+                    'and final.'
+                ),
+                'first': 'First boundary in a word with multiple boundaries.',
+                'middle': 'Neither the first nor final boundary in the word.',
+                'final': 'Final boundary in a word with multiple boundaries.',
+            },
+            'left_character_case': list(CASE_VALUES),
+            'cross_group_separator': '|',
+        },
         'pair_occurrence_distribution': _distribution(pair_support),
         'pairs_with_at_least': {
             '40_occurrences': sum(count >= 40 for count in pair_support),
@@ -357,7 +460,7 @@ def analyze_boundary_jsonl(
             for window_ms in window_sizes
         },
     }
-    return summary, pair_rows
+    return summary, pair_rows, position_rows
 
 
 def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -376,10 +479,12 @@ def _atomic_write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     os.replace(temporary, path)
 
 
-def _make_overview_rows(pair_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    '''Keep the most interpretable columns in a compact companion table.'''
-    columns = (
-        'pair',
+def _make_overview_rows(
+    rows: list[dict[str, Any]],
+    identity_columns: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    '''Keep identity plus the most interpretable descriptive columns.'''
+    columns = identity_columns + (
         'window_ms',
         'subset',
         'occurrence_count',
@@ -404,7 +509,7 @@ def _make_overview_rows(pair_rows: list[dict[str, Any]]) -> list[dict[str, Any]]
     )
     return [
         {column: row[column] for column in columns}
-        for row in pair_rows
+        for row in rows
     ]
 
 
@@ -412,19 +517,28 @@ def write_boundary_statistics(
     output_dir: str | Path,
     summary: dict[str, Any],
     pair_rows: list[dict[str, Any]],
+    position_rows: list[dict[str, Any]],
     *,
     overwrite: bool = False,
-) -> tuple[Path, Path, Path]:
-    '''Write the global report plus detailed and compact pair CSV files.'''
+) -> tuple[Path, Path, Path, Path, Path]:
+    '''Write global, pair, and position/case analysis files.'''
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     summary_path = output_dir / 'analysis_summary.json'
     pair_path = output_dir / 'pair_statistics.csv'
     overview_path = output_dir / 'pair_overview.csv'
+    position_path = output_dir / 'position_statistics.csv'
+    position_overview_path = output_dir / 'position_overview.csv'
 
     existing = [
         path
-        for path in (summary_path, pair_path, overview_path)
+        for path in (
+            summary_path,
+            pair_path,
+            overview_path,
+            position_path,
+            position_overview_path,
+        )
         if path.exists()
     ]
     if existing and not overwrite:
@@ -435,5 +549,22 @@ def write_boundary_statistics(
 
     _atomic_write_json(summary_path, summary)
     _atomic_write_csv(pair_path, pair_rows)
-    _atomic_write_csv(overview_path, _make_overview_rows(pair_rows))
-    return summary_path, pair_path, overview_path
+    _atomic_write_csv(
+        overview_path,
+        _make_overview_rows(pair_rows, ('pair',)),
+    )
+    _atomic_write_csv(position_path, position_rows)
+    _atomic_write_csv(
+        position_overview_path,
+        _make_overview_rows(
+            position_rows,
+            ('group_type', 'group_value'),
+        ),
+    )
+    return (
+        summary_path,
+        pair_path,
+        overview_path,
+        position_path,
+        position_overview_path,
+    )

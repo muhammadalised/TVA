@@ -229,6 +229,9 @@ contains:
   measurements; and
 - `pair_statistics.csv`: the full means, standard deviations, ranges, and
   10th/25th/50th/75th/90th percentiles used for later scoring and ablations.
+- `position_overview.csv`: compact position, case, and position-by-case
+  diagnostics; and
+- `position_statistics.csv`: the corresponding full descriptive statistics.
 
 Every pair/window is reported twice. The `all` subset contains every exported
 occurrence. The `agreement_nonpadding_unclipped` subset includes an occurrence
@@ -240,6 +243,12 @@ filter: it applies no probability or confidence-margin threshold.
 The `no_low_force_rate` is the fraction of occurrences whose complete local
 window remained above the provisional recording-relative force threshold. It
 is descriptive contact evidence and is not yet a continuity label.
+
+Position groups are mutually exclusive. `only` means a two-character word has
+exactly one boundary, which is simultaneously its first and final boundary.
+Longer words use `first`, `middle`, and `final`. The report also separates the
+case of the character to the left of the boundary and crosses case with
+position. Unicode-aware case checks support German uppercase characters.
 
 ## Next development steps
 
