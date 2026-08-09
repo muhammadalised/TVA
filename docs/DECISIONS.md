@@ -46,13 +46,15 @@ the reason no longer valid.
   to dominate, while ranking primarily by frequency would revert to linguistic
   tokenization.
 
-## D006 — Select the alignment model by validation CER
+## D006 — Select a checkpoint within one architecture by validation CER
 
-- Status: implemented for future runs
-- Decision: Prefer `best_cer.pth` for forced alignment. Use `latest.pth` when a
-  best-CER model is unavailable, and document that exception.
-- Reason: Character accuracy is more directly relevant to character-time
-  alignment than word-level accuracy.
+- Status: revised on 2026-08-09
+- Decision: Prefer `best_cer.pth` when choosing among checkpoints from the same
+  alignment architecture. Use `latest.pth` when a best-CER model is unavailable
+  and document that exception. CER alone must not choose between architectures.
+- Reason: Character accuracy is relevant to forced alignment, but the WI timing
+  diagnostic showed that a highly confident bidirectional model can still place
+  character emissions too early to represent physical handwriting boundaries.
 
 ## D007 — Keep image OCR evaluation optional
 
@@ -71,3 +73,18 @@ the reason no longer valid.
 - Reason: Vocabulary size affects recognition independently of the token-learning
   method, but a large grid across three families, two dataset settings, and five
   folds would make the experiment matrix unnecessarily expensive.
+
+## D009 — Validate a unidirectional recurrent decoder for alignment
+
+- Status: implementation ready; training pending
+- Decision: Keep the BLConv-B + BiLSTM-B character model as the recognition
+  baseline. Separately train BLConv-B + UniLSTM-B on WI/RH fold 0 and use the
+  existing position diagnostic to test whether removing whole-sequence future
+  recurrent context improves timestamp plausibility.
+- Reason: In the reliable WI training subset, `only` and `first` boundaries had
+  a median centre time of 80 ms and were about 315 and 300 ms earlier than the
+  rough uniform references. Their median blank duration was zero. This makes
+  the current word-initial sensor windows unsuitable for continuity scoring.
+- Limitation: BLConv uses centred convolutions and sequence-wide instance
+  normalization, so A0 is not fully causal end to end. It is a controlled test
+  of recurrent direction.

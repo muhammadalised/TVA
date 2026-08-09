@@ -77,3 +77,30 @@ evaluation.
   `latest.pth` remains the resumable end-of-training checkpoint.
 - The complete run directory should be archived before alignment development.
 - Backup archive checksum: not yet recorded in this log.
+
+## A0 unidirectional character aligner — WI/RH fold 0
+
+### Planned setup
+
+- Date prepared: 2026-08-09
+- Dataset: OnHW-Words500, writer-independent, right-handed, fold 0
+- Purpose: alignment-only temporal-localization comparison
+- Architecture: BLConv-B + UniLSTM-B
+- Controlled change from B0: recurrent decoder direction only
+- Seed: 42
+- Maximum epochs: 300 (validation-selected checkpoint)
+- Batch size: 64
+- Configuration: `configs/thesis/a0_char_wi_rh_unidirectional.yaml`
+- Output: `results/thesis/alignment_models/A0_char_wi_rh_unidirectional`
+
+### Acceptance check
+
+Use `best_cer.pth` to repeat the sample alignments and full training boundary
+analysis. Compare reliable `only`, `first`, `middle`, and `final` timing offsets,
+blank durations, anchor agreement, and sample support with B0. The main question
+is whether A0 removes the 80 ms word-initial concentration; recognition metrics
+are secondary because A0 does not replace the B0 recognition baseline.
+
+A0 is not fully causal because BLConv retains centred convolutions and
+sequence-wide instance normalization. This experiment isolates the effect of
+the recurrent decoder direction before considering a larger encoder change.

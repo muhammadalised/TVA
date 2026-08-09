@@ -107,6 +107,37 @@ region. A zero-width region means the CTC path moved directly from one
 character to the next; it does not by itself prove that the physical motion was
 continuous.
 
+## Observed word-initial timing bias
+
+The full WI/RH fold-0 training analysis showed that the bidirectional B0 model
+usually placed both `only` and `first` boundaries at 80 ms. In the reliable
+subset, their median offsets from the rough uniform reference were -315 ms and
+-300 ms, and their median intervening CTC blank duration was zero. The same
+pattern appeared without the reliability filter and for both uppercase and
+lowercase word starts.
+
+This is consistent with the BiLSTM using later parts of the recording to emit
+the first characters early. Alignment probability does not solve the problem:
+the median first-boundary probability was approximately 0.999. Therefore the
+current word-initial sensor windows must not be treated as physical continuity
+measurements.
+
+The A0 experiment keeps BLConv-B but replaces BiLSTM-B with a unidirectional
+LSTM. This removes whole-recording future recurrent context while leaving the
+recognition baseline unchanged. BLConv still uses centred convolutions and
+sequence-wide instance normalization, so A0 is not fully causal end to end and
+its timestamps must be measured rather than assumed correct.
+
+Train A0 on the RTX machine:
+
+```bash
+python main.py --config configs/thesis/a0_char_wi_rh_unidirectional.yaml
+```
+
+After training, use its best-CER checkpoint with `align_sample.py`, then export
+and analyze its training boundaries under a separate output directory. Compare
+its `only`, `first`, `middle`, and `final` timing offsets directly with B0.
+
 ## Visualization and JSON
 
 The PNG contains three synchronized timelines:
@@ -262,10 +293,11 @@ and must not be used as a training label by itself.
 
 ## Next development steps
 
-1. Use the position timing diagnostic to quantify possible early CTC emission
-   bias on the full WI training export.
-2. Compare 50, 100, and 150 ms distributions before selecting the window size.
-3. Define and document the alignment-quality filter using these training-only
+1. Train A0 and inspect several validation samples with its best-CER checkpoint.
+2. Export A0 WI training boundaries and repeat the position timing diagnostic.
+3. Accept A0 only if it materially reduces the word-initial timing bias without
+   making character alignment reliability unusable.
+4. Define and document the alignment-quality filter using these training-only
    distributions.
-4. Define the first force-only and combined-motion continuity scores, followed
+5. Define the first force-only and combined-motion continuity scores, followed
    by planned ablations.

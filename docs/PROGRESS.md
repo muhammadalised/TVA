@@ -322,3 +322,25 @@ before starting the full WD/RH fold-0 B0 experiment.
   and the CLI prints them beside the 100 ms position summary.
 - All 20 focused alignment and boundary-analysis tests pass, and the analyzer
   completed successfully on the real local smoke export.
+
+## 2026-08-09 — Unidirectional recurrent alignment experiment prepared
+
+- Full WI results confirmed a strong word-initial localization bias. Reliable
+  `only` and `first` boundaries both had a median centre time of 80 ms, median
+  blank duration of zero, and median offsets of about -315 and -300 ms from the
+  rough uniform references. The unfiltered and case-crossed summaries showed
+  the same pattern, so neither the reliability filter nor uppercase letters
+  explain it.
+- Added a simple UniLSTM decoder and `unilstm_b`/`unilstm_s` factory keys. A
+  focused test verifies that changing future decoder inputs cannot change its
+  earlier outputs.
+- Added `configs/thesis/a0_char_wi_rh_unidirectional.yaml`. It keeps all B0 WI
+  settings fixed except the recurrent direction and writes to a separate
+  alignment-model directory, so the completed B0 recognition baseline remains
+  untouched.
+- A0 removes whole-recording future recurrent context, but BLConv retains
+  centred convolutions and sequence-wide instance normalization. It is not
+  fully causal, so its timestamps require the same empirical position
+  diagnostic and are not assumed to be ground truth.
+- All 23 focused tests pass. A CPU smoke step also completed a forward pass,
+  CTC loss, backward pass, and optimizer update with the new decoder.

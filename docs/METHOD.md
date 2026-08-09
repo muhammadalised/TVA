@@ -13,8 +13,8 @@ WER are calculated.
 
 ## 1. Character alignment
 
-For each fold, train the B0 character CTC model from that fold's training data.
-Run target-constrained CTC Viterbi forced alignment using each training
+For each fold, train a character CTC alignment model from that fold's training
+data. Run target-constrained CTC Viterbi forced alignment using each training
 recording and its known word label. The alignment must support CTC blanks and
 repeated characters and provide character intervals plus a confidence measure.
 
@@ -30,6 +30,16 @@ blank-frame regions, and saves synchronized sensor/confidence plots plus JSON.
 Manual validation and the final alignment-quality filter remain open. See
 `docs/FORCED_ALIGNMENT.md` for the interface and limitations.
 
+The full WI timing diagnostic later found that the bidirectional B0 model
+usually placed `only` and `first` boundaries at 80 ms, about 315 and 300 ms
+earlier than the rough uniform references. High local confidence did not expose
+this shift. Before continuity scoring, train the separate A0 BLConv-B +
+UniLSTM-B alignment model and repeat the same export and position analysis.
+This changes only the recurrent direction relative to B0. BLConv can still use
+neighbouring samples and sequence-wide instance-normalization statistics, so A0
+is a unidirectional recurrent temporal-localization experiment—not a fully
+causal network or assumed ground truth.
+
 The batch exporter processes the training partition without augmentation and
 writes one occurrence record per adjacent-character boundary. Its scientific
 default is one sample per inference call because padding unequal word lengths
@@ -44,9 +54,10 @@ the dataset's 100 Hz sample rate.
 
 The implemented starting position is the midpoint between adjacent character
 emission anchors. The extractor currently saves all three window sizes and
-unweighted sensor measurements. A recording-adaptive provisional low-force
-threshold uses 10% of the recording's 90th-percentile raw force value. This is
-an inspectable development rule, not a frozen thesis threshold.
+unweighted sensor measurements. These positions must be regenerated with the
+selected alignment model before scoring. A recording-adaptive provisional
+low-force threshold uses 10% of the recording's 90th-percentile raw force
+value. This is an inspectable development rule, not a frozen thesis threshold.
 
 Candidate feature groups are:
 

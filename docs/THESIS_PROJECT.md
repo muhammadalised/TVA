@@ -236,6 +236,8 @@ use a small, predeclared set to keep the comparison feasible.
 - WD tokenizer directory: `data/tva/onhw_words500_wd_word_rh/tokenizers/`
 - Character-baseline configurations: `configs/thesis/b0_char_wd_rh.yaml` and
   `configs/thesis/b0_char_wi_rh.yaml`
+- WI unidirectional-alignment experiment:
+  `configs/thesis/a0_char_wi_rh_unidirectional.yaml`
 - Thesis results: `results/thesis/`
 
 The thesis will use the right-handed writer-dependent and writer-independent
