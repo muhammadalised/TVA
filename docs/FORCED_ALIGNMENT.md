@@ -250,9 +250,20 @@ Longer words use `first`, `middle`, and `final`. The report also separates the
 case of the character to the left of the boundary and crosses case with
 position. Unicode-aware case checks support German uppercase characters.
 
+The position report also checks for systematic timing bias. It expresses each
+estimated boundary centre as a fraction of the recording and compares it with
+the simple evenly spaced reference
+`(boundary_index + 1) / (number_of_boundaries + 1)`. The signed offset is
+negative when the CTC estimate is earlier than this reference, and the absolute
+error ignores direction. The report also gives the signed offset in
+milliseconds. This equal-spacing reference is only a sanity check: real
+characters do not take equal time, so it is not physical boundary ground truth
+and must not be used as a training label by itself.
+
 ## Next development steps
 
-1. Inspect the full WI training-fold global statistics and compact pair table.
+1. Use the position timing diagnostic to quantify possible early CTC emission
+   bias on the full WI training export.
 2. Compare 50, 100, and 150 ms distributions before selecting the window size.
 3. Define and document the alignment-quality filter using these training-only
    distributions.

@@ -18,12 +18,23 @@ __all__ = [
 ]
 
 
-ALIGNMENT_METRICS = (
+RAW_ALIGNMENT_METRICS = (
     'minimum_aligned_probability',
     'minimum_confidence_margin',
     'alignment_mean_log_score',
     'blank_duration_ms',
 )
+
+DERIVED_TIMING_METRICS = (
+    'boundary_center_relative',
+    'uniform_reference_relative',
+    'boundary_relative_offset',
+    'boundary_absolute_relative_error',
+    'boundary_center_time_ms',
+    'boundary_time_offset_ms',
+)
+
+ALIGNMENT_METRICS = RAW_ALIGNMENT_METRICS + DERIVED_TIMING_METRICS
 
 WINDOW_METRICS = (
     'force_min_relative',
@@ -99,6 +110,46 @@ def _distribution(values: list[float]) -> dict[str, float | int | None]:
         'p75': float(quantiles[3]),
         'p90': float(quantiles[4]),
         'max': float(array.max()),
+    }
+
+
+def _boundary_timing_metrics(row: dict[str, Any]) -> dict[str, float]:
+    '''Compare an estimated boundary with a rough uniform word reference.'''
+    boundary_index = int(row['boundary_index'])
+    num_boundaries = int(row['num_boundaries_in_sample'])
+    raw_num_samples = int(row['raw_num_samples'])
+    sample_rate_hz = float(row['sample_rate_hz'])
+    center_input_sample = float(row['center_input_sample'])
+
+    if num_boundaries <= 0 or not 0 <= boundary_index < num_boundaries:
+        raise ValueError(
+            'Invalid boundary_index or num_boundaries_in_sample.'
+        )
+    if raw_num_samples <= 0:
+        raise ValueError('raw_num_samples must be positive.')
+    if sample_rate_hz <= 0:
+        raise ValueError('sample_rate_hz must be positive.')
+
+    # A word with B boundaries has B + 1 characters. This evenly spaced
+    # location is only a diagnostic reference; it is not a stroke annotation.
+    uniform_reference_relative = (
+        (boundary_index + 1) / (num_boundaries + 1)
+    )
+    boundary_center_relative = center_input_sample / raw_num_samples
+    boundary_relative_offset = (
+        boundary_center_relative - uniform_reference_relative
+    )
+    recording_duration_ms = raw_num_samples / sample_rate_hz * 1000
+
+    return {
+        'boundary_center_relative': boundary_center_relative,
+        'uniform_reference_relative': uniform_reference_relative,
+        'boundary_relative_offset': boundary_relative_offset,
+        'boundary_absolute_relative_error': abs(boundary_relative_offset),
+        'boundary_center_time_ms': center_input_sample / sample_rate_hz * 1000,
+        'boundary_time_offset_ms': (
+            boundary_relative_offset * recording_duration_ms
+        ),
     }
 
 
@@ -301,6 +352,7 @@ def analyze_boundary_jsonl(
 
             pair = str(row['pair'])
             position = _boundary_position(row)
+            row.update(_boundary_timing_metrics(row))
             left_case = _character_case(str(row['left_character']))
             position_descriptors = {
                 'boundary_position': position,
@@ -414,7 +466,7 @@ def analyze_boundary_jsonl(
 
     pair_support = list(pair_counts.values())
     summary = {
-        'schema_version': 1,
+        'schema_version': 2,
         'input_jsonl': str(input_path),
         'provenance': provenance,
         'source_export_summary': source_summary,
@@ -443,6 +495,13 @@ def analyze_boundary_jsonl(
             },
             'left_character_case': list(CASE_VALUES),
             'cross_group_separator': '|',
+            'uniform_boundary_reference': (
+                'For boundary index k in a word with B boundaries, the rough '
+                'reference is (k + 1) / (B + 1) of the recording. It assumes '
+                'equal character spacing and is a diagnostic, not ground '
+                'truth. Negative offsets mean the estimated boundary occurs '
+                'earlier than this reference.'
+            ),
         },
         'pair_occurrence_distribution': _distribution(pair_support),
         'pairs_with_at_least': {
@@ -498,6 +557,12 @@ def _make_overview_rows(
         'minimum_aligned_probability_median',
         'minimum_confidence_margin_median',
         'blank_duration_ms_median',
+        'boundary_center_relative_median',
+        'uniform_reference_relative_median',
+        'boundary_relative_offset_median',
+        'boundary_absolute_relative_error_median',
+        'boundary_center_time_ms_median',
+        'boundary_time_offset_ms_median',
         'force_min_relative_p25',
         'force_min_relative_median',
         'force_min_relative_p75',

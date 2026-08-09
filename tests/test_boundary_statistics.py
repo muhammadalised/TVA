@@ -23,6 +23,8 @@ def make_row(
     force_100: float = 0.5,
     boundary_index: int = 0,
     num_boundaries: int = 3,
+    center_input_sample: float = 20.0,
+    raw_num_samples: int = 100,
 ) -> dict:
     def window(window_ms: int, clipped: bool, force: float) -> dict:
         return {
@@ -56,6 +58,8 @@ def make_row(
         'left_character': pair[0],
         'boundary_index': boundary_index,
         'num_boundaries_in_sample': num_boundaries,
+        'center_input_sample': center_input_sample,
+        'raw_num_samples': raw_num_samples,
         'minimum_aligned_probability': 0.8,
         'minimum_confidence_margin': 0.6 if agrees else -0.2,
         'alignment_mean_log_score': -0.1,
@@ -164,6 +168,22 @@ class BoundaryStatisticsTest(unittest.TestCase):
         )
         self.assertEqual(first_uppercase['occurrence_count'], 1)
 
+        only = next(
+            row for row in position_rows
+            if row['group_type'] == 'boundary_position'
+            and row['group_value'] == 'only'
+            and row['window_ms'] == 100
+            and row['subset'] == SUBSET_AGREEMENT_FILTERED
+        )
+        self.assertAlmostEqual(only['boundary_center_relative_median'], 0.2)
+        self.assertAlmostEqual(only['uniform_reference_relative_median'], 0.5)
+        self.assertAlmostEqual(only['boundary_relative_offset_median'], -0.3)
+        self.assertAlmostEqual(
+            only['boundary_absolute_relative_error_median'], 0.3
+        )
+        self.assertAlmostEqual(only['boundary_center_time_ms_median'], 200.0)
+        self.assertAlmostEqual(only['boundary_time_offset_ms_median'], -300.0)
+
     def test_writes_json_and_csv_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_fixture(directory)
@@ -232,6 +252,18 @@ class BoundaryStatisticsTest(unittest.TestCase):
                 file.write(json.dumps(row) + '\n')
 
             with self.assertRaisesRegex(ValueError, 'Invalid boundary_index'):
+                analyze_boundary_jsonl(path)
+
+    def test_rejects_an_invalid_recording_length(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'boundaries.jsonl'
+            row = make_row(
+                'invalid-length', 'ab', 0, 1, raw_num_samples=0
+            )
+            with open(path, 'w', encoding='utf-8') as file:
+                file.write(json.dumps(row) + '\n')
+
+            with self.assertRaisesRegex(ValueError, 'raw_num_samples'):
                 analyze_boundary_jsonl(path)
 
 

@@ -94,6 +94,15 @@ cross-product. This diagnostic checks whether apparently continuous uppercase
 pairs are actually explained by their usual word-initial position. The groups
 do not alter or reweight the exported measurements.
 
+The position analysis also compares the normalized estimated boundary centre
+with a rough evenly spaced reference. For boundary index `k` in a word with
+`B` boundaries, the reference is `(k + 1) / (B + 1)`. Signed relative and
+millisecond offsets reveal whether the CTC anchors are systematically early or
+late; absolute relative error describes offset size. This is explicitly not
+ground truth, because character durations vary. It is only a diagnostic for
+temporal localization bias before boundary evidence is turned into tokenizer
+scores.
+
 ## 4. Handwriting-aware Bigram
 
 Keep all characters as fallback tokens. Reject pairs below minimum occurrence,

@@ -49,7 +49,8 @@ def analyze_boundaries(args: argparse.Namespace) -> None:
         rate = count / summary['total_boundaries']
         print(f'    {window_ms:>3} ms: {count} ({rate:.1%})')
 
-    print('  100 ms filtered contact preservation by position:')
+    print('  100 ms filtered position diagnostics:')
+    print('    timing reference is evenly spaced and is not ground truth')
     for position in ('only', 'first', 'middle', 'final'):
         row = next(
             item for item in position_rows
@@ -60,9 +61,20 @@ def analyze_boundaries(args: argparse.Namespace) -> None:
         )
         rate = row['no_low_force_rate']
         readable_rate = f'{rate:.1%}' if rate is not None else 'n/a'
+        estimated = row['boundary_center_relative_median']
+        reference = row['uniform_reference_relative_median']
+        relative_offset = row['boundary_relative_offset_median']
+        time_offset = row['boundary_time_offset_ms_median']
+        readable_timing = 'n/a'
+        if relative_offset is not None:
+            readable_timing = (
+                f'est={estimated:.1%}, ref={reference:.1%}, '
+                f'offset={relative_offset:+.1%} '
+                f'({time_offset:+.0f} ms)'
+            )
         print(
             f'    {position:>6}: {row["occurrence_count"]} '
-            f'({readable_rate} contact preserved)'
+            f'({readable_rate} contact preserved; {readable_timing})'
         )
     print(f'  JSON report: {summary_path}')
     print(f'  pair overview: {overview_path}')

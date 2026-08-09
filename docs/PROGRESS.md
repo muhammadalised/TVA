@@ -302,3 +302,23 @@ before starting the full WD/RH fold-0 B0 experiment.
   be reused; model inference and data re-export are not required.
 - All 19 focused tests pass. The updated analyzer also completed on the real
   local smoke export and produced all five expected output files.
+
+## 2026-08-09 — CTC boundary timing-bias diagnostic
+
+- The full WI position report showed very different behaviour at word-initial
+  boundaries: `only` and `first` boundaries had a median CTC blank duration of
+  zero and preserved contact in about 92% of reliable occurrences, whereas
+  `middle` and `final` boundaries had longer blank regions and lower contact
+  preservation. This suggests that temporal localization, rather than only
+  handwriting, may influence the boundary measurements.
+- Added normalized boundary-centre timing and a simple evenly spaced reference,
+  plus signed relative offset, absolute relative error, centre time, and signed
+  millisecond offset. Negative signed offsets mean the estimate occurs earlier
+  than the reference.
+- The equal-spacing reference is documented as a rough sanity check, not a true
+  physical character boundary. Existing JSONL exports contain all required
+  fields, so no model inference or boundary re-export is needed.
+- The compact pair and position overviews now include these timing diagnostics,
+  and the CLI prints them beside the 100 ms position summary.
+- All 20 focused alignment and boundary-analysis tests pass, and the analyzer
+  completed successfully on the real local smoke export.
