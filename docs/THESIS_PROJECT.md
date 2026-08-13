@@ -123,8 +123,12 @@ Low-confidence alignments should be excluded from tokenizer construction.
 
 ### 3. Measure continuity at adjacent-character boundaries
 
-For every aligned pair of adjacent characters, inspect a small time window
-around their estimated boundary. Possible continuity evidence includes:
+For every aligned pair of adjacent characters, inspect both small fixed windows
+around the estimated midpoint and the complete CTC candidate interval between
+the two character emissions. Keeping both views lets us test whether a local
+window misses a pen lift or whether a long interval includes unrelated motion.
+An empty candidate interval uses an explicitly marked local fallback rather
+than being interpreted directly as continuity. Possible evidence includes:
 
 - whether force or pressure remains active or drops;
 - the presence and duration of a pause or pen lift;

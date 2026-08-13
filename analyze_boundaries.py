@@ -18,18 +18,30 @@ def analyze_boundaries(args: argparse.Namespace) -> None:
         else input_path.parent / 'pair_analysis'
     )
 
-    summary, pair_rows, position_rows = analyze_boundary_jsonl(input_path)
+    (
+        summary,
+        pair_rows,
+        position_rows,
+        region_pair_rows,
+        region_position_rows,
+    ) = analyze_boundary_jsonl(input_path)
     (
         summary_path,
         pair_path,
         overview_path,
         position_path,
         position_overview_path,
+        region_pair_path,
+        region_pair_overview_path,
+        region_position_path,
+        region_position_overview_path,
     ) = write_boundary_statistics(
         output_dir,
         summary,
         pair_rows,
         position_rows,
+        region_pair_rows,
+        region_position_rows,
         overwrite=args.overwrite,
     )
 
@@ -48,6 +60,23 @@ def analyze_boundaries(args: argparse.Namespace) -> None:
     for window_ms, count in quality_by_window.items():
         rate = count / summary['total_boundaries']
         print(f'    {window_ms:>3} ms: {count} ({rate:.1%})')
+
+    region_statistics = summary['candidate_region_statistics']
+    if region_statistics is not None:
+        region_filtered = region_statistics[SUBSET_AGREEMENT_FILTERED]
+        region_count = region_filtered['occurrence_count']
+        region_rate = region_count / summary['total_boundaries']
+        fallback_rate = region_filtered['fallback_window_rate']
+        readable_fallback_rate = (
+            f'{fallback_rate:.1%}'
+            if fallback_rate is not None
+            else 'n/a'
+        )
+        print('  complete candidate-region features:')
+        print(
+            f'    reliable: {region_count} ({region_rate:.1%}); '
+            f'fallback used: {readable_fallback_rate}'
+        )
 
     print('  100 ms filtered position diagnostics:')
     print('    timing reference is evenly spaced and is not ground truth')
@@ -81,6 +110,11 @@ def analyze_boundaries(args: argparse.Namespace) -> None:
     print(f'  pair statistics: {pair_path}')
     print(f'  position overview: {position_overview_path}')
     print(f'  position statistics: {position_path}')
+    if region_pair_overview_path is not None:
+        print(f'  region pair overview: {region_pair_overview_path}')
+        print(f'  region pair statistics: {region_pair_path}')
+        print(f'  region position overview: {region_position_overview_path}')
+        print(f'  region position statistics: {region_position_path}')
 
 
 def parse_args() -> argparse.Namespace:

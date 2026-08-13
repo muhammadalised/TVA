@@ -77,6 +77,12 @@ class BoundaryExportTest(unittest.TestCase):
         self.assertEqual(row['pair'], 'ÄB')
         self.assertEqual(row['known_label'], 'ÄB')
         self.assertIn('100', row['windows_ms'])
+        self.assertEqual(row['schema_version'], 2)
+        self.assertIn('candidate_region', row)
+        self.assertEqual(
+            row['candidate_region']['candidate_duration_ms'],
+            row['blank_duration_ms'],
+        )
         self.assertEqual(
             row['windows_ms']['100']['force_min_relative'], 1.0
         )

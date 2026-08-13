@@ -40,7 +40,7 @@ def make_boundary_rows(
         raise ValueError('Alignment and feature boundary counts do not match.')
 
     sample_fields = {
-        'schema_version': 1,
+        'schema_version': 2,
         'config': config_path,
         'checkpoint': checkpoint_path,
         'checkpoint_epoch': checkpoint_epoch,
@@ -64,6 +64,7 @@ def make_boundary_rows(
         'force_reference_raw': features.force_reference_raw,
         'low_force_threshold_raw': features.low_force_threshold_raw,
         'low_force_threshold_fraction': features.low_force_threshold_fraction,
+        'empty_region_fallback_ms': features.empty_region_fallback_ms,
     }
 
     rows = []
@@ -104,6 +105,7 @@ def make_boundary_rows(
                     boundary.both_anchors_agree_with_greedy
                 ),
                 'overlaps_padding': boundary.overlaps_padding,
+                'candidate_region': asdict(boundary.candidate_region),
                 'windows_ms': {
                     str(window.window_ms): asdict(window)
                     for window in boundary.windows

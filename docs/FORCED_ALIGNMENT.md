@@ -123,20 +123,13 @@ current word-initial sensor windows must not be treated as physical continuity
 measurements.
 
 The A0 experiment keeps BLConv-B but replaces BiLSTM-B with a unidirectional
-LSTM. This removes whole-recording future recurrent context while leaving the
-recognition baseline unchanged. BLConv still uses centred convolutions and
+LSTM. On the full WI/RH fold-0 training export, it reduced reliable median
+`only` and `first` offsets from about -315/-300 ms to -65/-47 ms and retained
+78,953 reliable boundaries across all 42 writers. A0 is therefore accepted as
+the fold-0 alignment model. It does not replace B0 for recognition because its
+validation CER and WER are worse. BLConv still uses centred convolutions and
 sequence-wide instance normalization, so A0 is not fully causal end to end and
-its timestamps must be measured rather than assumed correct.
-
-Train A0 on the RTX machine:
-
-```bash
-python main.py --config configs/thesis/a0_char_wi_rh_unidirectional.yaml
-```
-
-After training, use its best-CER checkpoint with `align_sample.py`, then export
-and analyze its training boundaries under a separate output directory. Compare
-its `only`, `first`, `middle`, and `final` timing offsets directly with B0.
+its timestamps remain estimates rather than ground truth.
 
 ## Visualization and JSON
 
@@ -157,10 +150,18 @@ sensor arrays remain in the dataset and are not duplicated in the JSON.
 
 ## Boundary feature extraction
 
-The first automatic feature extractor uses the midpoint between adjacent
-character emission anchors. It measures separate 50, 100, and 150 ms windows
-around that point. Using local windows avoids treating a long CTC blank region
-as though every pen lift inside it belonged to the same character boundary.
+The feature extractor keeps two complementary measurements. It measures
+separate 50, 100, and 150 ms windows around the midpoint between adjacent
+character emission anchors, and it measures the complete intervening CTC
+candidate region. Local windows avoid assigning every event in a long blank
+region to the boundary; the complete region avoids missing a force drop near a
+region edge. Their difference is an explicit development comparison.
+
+When two characters are emitted in consecutive CTC frames, the candidate
+region has zero samples. The extractor uses a 100 ms midpoint-centred fallback
+in that case and saves `used_fallback_window=true`. The original zero duration
+is also retained, so fallback evidence cannot be mistaken for a true non-empty
+region.
 
 Each boundary stores alignment reliability from both neighbouring anchors:
 
@@ -176,6 +177,10 @@ Each window stores transparent sensor measurements:
 - fraction and longest duration below a provisional low-force threshold;
 - mean AF, AR, and G magnitudes; and
 - derivative energy across the nine AF/AR/G axes.
+
+The complete candidate-region record stores the same sensor measurements plus
+the original and actual interval sizes/durations, whether a fallback was used,
+and whether clipping at the recording edge occurred.
 
 The provisional low-force threshold is 10% of the recording-level force
 reference. It is saved in every JSON file so the calculation is reproducible.
@@ -209,20 +214,26 @@ statistics must be learned without looking at validation recordings. It writes
 one JSONL record per adjacent-character occurrence, plus a compact summary and
 a progress file.
 
-Run the WI/RH training-fold export on the RTX machine:
+Run the selected A0 WI/RH training-fold export on the RTX machine:
 
 ```bash
 python export_boundaries.py \
-  --config configs/thesis/b0_char_wi_rh.yaml \
-  --checkpoint results/thesis/baselines/B0_char_wi_rh/0/checkpoints/best_cer.pth \
-  --device cuda
+  --config configs/thesis/a0_char_wi_rh_unidirectional.yaml \
+  --checkpoint results/thesis/alignment_models/A0_char_wi_rh_unidirectional/0/checkpoints/best_cer.pth \
+  --device cuda \
+  --overwrite
 ```
 
 The default output is:
 
 ```text
-results/thesis/boundary_exports/b0_char_wi_rh/fold0/train/boundaries.jsonl
+results/thesis/boundary_exports/a0_char_wi_rh_unidirectional/fold0/train/boundaries.jsonl
 ```
+
+The first export after adding complete-region features must use `--overwrite`.
+The older JSONL rows do not contain those measurements, so `--resume` would
+correctly skip them rather than upgrade them. Later interruptions of the new
+export can use `--resume` normally.
 
 Use `--max-samples 100 --overwrite` for a small development export. Use
 `--resume` after an interruption. Resume is sample-safe: the progress marker is
@@ -247,7 +258,7 @@ a CPU analysis and does not run the recognition model again:
 
 ```bash
 python analyze_boundaries.py \
-  --input results/thesis/boundary_exports/b0_char_wi_rh/fold0/train/boundaries.jsonl \
+  --input results/thesis/boundary_exports/a0_char_wi_rh_unidirectional/fold0/train/boundaries.jsonl \
   --overwrite
 ```
 
@@ -263,6 +274,10 @@ contains:
 - `position_overview.csv`: compact position, case, and position-by-case
   diagnostics; and
 - `position_statistics.csv`: the corresponding full descriptive statistics.
+- `pair_region_overview.csv` and `pair_region_statistics.csv`: compact and
+  full pair summaries over complete candidate regions; and
+- `position_region_overview.csv` and `position_region_statistics.csv`: the
+  corresponding complete-region position/case diagnostics.
 
 Every pair/window is reported twice. The `all` subset contains every exported
 occurrence. The `agreement_nonpadding_unclipped` subset includes an occurrence
@@ -293,11 +308,10 @@ and must not be used as a training label by itself.
 
 ## Next development steps
 
-1. Train A0 and inspect several validation samples with its best-CER checkpoint.
-2. Export A0 WI training boundaries and repeat the position timing diagnostic.
-3. Accept A0 only if it materially reduces the word-initial timing bias without
-   making character alignment reliability unusable.
-4. Define and document the alignment-quality filter using these training-only
-   distributions.
-5. Define the first force-only and combined-motion continuity scores, followed
-   by planned ablations.
+1. Re-export A0 WI training boundaries with the complete-region feature schema.
+2. Compare midpoint-window and complete-region pair statistics, including the
+   fallback rate.
+3. Define and document the alignment-quality and minimum-support gates using
+   training-only distributions.
+4. Define the first force-only and motion-only continuity components, then a
+   combined score and planned ablations.

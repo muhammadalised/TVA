@@ -33,12 +33,12 @@ Manual validation and the final alignment-quality filter remain open. See
 The full WI timing diagnostic later found that the bidirectional B0 model
 usually placed `only` and `first` boundaries at 80 ms, about 315 and 300 ms
 earlier than the rough uniform references. High local confidence did not expose
-this shift. Before continuity scoring, train the separate A0 BLConv-B +
-UniLSTM-B alignment model and repeat the same export and position analysis.
-This changes only the recurrent direction relative to B0. BLConv can still use
-neighbouring samples and sequence-wide instance-normalization statistics, so A0
-is a unidirectional recurrent temporal-localization experiment—not a fully
-causal network or assumed ground truth.
+this shift. The separate A0 BLConv-B + UniLSTM-B alignment model reduced these
+reliable median offsets to about 65 and 47 ms early while retaining 78,953 of
+88,292 boundaries in the transparent quality subset. A0 is therefore used for
+fold-0 tokenizer-evidence development. BLConv can still use neighbouring
+samples and sequence-wide instance-normalization statistics, so A0 is not
+fully causal or assumed ground truth.
 
 The batch exporter processes the training partition without augmentation and
 writes one occurrence record per adjacent-character boundary. Its scientific
@@ -48,16 +48,21 @@ resumable at sample boundaries.
 
 ## 2. Boundary features
 
-For every adjacent-character boundary, examine fixed windows before and after
-the estimated position. Candidate window sizes include 50, 100, and 150 ms at
-the dataset's 100 Hz sample rate.
+For every adjacent-character boundary, retain two transparent views of the
+same candidate:
 
-The implemented starting position is the midpoint between adjacent character
-emission anchors. The extractor currently saves all three window sizes and
-unweighted sensor measurements. These positions must be regenerated with the
-selected alignment model before scoring. A recording-adaptive provisional
-low-force threshold uses 10% of the recording's 90th-percentile raw force
-value. This is an inspectable development rule, not a frozen thesis threshold.
+- fixed 50, 100, and 150 ms windows around the candidate-region midpoint; and
+- the complete CTC interval between the neighbouring character emissions.
+
+The complete interval can reveal a force loss near an edge that a midpoint
+window misses. Conversely, a long interval can include unrelated internal
+motion, so neither view is assumed correct before comparison. If CTC emits two
+characters in consecutive frames, the complete interval is empty; extraction
+then uses a marked 100 ms midpoint fallback and reports its usage rate.
+
+A recording-adaptive provisional low-force threshold uses 10% of the
+recording's 90th-percentile raw force value. This is an inspectable development
+rule, not a frozen thesis threshold.
 
 Candidate feature groups are:
 

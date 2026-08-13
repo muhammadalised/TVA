@@ -153,6 +153,29 @@ def print_boundary_features(
             f'{"yes" if boundary.both_anchors_agree_with_greedy else "NO":>5}'
         )
 
+    print('\nWhole candidate-region features')
+    print(
+        'pair samples duration fallback force_min low_force '
+        'longest_low motion_dE'
+    )
+    print(
+        '---- ------- -------- -------- --------- --------- '
+        '----------- ---------'
+    )
+    for boundary in features.boundaries:
+        region = boundary.candidate_region
+        fallback = 'yes' if region.used_fallback_window else 'no'
+        print(
+            f'{boundary.pair:^4} '
+            f'{region.actual_num_samples:>7} '
+            f'{region.actual_duration_ms:>6.0f}ms '
+            f'{fallback:>8} '
+            f'{region.force_min_relative:>9.3f} '
+            f'{region.low_force_fraction:>9.3f} '
+            f'{region.longest_low_force_ms:>11.1f} '
+            f'{region.motion_derivative_energy:>9.3f}'
+        )
+
 
 def align_one_sample(args: argparse.Namespace) -> CTCAlignment:
     '''Load one sample, run inference, align it, and print the result.'''

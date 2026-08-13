@@ -80,9 +80,10 @@ evaluation.
 
 ## A0 unidirectional character aligner — WI/RH fold 0
 
-### Planned setup
+### Setup
 
 - Date prepared: 2026-08-09
+- Date completed: 2026-08-09
 - Dataset: OnHW-Words500, writer-independent, right-handed, fold 0
 - Purpose: alignment-only temporal-localization comparison
 - Architecture: BLConv-B + UniLSTM-B
@@ -93,7 +94,20 @@ evaluation.
 - Configuration: `configs/thesis/a0_char_wi_rh_unidirectional.yaml`
 - Output: `results/thesis/alignment_models/A0_char_wi_rh_unidirectional`
 
-### Acceptance check
+### Best validation results
+
+| Metric | Value | Epoch |
+| --- | ---: | ---: |
+| Levenshtein distance | 0.945578 | 275 |
+| Character error rate | 0.173287 (17.33%) | 275 |
+| Word error rate | 0.327664 (32.77%) | 293 |
+| Average reference length | 5.456727 characters | Not optimized |
+
+The recognition results are worse than B0 WI (15.60% CER and 27.95% WER), as
+expected when the recurrent decoder cannot use future frames. A0 is not the
+recognition baseline.
+
+### Alignment acceptance result
 
 Use `best_cer.pth` to repeat the sample alignments and full training boundary
 analysis. Compare reliable `only`, `first`, `middle`, and `final` timing offsets,
@@ -104,3 +118,19 @@ are secondary because A0 does not replace the B0 recognition baseline.
 A0 is not fully causal because BLConv retains centred convolutions and
 sequence-wide instance normalization. This experiment isolates the effect of
 the recurrent decoder direction before considering a larger encoder change.
+
+The complete fold-0 training export contained 88,292 boundaries from 19,907
+samples and 42 writers. The transparent agreement/non-padding/unclipped subset
+retained 78,953 boundaries (89.4%). Reliable median timing changed as follows:
+
+| Position | B0 offset | A0 offset |
+| --- | ---: | ---: |
+| Only boundary | -315 ms | -65 ms |
+| First boundary | -300 ms | -47 ms |
+| Middle boundary | -98 ms | +63 ms |
+| Final boundary | -50 ms | +38 ms |
+
+The severe word-initial concentration therefore decreased substantially while
+retaining broad sample and writer coverage. A0 is accepted as the alignment
+model for fold-0 tokenizer-evidence development. The equal-spacing reference
+remains a diagnostic rather than character-boundary ground truth.

@@ -76,11 +76,10 @@ the reason no longer valid.
 
 ## D009 — Validate a unidirectional recurrent decoder for alignment
 
-- Status: implementation ready; training pending
+- Status: accepted for tokenizer-evidence development on 2026-08-13
 - Decision: Keep the BLConv-B + BiLSTM-B character model as the recognition
-  baseline. Separately train BLConv-B + UniLSTM-B on WI/RH fold 0 and use the
-  existing position diagnostic to test whether removing whole-sequence future
-  recurrent context improves timestamp plausibility.
+  baseline. Use the separately trained BLConv-B + UniLSTM-B A0 model for
+  fold-0 alignment and tokenizer-evidence development.
 - Reason: In the reliable WI training subset, `only` and `first` boundaries had
   a median centre time of 80 ms and were about 315 and 300 ms earlier than the
   rough uniform references. Their median blank duration was zero. This makes
@@ -88,3 +87,20 @@ the reason no longer valid.
 - Limitation: BLConv uses centred convolutions and sequence-wide instance
   normalization, so A0 is not fully causal end to end. It is a controlled test
   of recurrent direction.
+- Evidence: A0 changed reliable median timing offsets for `only`/`first`
+  boundaries from approximately -315/-300 ms to -65/-47 ms. It retained
+  78,953 reliable boundaries (89.4% of all 88,292), spanning all 42 writers.
+  Its validation CER was worse than B0, so A0 is an alignment model and does
+  not replace the recognition baseline.
+
+## D010 — Retain midpoint and whole-region boundary measurements
+
+- Status: implemented for comparison on 2026-08-13
+- Decision: Store the existing 50/100/150 ms midpoint windows and a second set
+  of features over the complete CTC candidate region. If the candidate region
+  is empty, use a clearly marked 100 ms midpoint fallback instead of silently
+  treating an empty array as physical continuity.
+- Reason: A0 provides plausible candidate regions, but their duration varies
+  substantially. A small window can miss a pen lift near one edge, while the
+  complete region can include unrelated motion. Keeping both makes this choice
+  testable through descriptive comparison and later ablation.

@@ -344,3 +344,25 @@ before starting the full WD/RH fold-0 B0 experiment.
   diagnostic and are not assumed to be ground truth.
 - All 23 focused tests pass. A CPU smoke step also completed a forward pass,
   CTC loss, backward pass, and optimizer update with the new decoder.
+
+## 2026-08-13 — A0 accepted and complete-region features implemented
+
+- Completed A0 WI/RH fold-0 training. Its best validation CER was 17.33% at
+  epoch 275 and its best WER was 32.77% at epoch 293. These are worse than B0,
+  so A0 remains alignment-only rather than replacing the recognition baseline.
+- Exported all 19,907 training samples: 88,292 boundaries across 426 pairs and
+  42 writers. The agreement/non-padding/unclipped subset retained 78,953
+  boundaries (89.4%).
+- Reliable median timing offsets changed from B0's approximately -315/-300 ms
+  for `only`/`first` boundaries to -65/-47 ms with A0. The severe word-initial
+  concentration was therefore materially reduced without losing broad data or
+  writer coverage.
+- Added sensor features over the complete CTC candidate interval while keeping
+  the existing 50/100/150 ms midpoint features. Each region stores original
+  and actual duration, force/contact measurements, AF/AR/G magnitudes, motion
+  derivative energy, edge clipping, and fallback usage.
+- Empty candidate intervals now use a clearly marked 100 ms midpoint fallback;
+  their original zero duration remains recorded.
+- Extended the exporter schema and descriptive analyzer. New compact and full
+  pair/position region tables are written separately so region measurements do
+  not get mixed with fixed-window results.

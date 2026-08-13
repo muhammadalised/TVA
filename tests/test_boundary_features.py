@@ -54,6 +54,7 @@ class BoundaryFeatureTest(unittest.TestCase):
 
         self.assertEqual(result.force_reference_raw, 100)
         self.assertEqual(result.low_force_threshold_raw, 10)
+        self.assertEqual(result.empty_region_fallback_ms, 100)
         self.assertEqual(result.window_sizes_ms, [100])
 
         boundary = result.boundaries[0]
@@ -70,6 +71,17 @@ class BoundaryFeatureTest(unittest.TestCase):
         self.assertEqual(window.longest_low_force_ms, 40)
         self.assertGreater(window.motion_derivative_energy, 0)
 
+        region = boundary.candidate_region
+        self.assertEqual(
+            (region.candidate_start_sample, region.candidate_end_sample),
+            (16, 24),
+        )
+        self.assertEqual(region.candidate_duration_ms, 80)
+        self.assertFalse(region.used_fallback_window)
+        self.assertAlmostEqual(region.low_force_fraction, 0.5)
+        self.assertEqual(region.longest_low_force_ms, 40)
+        self.assertGreater(region.motion_derivative_energy, 0)
+
     def test_rejects_invalid_window_size(self) -> None:
         with self.assertRaisesRegex(ValueError, 'window sizes'):
             extract_boundary_features(
@@ -78,6 +90,47 @@ class BoundaryFeatureTest(unittest.TestCase):
                 self.analysis,
                 window_sizes_ms=(0,),
             )
+
+        with self.assertRaisesRegex(ValueError, 'fallback size'):
+            extract_boundary_features(
+                self.raw_signal,
+                self.normalized_signal,
+                self.analysis,
+                empty_region_fallback_ms=0,
+            )
+
+    def test_uses_a_marked_fallback_for_an_empty_candidate_region(self) -> None:
+        probabilities = torch.tensor(
+            [
+                [0.05, 0.90, 0.05],
+                [0.05, 0.05, 0.90],
+            ]
+        )
+        alignment = ctc_viterbi_align(probabilities, target=[1, 2])
+        analysis = analyze_alignment(
+            alignment,
+            probabilities,
+            token_text,
+            downsampling_ratio=8,
+            num_model_input_samples=16,
+            num_raw_samples=16,
+            sample_rate_hz=100,
+        )
+
+        result = extract_boundary_features(
+            self.raw_signal[:16],
+            self.normalized_signal[:16],
+            analysis,
+            window_sizes_ms=(100,),
+            empty_region_fallback_ms=100,
+        )
+
+        region = result.boundaries[0].candidate_region
+        self.assertEqual(region.candidate_num_samples, 0)
+        self.assertEqual(region.candidate_duration_ms, 0)
+        self.assertTrue(region.used_fallback_window)
+        self.assertEqual(region.actual_num_samples, 10)
+        self.assertEqual(region.actual_duration_ms, 100)
 
     def test_clips_a_window_whose_alignment_reaches_padding(self) -> None:
         short_raw_signal = self.raw_signal[:10]

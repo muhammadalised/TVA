@@ -48,6 +48,13 @@ WINDOW_METRICS = (
     'motion_derivative_energy',
 )
 
+CANDIDATE_REGION_METRICS = (
+    'candidate_num_samples',
+    'candidate_duration_ms',
+    'actual_num_samples',
+    'actual_duration_ms',
+) + WINDOW_METRICS
+
 SUBSET_ALL = 'all'
 SUBSET_AGREEMENT_FILTERED = 'agreement_nonpadding_unclipped'
 SUBSETS = (SUBSET_ALL, SUBSET_AGREEMENT_FILTERED)
@@ -74,6 +81,7 @@ PROVENANCE_FIELDS = (
     'downsampling_ratio',
     'sample_rate_hz',
     'low_force_threshold_fraction',
+    'empty_region_fallback_ms',
 )
 
 
@@ -163,12 +171,18 @@ class GroupAccumulator:
     anchor_agreement_count: int = 0
     padding_overlap_count: int = 0
     window_clipped_count: int = 0
+    fallback_window_count: int = 0
     no_low_force_count: int = 0
     metrics: dict[str, list[float]] = field(
         default_factory=lambda: defaultdict(list)
     )
 
-    def add(self, row: dict[str, Any], window: dict[str, Any]) -> None:
+    def add(
+        self,
+        row: dict[str, Any],
+        measurement: dict[str, Any],
+        feature_metrics: tuple[str, ...] = WINDOW_METRICS,
+    ) -> None:
         self.occurrence_count += 1
         self.sample_indices.add(int(row['sample_index']))
         self.writer_ids.add(str(row['writer_id']))
@@ -177,16 +191,25 @@ class GroupAccumulator:
         )
         self.padding_overlap_count += int(row['overlaps_padding'])
         self.window_clipped_count += int(
-            window['clipped_at_recording_edge']
+            measurement['clipped_at_recording_edge']
         )
-        self.no_low_force_count += int(window['low_force_fraction'] == 0)
+        self.fallback_window_count += int(
+            measurement.get('used_fallback_window', False)
+        )
+        self.no_low_force_count += int(
+            measurement['low_force_fraction'] == 0
+        )
 
         for name in ALIGNMENT_METRICS:
             self.metrics[name].append(float(row[name]))
-        for name in WINDOW_METRICS:
-            self.metrics[name].append(float(window[name]))
+        for name in feature_metrics:
+            self.metrics[name].append(float(measurement[name]))
 
-    def nested_summary(self, total_writers: int) -> dict[str, Any]:
+    def nested_summary(
+        self,
+        total_writers: int,
+        feature_metrics: tuple[str, ...] = WINDOW_METRICS,
+    ) -> dict[str, Any]:
         return {
             'occurrence_count': self.occurrence_count,
             'sample_count': len(self.sample_indices),
@@ -203,12 +226,15 @@ class GroupAccumulator:
             'window_clipped_rate': _safe_rate(
                 self.window_clipped_count, self.occurrence_count
             ),
+            'fallback_window_rate': _safe_rate(
+                self.fallback_window_count, self.occurrence_count
+            ),
             'no_low_force_rate': _safe_rate(
                 self.no_low_force_count, self.occurrence_count
             ),
             'metrics': {
                 name: _distribution(self.metrics[name])
-                for name in ALIGNMENT_METRICS + WINDOW_METRICS
+                for name in ALIGNMENT_METRICS + feature_metrics
             },
         }
 
@@ -218,8 +244,9 @@ class GroupAccumulator:
         window_ms: int,
         subset: str,
         total_writers: int,
+        feature_metrics: tuple[str, ...] = WINDOW_METRICS,
     ) -> dict[str, Any]:
-        nested = self.nested_summary(total_writers)
+        nested = self.nested_summary(total_writers, feature_metrics)
         row = {
             **identity,
             'window_ms': window_ms,
@@ -232,6 +259,35 @@ class GroupAccumulator:
                     continue
                 row[f'{metric_name}_{statistic_name}'] = value
         return row
+
+    def flat_region_summary(
+        self,
+        identity: dict[str, str],
+        subset: str,
+        total_writers: int,
+    ) -> dict[str, Any]:
+        '''Flatten one whole-region summary without a window-size column.'''
+        nested = self.nested_region_summary(total_writers)
+        row = {
+            **identity,
+            'subset': subset,
+            **{key: value for key, value in nested.items() if key != 'metrics'},
+        }
+        for metric_name, statistics in nested['metrics'].items():
+            for statistic_name, value in statistics.items():
+                if statistic_name == 'count':
+                    continue
+                row[f'{metric_name}_{statistic_name}'] = value
+        return row
+
+    def nested_region_summary(self, total_writers: int) -> dict[str, Any]:
+        '''Return a whole-region summary with region-specific field names.'''
+        nested = self.nested_summary(
+            total_writers,
+            CANDIDATE_REGION_METRICS,
+        )
+        nested['region_clipped_rate'] = nested.pop('window_clipped_rate')
+        return nested
 
 
 def _boundary_position(row: dict[str, Any]) -> str:
@@ -286,8 +342,10 @@ def analyze_boundary_jsonl(
     dict[str, Any],
     list[dict[str, Any]],
     list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
 ]:
-    '''Return global, pair, and position/case descriptive summaries.'''
+    '''Return midpoint-window and whole-region descriptive summaries.'''
     input_path = Path(input_path)
     source_summary = _load_export_summary(input_path)
     expected_rows = (
@@ -305,12 +363,22 @@ def analyze_boundary_jsonl(
     position_groups: dict[
         tuple[str, str, int, str], GroupAccumulator
     ] = defaultdict(GroupAccumulator)
+    region_groups: dict[tuple[str, str], GroupAccumulator] = defaultdict(
+        GroupAccumulator
+    )
+    global_region_groups: dict[str, GroupAccumulator] = defaultdict(
+        GroupAccumulator
+    )
+    position_region_groups: dict[
+        tuple[str, str, str], GroupAccumulator
+    ] = defaultdict(GroupAccumulator)
     pair_counts: Counter[str] = Counter()
     sample_indices: set[int] = set()
     writer_ids: set[str] = set()
     boundary_ids: set[str] = set()
     provenance: dict[str, Any] | None = None
     window_sizes: tuple[int, ...] | None = None
+    has_candidate_regions: bool | None = None
     row_count = 0
 
     with open(input_path, 'r', encoding='utf-8') as file:
@@ -343,6 +411,15 @@ def analyze_boundary_jsonl(
             elif row_windows != window_sizes:
                 raise ValueError(
                     f'Inconsistent window sizes at JSONL line {line_number}.'
+                )
+
+            row_has_candidate_region = 'candidate_region' in row
+            if has_candidate_regions is None:
+                has_candidate_regions = row_has_candidate_region
+            elif row_has_candidate_region != has_candidate_regions:
+                raise ValueError(
+                    'Inconsistent candidate-region features at JSONL line '
+                    f'{line_number}.'
                 )
 
             boundary_id = str(row['boundary_id'])
@@ -399,6 +476,47 @@ def analyze_boundary_jsonl(
                                 SUBSET_AGREEMENT_FILTERED,
                             )
                         ].add(row, window)
+
+            if row_has_candidate_region:
+                region = row['candidate_region']
+                region_groups[(pair, SUBSET_ALL)].add(
+                    row,
+                    region,
+                    CANDIDATE_REGION_METRICS,
+                )
+                global_region_groups[SUBSET_ALL].add(
+                    row,
+                    region,
+                    CANDIDATE_REGION_METRICS,
+                )
+                for group_type, group_value in position_descriptors.items():
+                    position_region_groups[
+                        (group_type, group_value, SUBSET_ALL)
+                    ].add(row, region, CANDIDATE_REGION_METRICS)
+
+                include_region_in_agreement_subset = (
+                    row['both_anchors_agree_with_greedy']
+                    and not row['overlaps_padding']
+                    and not region['clipped_at_recording_edge']
+                )
+                if include_region_in_agreement_subset:
+                    region_groups[
+                        (pair, SUBSET_AGREEMENT_FILTERED)
+                    ].add(row, region, CANDIDATE_REGION_METRICS)
+                    global_region_groups[
+                        SUBSET_AGREEMENT_FILTERED
+                    ].add(row, region, CANDIDATE_REGION_METRICS)
+                    for (
+                        group_type,
+                        group_value,
+                    ) in position_descriptors.items():
+                        position_region_groups[
+                            (
+                                group_type,
+                                group_value,
+                                SUBSET_AGREEMENT_FILTERED,
+                            )
+                        ].add(row, region, CANDIDATE_REGION_METRICS)
 
     if row_count == 0 or provenance is None or window_sizes is None:
         raise ValueError('Boundary JSONL contains no records.')
@@ -464,9 +582,36 @@ def analyze_boundary_jsonl(
                         )
                     )
 
+    region_pair_rows = []
+    region_position_rows = []
+    if has_candidate_regions:
+        for pair in sorted(pair_counts):
+            for subset in SUBSETS:
+                region_pair_rows.append(
+                    region_groups[(pair, subset)].flat_region_summary(
+                        {'pair': pair}, subset, total_writers
+                    )
+                )
+
+        for group_type, group_values in POSITION_GROUPS.items():
+            for group_value in group_values:
+                for subset in SUBSETS:
+                    region_position_rows.append(
+                        position_region_groups[
+                            (group_type, group_value, subset)
+                        ].flat_region_summary(
+                            {
+                                'group_type': group_type,
+                                'group_value': group_value,
+                            },
+                            subset,
+                            total_writers,
+                        )
+                    )
+
     pair_support = list(pair_counts.values())
     summary = {
-        'schema_version': 2,
+        'schema_version': 3,
         'input_jsonl': str(input_path),
         'provenance': provenance,
         'source_export_summary': source_summary,
@@ -475,6 +620,7 @@ def analyze_boundary_jsonl(
         'total_writers': total_writers,
         'unique_pairs': len(pair_counts),
         'window_sizes_ms': list(window_sizes),
+        'has_candidate_region_features': bool(has_candidate_regions),
         'subsets': {
             SUBSET_ALL: 'Every exported boundary occurrence.',
             SUBSET_AGREEMENT_FILTERED: (
@@ -518,8 +664,24 @@ def analyze_boundary_jsonl(
             }
             for window_ms in window_sizes
         },
+        'candidate_region_statistics': (
+            {
+                subset: global_region_groups[subset].nested_region_summary(
+                    total_writers
+                )
+                for subset in SUBSETS
+            }
+            if has_candidate_regions
+            else None
+        ),
     }
-    return summary, pair_rows, position_rows
+    return (
+        summary,
+        pair_rows,
+        position_rows,
+        region_pair_rows,
+        region_position_rows,
+    )
 
 
 def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -578,14 +740,61 @@ def _make_overview_rows(
     ]
 
 
+def _make_region_overview_rows(
+    rows: list[dict[str, Any]],
+    identity_columns: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    '''Keep the most useful complete-region measurements.'''
+    columns = identity_columns + (
+        'subset',
+        'occurrence_count',
+        'sample_count',
+        'writer_count',
+        'writer_coverage_fraction',
+        'anchor_agreement_rate',
+        'padding_overlap_rate',
+        'region_clipped_rate',
+        'fallback_window_rate',
+        'no_low_force_rate',
+        'minimum_aligned_probability_median',
+        'minimum_confidence_margin_median',
+        'candidate_duration_ms_median',
+        'actual_duration_ms_median',
+        'force_min_relative_p25',
+        'force_min_relative_median',
+        'force_min_relative_p75',
+        'low_force_fraction_median',
+        'longest_low_force_ms_median',
+        'motion_derivative_energy_p25',
+        'motion_derivative_energy_median',
+        'motion_derivative_energy_p75',
+    )
+    return [
+        {column: row[column] for column in columns}
+        for row in rows
+    ]
+
+
 def write_boundary_statistics(
     output_dir: str | Path,
     summary: dict[str, Any],
     pair_rows: list[dict[str, Any]],
     position_rows: list[dict[str, Any]],
+    region_pair_rows: list[dict[str, Any]],
+    region_position_rows: list[dict[str, Any]],
     *,
     overwrite: bool = False,
-) -> tuple[Path, Path, Path, Path, Path]:
+) -> tuple[
+    Path,
+    Path,
+    Path,
+    Path,
+    Path,
+    Path | None,
+    Path | None,
+    Path | None,
+    Path | None,
+]:
     '''Write global, pair, and position/case analysis files.'''
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -594,6 +803,12 @@ def write_boundary_statistics(
     overview_path = output_dir / 'pair_overview.csv'
     position_path = output_dir / 'position_statistics.csv'
     position_overview_path = output_dir / 'position_overview.csv'
+    region_pair_path = output_dir / 'pair_region_statistics.csv'
+    region_pair_overview_path = output_dir / 'pair_region_overview.csv'
+    region_position_path = output_dir / 'position_region_statistics.csv'
+    region_position_overview_path = (
+        output_dir / 'position_region_overview.csv'
+    )
 
     existing = [
         path
@@ -603,6 +818,10 @@ def write_boundary_statistics(
             overview_path,
             position_path,
             position_overview_path,
+            region_pair_path,
+            region_pair_overview_path,
+            region_position_path,
+            region_position_overview_path,
         )
         if path.exists()
     ]
@@ -626,10 +845,33 @@ def write_boundary_statistics(
             ('group_type', 'group_value'),
         ),
     )
+    if region_pair_rows and region_position_rows:
+        _atomic_write_csv(region_pair_path, region_pair_rows)
+        _atomic_write_csv(
+            region_pair_overview_path,
+            _make_region_overview_rows(region_pair_rows, ('pair',)),
+        )
+        _atomic_write_csv(region_position_path, region_position_rows)
+        _atomic_write_csv(
+            region_position_overview_path,
+            _make_region_overview_rows(
+                region_position_rows,
+                ('group_type', 'group_value'),
+            ),
+        )
+    else:
+        region_pair_path = None
+        region_pair_overview_path = None
+        region_position_path = None
+        region_position_overview_path = None
     return (
         summary_path,
         pair_path,
         overview_path,
         position_path,
         position_overview_path,
+        region_pair_path,
+        region_pair_overview_path,
+        region_position_path,
+        region_position_overview_path,
     )
