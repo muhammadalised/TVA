@@ -117,8 +117,12 @@ def make_boundary_rows(
     return rows
 
 
-def _read_jsonl(path: Path) -> list[dict[str, Any]]:
-    '''Read JSONL while tolerating only an incomplete final write.'''
+def _read_jsonl(
+    path: Path,
+    *,
+    tolerate_malformed: bool = False,
+) -> list[dict[str, Any]]:
+    '''Read JSONL, optionally skipping damaged lines during safe repair.'''
     if not path.exists():
         return []
 
@@ -130,6 +134,8 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
         try:
             records.append(json.loads(line))
         except json.JSONDecodeError:
+            if tolerate_malformed:
+                continue
             if line_index != len(lines) - 1:
                 raise ValueError(
                     f'Malformed JSONL record in {path} at line '
@@ -205,14 +211,28 @@ class BoundaryJSONLWriter:
         )
 
     def _repair_for_resume(self) -> None:
-        '''Keep only samples proven complete by both output files.'''
-        progress = _read_jsonl(self.progress_path)
+        '''Keep only samples proven complete by both output files.
+
+        A forced stop normally damages only the final line. Concurrent access
+        or a filesystem interruption can leave a malformed line followed by
+        valid rows. During explicit ``--resume`` repair, malformed lines are
+        ignored and a sample is retained only when its number of valid rows
+        exactly matches its flushed progress record. Every other sample is
+        removed and exported again.
+        '''
+        progress = _read_jsonl(
+            self.progress_path,
+            tolerate_malformed=True,
+        )
         expected = {
             int(record['sample_index']): int(record['num_boundaries'])
             for record in progress
         }
 
-        boundary_rows = _read_jsonl(self.output_path)
+        boundary_rows = _read_jsonl(
+            self.output_path,
+            tolerate_malformed=True,
+        )
         rows_by_sample: dict[int, list[dict[str, Any]]] = defaultdict(list)
         for row in boundary_rows:
             rows_by_sample[int(row['sample_index'])].append(row)

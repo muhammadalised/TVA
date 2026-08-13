@@ -132,6 +132,33 @@ class BoundaryExportTest(unittest.TestCase):
                 [7, 9],
             )
 
+    def test_resume_repairs_a_malformed_middle_line(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'boundaries.jsonl'
+            rows = self.make_rows()
+
+            with BoundaryJSONLWriter(output) as writer:
+                writer.write_sample(7, rows)
+                writer.write_sample(8, [dict(rows[0], sample_index=8)])
+                writer.write_sample(9, [dict(rows[0], sample_index=9)])
+
+            valid_lines = output.read_text(encoding='utf-8').splitlines()
+            output.write_text(
+                valid_lines[0] + '\n{"sample_index": 8\n'
+                + valid_lines[2] + '\n',
+                encoding='utf-8',
+            )
+
+            with BoundaryJSONLWriter(output, resume=True) as writer:
+                self.assertEqual(writer.completed_samples, {7, 9})
+                writer.write_sample(8, [dict(rows[0], sample_index=8)])
+
+            loaded = load_boundary_rows(output)
+            self.assertEqual(
+                {row['sample_index'] for row in loaded},
+                {7, 8, 9},
+            )
+
     def test_existing_output_requires_an_explicit_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'boundaries.jsonl'
