@@ -366,3 +366,28 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Extended the exporter schema and descriptive analyzer. New compact and full
   pair/position region tables are written separately so region measurements do
   not get mixed with fixed-window results.
+
+## 2026-08-13 — Corrected provisional force-continuity ranking
+
+- Complete-region comparison found contact preservation in 28.1% of 78,953
+  reliable boundaries, versus 37.2% in the centred 100 ms view. The complete
+  interval therefore finds additional force losses, but its duration is a
+  serious confound: reliable first boundaries have a 480 ms median candidate
+  region, compared with 240 ms for middle and final boundaries.
+- Added `score_continuity.py` and `tva/continuity_scoring.py`. They create the
+  first pair ranking without rerunning the recognition model.
+- The scorer uses the established agreement/non-padding/unclipped evidence,
+  subtracts expected contact rates for matching boundary-position and broad
+  duration groups, and balances pair residuals equally across writers.
+- The explicit development score uses 75% corrected 100 ms local contact and
+  25% corrected complete-region contact. It reports raw and corrected
+  components so the effect of the correction remains visible.
+- The tentative support gate is 100 reliable occurrences and 30 writers.
+  Frequency decides whether a pair is reliable enough to rank but does not
+  increase its continuity score.
+- Output includes a JSON method report and an auditable CSV with eligibility,
+  writer variability, alignment confidence, duration, fallback use, case, and
+  word-position proportions. The score is rejected for non-training splits.
+- Four focused scorer tests cover correction/ranking, support gates, atomic
+  output writing, and training-only enforcement. All 29 repository tests pass
+  in the `tva-thesis` environment.

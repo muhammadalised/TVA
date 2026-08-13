@@ -104,3 +104,22 @@ the reason no longer valid.
   substantially. A small window can miss a pen lift near one edge, while the
   complete region can include unrelated motion. Keeping both makes this choice
   testable through descriptive comparison and later ablation.
+
+## D011 — Correct provisional force scores for position and region duration
+
+- Status: implemented for fold-0 development on 2026-08-13
+- Decision: Use the corrected 100 ms contact-preservation component as the
+  primary force evidence and the corrected complete-region component as
+  secondary evidence. Estimate expected contact separately for boundary
+  position and broad region-duration groups, then aggregate residual evidence
+  with equal weight per writer.
+- Development defaults: 75% local and 25% complete-region evidence; at least
+  100 reliable occurrences from at least 30 writers; at least 100 occurrences
+  before a position-duration baseline is used.
+- Reason: Complete-region analysis finds pressure losses missed by a local
+  window, but longer regions and word-initial positions show lower apparent
+  continuity independent of pair identity. Directly ranking raw region rates
+  would therefore reward or penalize some pairs for alignment geometry.
+- Limitation: This is the first interpretable force-only baseline. Weighting,
+  force threshold, duration bins, support gates, motion components, and their
+  ablations remain development choices rather than frozen thesis settings.

@@ -155,6 +155,15 @@ writer coverage, median continuity, variability, and alignment confidence.
 This shared table supplies handwriting evidence to all proposed tokenizer
 families.
 
+Because CTC candidate intervals vary with word position and duration, raw
+complete-region rates are not compared directly. The first force-only baseline
+subtracts the expected contact-preservation rate for boundaries with the same
+position and a similar interval duration. Evidence is averaged within writer
+before writers are averaged, so one prolific writer cannot dominate a pair.
+The local 100 ms component remains primary and the complete interval is
+secondary. Motion-only and combined variants are evaluated as explicit
+ablations rather than silently folded into this first score.
+
 ### 5. Train handwriting-aware tokenizer families
 
 Construct three proposed tokenizer variants:

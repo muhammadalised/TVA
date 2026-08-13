@@ -306,12 +306,44 @@ milliseconds. This equal-spacing reference is only a sanity check: real
 characters do not take equal time, so it is not physical boundary ground truth
 and must not be used as a training label by itself.
 
+## Provisional corrected force-continuity ranking
+
+`score_continuity.py` reads the completed training JSONL directly. It does not
+run the recognizer or require a GPU:
+
+```bash
+python score_continuity.py \
+  --input results/thesis/boundary_exports/a0_char_wi_rh_unidirectional/fold0/train_region_v2/boundaries.jsonl \
+  --overwrite
+```
+
+The default `continuity_scores/` directory beside the JSONL contains:
+
+- `continuity_score_summary.json`: exact method parameters, global and
+  position-duration reference rates, data counts, and the top eligible pairs;
+  and
+- `pair_continuity_scores.csv`: all pairs, their eligibility reason, raw and
+  corrected local/region contact evidence, provisional force score,
+  writer-to-writer variability, support, alignment confidence, region duration,
+  fallback rate, case rate, and boundary-position proportions.
+
+The score is learned only from records whose split is `train`. Its transparent
+quality filter requires greedy agreement for both anchors, no padding overlap,
+and unclipped local and region measurements. Expected contact rates are formed
+within boundary-position and broad duration groups. Pair residuals are first
+averaged within writer and then across writers. The defaults rank only pairs
+with at least 100 reliable occurrences and 30 writers.
+
+The provisional score is 75% corrected 100 ms local contact and 25% corrected
+complete-region contact. It is a force-only development baseline for the first
+handwriting-aware Bigram experiment, not the final combined force/motion score.
+
 ## Next development steps
 
-1. Re-export A0 WI training boundaries with the complete-region feature schema.
-2. Compare midpoint-window and complete-region pair statistics, including the
-   fallback rate.
-3. Define and document the alignment-quality and minimum-support gates using
-   training-only distributions.
-4. Define the first force-only and motion-only continuity components, then a
-   combined score and planned ablations.
+1. Run the corrected force scorer on the complete A0 WI training export and
+   inspect its top, middle, and bottom supported pairs.
+2. Check ranking sensitivity to local/region weights, duration bins, and the
+   support gate without using validation or test recognition results.
+3. Define a motion-only component from accelerometer and gyroscope evidence.
+4. Compare force-only, motion-only, and combined scores before constructing the
+   first handwriting-aware Bigram vocabulary.

@@ -110,6 +110,35 @@ cross-product. This diagnostic checks whether apparently continuous uppercase
 pairs are actually explained by their usual word-initial position. The groups
 do not alter or reweight the exported measurements.
 
+The first executable score is deliberately limited to force/contact evidence.
+It is a development baseline, not the frozen combined score. An occurrence is
+retained when both anchors agree with the local model choice, neither anchor
+overlaps padding, and neither its 100 ms local window nor complete region is
+clipped. The method then:
+
+1. groups occurrences by boundary position and a broad candidate-region
+   duration bin;
+2. calculates the expected local and complete-region contact-preservation rate
+   within each sufficiently supported group;
+3. subtracts these expected rates from each binary contact observation;
+4. averages residuals within each writer before averaging writers; and
+5. maps the residual back around the global contact rate.
+
+This correction asks whether a pair preserves contact more often than expected
+for boundaries with a similar position and alignment-region duration. It does
+not claim that the whole CTC interval is a physical character transition. The
+provisional force score gives the corrected 100 ms local component 75% weight
+and the corrected complete-region component 25% weight. The local view is
+primary because it is more boundary-specific; the region view can reveal a
+nearby force loss but is more vulnerable to unrelated motion. These weights
+are explicit ablation parameters and are not final thesis hyperparameters.
+
+The development support gate is at least 100 reliable occurrences from at
+least 30 writers. It controls whether a pair receives a rank; it does not add
+frequency to the continuity score. Every row retains raw rates, corrected
+components, writer variability, position proportions, duration, fallback rate,
+and alignment confidence so the ranking can be audited.
+
 The position analysis also compares the normalized estimated boundary centre
 with a rough evenly spaced reference. For boundary index `k` in a word with
 `B` boundaries, the reference is `(k + 1) / (B + 1)`. Signed relative and
