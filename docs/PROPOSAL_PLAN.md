@@ -1,98 +1,129 @@
 # Thesis Proposal Plan
 
-## Working title
+This document mirrors the approved proposal, *Handwriting-Aware Tokenization
+for IMU-Based Online Handwriting Recognition*. The proposal is the authority
+for thesis scope; implementation notes elsewhere must not silently broaden or
+reverse it.
 
-**Handwriting-Aware Label Tokenization for IMU-Based Online Handwriting
-Recognition**
+## Problem and objective
 
-## Problem and motivation
+Conventional Bigram, BPE, and Unigram tokenizers form text-label tokens mainly
+from linguistic frequency. A character group can therefore become one output
+token even when its characters are normally written with separate movements.
+The thesis investigates whether visible handwriting structure provides more
+suitable output labels for IMU-based online handwriting recognition.
 
-IMU handwriting recognizers commonly predict individual characters or use
-subword tokenizers learned from text frequency. Linguistic frequency does not
-necessarily describe how characters are physically connected during writing.
-The thesis investigates whether token vocabularies learned from handwriting
-motion can provide more suitable CTC output labels.
+The recognizer continues to receive raw 13-channel IMU signals. Tokenization
+changes only its output vocabulary and CTC target labels.
 
-## Objective
+## Primary research method
 
-Develop handwriting-aware Bigram, BPE, and Unigram tokenizers whose candidate
-selection or merge decisions are guided primarily by motion continuity, then
-compare them fairly with character labels and corresponding linguistic
-tokenizers.
+Use offline handwriting images to estimate how often neighbouring characters
+are visibly connected:
 
-## Research question
+1. Prepare the IAM English and READ German datasets and analyse them
+   separately.
+2. Use a pretrained DTLR model to obtain character identities and bounding
+   boxes.
+3. Match the detected characters and boxes to each known transcription.
+4. Exclude uncertain localizations rather than treating them as evidence.
+5. Binarize the accepted writing and apply connected-component labelling
+   (CCL).
+6. Determine whether the ink associated with each adjacent character pair is
+   connected and aggregate the observations into pair-connectivity scores.
+7. Require sufficient occurrences and writer support for a score to be
+   eligible for tokenizer construction.
 
-Can handwriting-aware Bigram, BPE, and Unigram text-label tokenizers learned
-from IMU motion continuity improve character and word recognition compared with
-character labels and linguistically trained tokenizers?
+IAM and READ must produce separate evidence tables and results. Combining them
+may be studied only as an explicit additional condition.
 
-## Planned approach
+This is cross-modal transfer: static-image ink connectivity is a handwriting
+prior for an IMU recognizer. It is not proof of continuous pen motion in any
+particular IMU recording, and CCL components are not character identities by
+themselves.
 
-1. Train the existing BLConv-B + BiLSTM-B + CTC character baseline on raw
-   13-channel OnHW-Words500 IMU recordings.
-2. Use target-constrained CTC forced alignment to estimate character intervals
-   in training recordings.
-3. Measure continuity around adjacent-character boundaries using force,
-   accelerometer, gyroscope, pause/energy, and possibly encoder features.
-4. Aggregate reliable motion evidence across occurrences and writers.
-5. Use the shared evidence to train handwriting-aware Bigram, BPE, and Unigram
-   text-label tokenizers.
-6. Retrain the same recognizer from scratch for every tokenizer and evaluate
-   reconstructed text with CER and WER.
+## Tokenizer development
 
-## Experimental comparison
+Construct and analyse a handwriting-aware Bigram vocabulary first. Retain all
+individual characters as fallback tokens and compare the vocabulary with a
+frequency-based Bigram baseline of the same or nearly the same size.
 
-The main comparison contains character, linguistic Bigram, handwriting-aware
-Bigram, linguistic BPE, handwriting-aware BPE, linguistic Unigram, and
-handwriting-aware Unigram conditions. Linguistic and handwriting-aware variants
-within each family will use matched vocabulary sizes and otherwise identical
-training settings. Candidate vocabulary sizes may be screened during fold-0
-development; a small final set will be fixed before cross-validation.
+Extend the connectivity evidence to handwriting-aware BPE and Unigram only if
+the Bigram results are promising. Each proposed family must be compared with
+its corresponding frequency-based tokenizer. The precise rules for deriving
+longer-token cohesion from internal pair scores must be documented before
+those experiments.
 
-Experiments use the right-handed writer-dependent and writer-independent
-OnHW-Words500 splits. Development begins on fold 0; final conclusions will use
-the agreed five-fold evaluation. Tokenizers and motion thresholds are learned
-from each training partition only to prevent validation leakage.
+## Recognition evaluation
 
-## Expected contribution
+Encode right-handed OnHW-Words500 labels with each tokenizer and train a
+separate BLConv-B + BiLSTM-B + CTC recognizer from scratch. Compare
+character-level, frequency-based, and handwriting-aware labels separately in:
 
-The thesis will contribute a method for converting aligned handwriting-motion
-patterns into text-token vocabularies, adaptations of established tokenizer
-families to this motion evidence, and a controlled evaluation of whether
-handwriting-aware tokenization adds value beyond linguistic token statistics.
+- writer-dependent (WD/RH) evaluation; and
+- writer-independent (WI/RH) evaluation.
 
-## Scope
+Keep raw IMU input, architecture, data splits, preprocessing, augmentation,
+training settings, and decoding/evaluation fixed. Reconstruct ordinary text
+before calculating character error rate (CER) and word error rate (WER).
 
-The raw IMU signal remains the model input; the thesis changes output-label
-tokenization. Right-handed data is the core dataset. Optional DTLR and connected
-component experiments on offline handwriting images are cross-modal extensions
-and will be attempted only after the IMU comparison is complete.
+Development may screen a small set of choices on fold 0. Final conclusions
+require the agreed five-fold evaluation, with the method and vocabulary sizes
+frozen in advance.
 
-## Staged implementation
+## Hypotheses
 
-Implement and validate character alignment and motion scoring first, followed
-by handwriting-aware Bigram, BPE, and Unigram in that order. This staging
-reduces technical risk while preserving all three tokenizer families in the
-planned thesis objective.
+1. Tokenizers trained with handwriting patterns will outperform corresponding
+   tokenizers trained using only linguistic frequency information.
+2. The benefit of handwriting-aware tokenization will be greater in the
+   writer-independent setting than in the writer-dependent setting.
 
-## Six-month work plan
+These are hypotheses to test, not assumed outcomes.
 
-| Period | Planned work |
-| --- | --- |
-| Month 1 | Complete character baselines; implement and validate CTC forced alignment |
-| Month 2 | Define continuity features and ablations; implement handwriting-aware Bigram |
-| Month 3 | Implement handwriting-aware BPE and motion-aware Unigram |
-| Month 4 | Run fold-0 matched comparisons; refine and freeze the methodology |
-| Month 5 | Run final WD/RH and WI/RH cross-validation experiments; optional image study only if core work is complete |
-| Month 6 | Analyze results, document limitations, write and revise the thesis |
+## Leakage control
 
-## Main risks and mitigations
+The image datasets provide external handwriting priors rather than OnHW
+validation evidence. Do not use OnHW validation recordings or recognition
+scores to construct a fold's tokenizer, choose pair thresholds, or tune its
+connectivity weights. Record the exact image corpus split, DTLR checkpoint,
+matching rules, uncertainty filters, binarization/CCL settings, vocabulary,
+and code commit for every experiment.
 
-- **Noisy character alignments:** use target-constrained Viterbi alignment,
-  confidence filtering, and manual inspection of representative examples.
-- **Writer-dependent force levels:** calibrate contact evidence per writer or
-  recording and evaluate force-only, motion-only, and combined scores.
-- **Rare token candidates:** require minimum count and writer coverage while
-  keeping motion continuity as the primary selection evidence.
-- **Too many experimental combinations:** develop on fold 0, freeze decisions
-  before cross-validation, and keep the image experiment optional.
+## Optional and fallback studies
+
+- If time and resources permit, evaluate the same tokenizers with a fixed
+  offline image-recognition model to test whether they also help directly in
+  the image domain.
+- If the image method is unreliable and time remains, use the implemented CTC
+  forced-alignment pipeline on OnHW as an additional comparison. Force,
+  acceleration, and rotation around estimated boundaries may provide an
+  IMU-derived continuity score, but those alignments are not physical-boundary
+  ground truth.
+
+Neither optional study replaces the primary image-to-IMU transfer experiment.
+
+## Milestone order
+
+1. Prepare IAM and READ and obtain reliable DTLR character localizations.
+2. Implement and validate transcript matching, binarization, CCL, and
+   pair-connectivity aggregation.
+3. Construct and analyse the handwriting-aware Bigram vocabulary.
+4. Train matched Bigram recognition comparisons on WD/RH and WI/RH.
+5. Extend to BPE and Unigram only if Bigram results are promising.
+6. Complete the five-fold comparison and thesis analysis.
+7. Attempt the optional image-recognition or IMU-alignment comparison only if
+   time and evidence justify it.
+
+## Main risks and controls
+
+- **Incorrect DTLR/transcript matching:** reject uncertain samples and audit a
+  representative set manually.
+- **CCL ambiguity:** remember that multiple characters can share one component
+  and one character can contain several; define the box-to-component rule
+  explicitly and report edge cases.
+- **Corpus/language effects:** analyse IAM and READ separately and report
+  coverage for every candidate pair.
+- **Rare candidates:** use minimum occurrence and writer-support gates without
+  turning frequency into the primary ranking criterion.
+- **Too many training conditions:** evaluate Bigram first and expand to BPE and
+  Unigram only after a promising result.

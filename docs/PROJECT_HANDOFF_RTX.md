@@ -5,7 +5,7 @@
 **Repository:** [muhammadalised/TVA](https://github.com/muhammadalised/TVA)
 
 **Current branch:** `forced-alignment`
-**Current code commit:** `52868fe` — *Add corrected force continuity ranking*
+**Documentation baseline commit:** `f8ba00a` — *Add RTX project handoff*
 
 This is the starting document for continuing the thesis on another machine. Read this file first, then read `docs/THESIS_PROJECT.md`, `docs/PROGRESS.md`, and `docs/DECISIONS.md` for the full technical record.
 
@@ -30,21 +30,26 @@ For every tokenizer experiment, train a **new model from scratch**. Only the out
 ### The three planned handwriting-aware tokenizers
 
 1. **Bigram (first implementation):** retain all characters and add selected two-character tokens, for example `[th]`, based on handwriting evidence.
-2. **BPE (later extension):** start with characters and make successive handwriting-guided merges rather than frequency-guided merges.
-3. **Unigram (later extension):** generate and score longer candidate strings from their internal handwriting cohesion, then prune/select a vocabulary.
+2. **BPE (conditional extension):** if Bigram is promising, start with
+   characters and make successive handwriting-guided merges rather than
+   frequency-guided merges.
+3. **Unigram (conditional extension):** if Bigram is promising, generate and
+   score longer candidate strings from their internal handwriting cohesion,
+   then prune/select a vocabulary.
 
 Frequency is still useful as a **reliability gate**: a pair needs enough examples and writer coverage for its handwriting score to be trustworthy. It must not become the main reason a token is selected.
 
-## 2. Important scope update: two possible evidence sources
+## 2. Approved scope: primary and fallback evidence sources
 
 There are two related approaches discussed with the supervisor. They must not be confused.
 
-### A. Primary proposal direction: offline handwriting-image connectivity
+### A. Primary proposal method: offline handwriting-image connectivity
 
-The current proposal direction is to use offline handwriting images as a source of a *handwriting prior*:
+The approved proposal uses offline handwriting images as a source of a
+*handwriting prior*:
 
-1. Use an image dataset such as **IAM** and/or **READ**.
-2. Obtain character locations/identities with **DTLR** or compatible text-line-recognition output.
+1. Analyse **IAM** English and **READ** German handwriting separately.
+2. Obtain character locations/identities with a pretrained **DTLR** model.
 3. Binarize the writing and use connected-component labelling (CCL).
 4. For adjacent characters in reading order, measure whether their visible ink belongs to the same connected component.
 5. Aggregate this across image samples to score character-pair connectivity.
@@ -65,11 +70,15 @@ It is not wasted work. It provides:
 - a force-based candidate pair ranking for a first IMU-informed Bigram; and
 - a future comparison source against image-derived connectivity.
 
-### Scope discrepancy to resolve before final experiments
+### Scope documentation status
 
-The older repository documents (`THESIS_PROJECT.md` and `DECISIONS.md`) still describe **IMU forced alignment as the main method** and image connectivity as an optional extension. The newer supervisor/proposal discussion makes **image-derived connectivity primary** and forced alignment the fallback.
-
-Before starting expensive five-fold training, update those documents to match the supervisor's final preferred wording. Do not claim that either static image connectivity or CTC alignment gives ground-truth physical pen-stroke boundaries.
+The approved September 2026 proposal makes **image-derived connectivity
+primary** and forced alignment an additional fallback/comparison only if the
+image method is unreliable and time remains. The repository planning,
+methodology, decision, progress, and forced-alignment documents have been
+updated to reflect that scope. Do not claim that either static image
+connectivity or CTC alignment gives ground-truth physical pen-stroke
+boundaries.
 
 ## 3. Data and evaluation scope
 
@@ -80,7 +89,10 @@ Before starting expensive five-fold training, update those documents to match th
 - **Metrics:** character error rate (CER) and word error rate (WER), measured after predicted tokens have been concatenated back into ordinary text.
 - **Model:** BLConv-B + BiLSTM-B + CTC for the recognition comparisons.
 
-Never let validation recordings influence tokenizer construction. For each fold, derive image/IMU evidence and freeze the tokenizer using the training partition only; then train and evaluate on that fold normally.
+Never let OnHW validation recordings or recognition scores influence tokenizer
+construction. Preserve explicit IAM/READ evidence splits and provenance. A
+frequency-based comparator learned from OnHW text must use only that fold's
+training labels; then freeze each tokenizer before training and evaluation.
 
 ## 4. Completed, verified work
 
@@ -176,14 +188,17 @@ docs/FORCED_ALIGNMENT.md         Commands and technical explanation
 docs/PROJECT_HANDOFF_RTX.md      This handoff
 ```
 
-Two proposal assets are currently **untracked** in this clone:
+The editable proposal sources mentioned during the earlier handoff are not
+present in this clone:
 
 ```text
 docs/image_primary_thesis_proposal.tex
 docs/references.bib
 ```
 
-They will not travel through Git unless deliberately added and committed. The formal PR-lab proposal was edited in Overleaf/Downloads, not necessarily in this repository. Preserve its `.tex` and `.bib` files separately.
+The approved PDF has been reviewed separately. Preserve the PDF and its
+editable `.tex` and `.bib` sources outside Git unless they are deliberately
+added to the repository.
 
 ## 6. Bring-up checklist on the RTX PC
 
@@ -283,11 +298,13 @@ The scorer writes an auditable `pair_continuity_scores.csv` and a method JSON re
 
 ## 8. Recommended next steps
 
-### First: settle and document the primary method
+### First: prepare the approved primary method
 
-1. Confirm with the supervisor that the **image-derived connectivity method is primary**, while IMU forced alignment is a secondary/fallback experiment.
-2. Update `THESIS_PROJECT.md`, `DECISIONS.md`, `PROGRESS.md`, and the formal proposal to make this consistent.
-3. Define a small pilot: likely IAM first because its transcriptions and line images are widely used; add READ if German/historical coverage is needed.
+1. Prepare IAM and READ as separate evidence datasets.
+2. Integrate the pretrained DTLR model and define character-to-transcription
+   matching and uncertainty-rejection rules.
+3. Define a small, manually audited CCL pilot for each dataset before scaling
+   evidence extraction.
 
 ### Primary image-based Bigram pilot
 
@@ -318,7 +335,8 @@ Tokenizer construction is quick; model training is the expensive part. Run one s
 
 ### Secondary IMU forced-alignment path
 
-If the image method is delayed or weak, continue with the existing A0 WI fold-0 pipeline:
+If the image method proves unreliable and time remains, the existing A0 WI
+fold-0 pipeline can be used as an additional comparison:
 
 1. Inspect the top/middle/bottom pairs in `pair_continuity_scores.csv` for obvious artifacts (position, case, force fallbacks, low writer coverage).
 2. Run sensitivity checks for support thresholds, duration bins, and the 75/25 local/region weights without looking at recognition validation scores.
@@ -346,8 +364,19 @@ If the image method is delayed or weak, continue with the existing A0 WI fold-0 
 - DTLR: Baena, Kalleli, and Aubry, *General Detection-Based Text Line Recognition*, NeurIPS 2024.
 - REWI if discussing the implementation lineage: Li et al., *Robust and Efficient Writer-Independent IMU-Based Handwriting Recognition*, 2026.
 
-The repository's `docs/references.bib` contains the working BibTeX entries.
+The working BibTeX source is not currently present in this clone and should be
+recovered from the proposal source archive if repository-local references are
+needed.
 
 ## 11. Short status summary for the next chat
 
-> We are continuing a master’s thesis in the TVA repository. The model always receives raw 13-channel IMU handwriting signals; only output text labels are tokenized. We have completed valid fold-0 character baselines (WD CER 12.76%, WI CER 15.60%) and a substantial forced-alignment/IMU-boundary-analysis branch. The supervisor's newer preferred method is to make handwriting-aware Bigram/BPE/Unigram tokenizers using connected-component connectivity from offline handwriting images (IAM/READ, with DTLR support) and evaluate them on OnHW-Words500 WD and WI. Bigram comes first. Image connectivity is a cross-modal handwriting prior, not proof of IMU pen continuity. The IMU CTC forced-alignment method remains an implemented fallback/comparison path.
+> We are continuing a master’s thesis in the TVA repository. The model always
+> receives raw 13-channel IMU handwriting signals; only output text labels are
+> tokenized. We have completed valid fold-0 character baselines (WD CER 12.76%,
+> WI CER 15.60%) and a substantial forced-alignment/IMU-boundary-analysis
+> branch. The approved proposal makes connected-component connectivity from
+> IAM and READ images, supported by pretrained DTLR character localization,
+> the primary handwriting prior. Bigram comes first; BPE and Unigram follow
+> only if Bigram is promising. The tokenizers are evaluated on OnHW-Words500
+> WD and WI. Image connectivity is not proof of IMU pen continuity. The IMU
+> CTC forced-alignment method remains an implemented secondary/fallback path.

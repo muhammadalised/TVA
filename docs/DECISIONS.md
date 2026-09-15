@@ -22,24 +22,28 @@ the reason no longer valid.
 
 ## D003 — Develop matched handwriting-aware tokenizer families
 
-- Status: clarified on 2026-08-02
+- Status: confirmed by the September 2026 proposal, with staged scope
 - Decision: Plan handwriting-aware Bigram, BPE, and Unigram variants and compare
-  each with the corresponding linguistic tokenizer at matched vocabulary size.
+  each implemented family with the corresponding linguistic tokenizer at
+  matched vocabulary size. Bigram is required first; BPE and Unigram follow
+  only if the Bigram results are promising.
 - Reason: The thesis idea is to train established tokenizer families from
   handwriting patterns instead of linguistic patterns, not merely to create a
   single pair vocabulary.
 
 ## D004 — Use a character CTC model for forced alignment
 
-- Status: planned
+- Status: superseded as the primary method; retained as fallback/comparison
 - Decision: Use target-constrained CTC Viterbi forced alignment from a trained
-  character baseline to estimate character intervals in training recordings.
+  character baseline to estimate character intervals in training recordings
+  only if the image method proves unreliable and time remains, or as an
+  explicitly secondary comparison.
 - Reason: Word labels are available, but true character timestamps are not.
   Linguistic tokenizers are not required for this alignment stage.
 
-## D005 — Motion is primary; frequency is a reliability condition
+## D005 — Motion was primary; frequency is a reliability condition
 
-- Status: planned
+- Status: superseded by D012 for the primary study
 - Decision: Rank or merge candidates primarily by aligned motion continuity.
   Use occurrence count and writer coverage to reject unreliable estimates.
 - Reason: Completely ignoring sample support would allow rare, noisy candidates
@@ -56,13 +60,15 @@ the reason no longer valid.
   diagnostic showed that a highly confident bidirectional model can still place
   character emissions too early to represent physical handwriting boundaries.
 
-## D007 — Keep image OCR evaluation optional
+## D007 — Keep image-domain recognition evaluation optional
 
-- Status: planned extension
-- Decision: DTLR plus connected-component analysis may be used for optional
-  cross-modal validation only after the IMU study works.
-- Reason: Static connected ink is not temporal motion continuity and should not
-  displace the core IMU contribution.
+- Status: revised by the September 2026 proposal
+- Decision: Using a fixed offline recognizer to evaluate the finished
+  tokenizers in the image domain is optional. DTLR plus connected-component
+  analysis for constructing the tokenizers is not optional; it is the primary
+  evidence pipeline.
+- Reason: The proposal distinguishes primary image-derived tokenizer
+  construction from optional image-domain recognition evaluation.
 
 ## D008 — Final vocabulary sizes
 
@@ -123,3 +129,38 @@ the reason no longer valid.
 - Limitation: This is the first interpretable force-only baseline. Weighting,
   force threshold, duration bins, support gates, motion components, and their
   ablations remain development choices rather than frozen thesis settings.
+
+## D012 — Use image connectivity as the primary handwriting prior
+
+- Status: confirmed by the approved September 2026 proposal
+- Decision: Analyse IAM English and READ German handwriting separately. Use a
+  pretrained DTLR model for character identities and bounding boxes, match the
+  output to known transcriptions, exclude uncertain localizations, and use
+  binarization plus connected-component labelling to estimate adjacent-pair
+  ink connectivity. Aggregate the accepted observations with occurrence and
+  writer-support requirements.
+- Reason: The approved contribution is a transparent cross-modal method that
+  constructs output-label tokenizers from visible handwriting structure rather
+  than primarily from linguistic frequency.
+- Limitation: Connected ink in a static image is a handwriting prior, not proof
+  of continuous pen motion in an OnHW recording. CCL components are not
+  characters without the localization and transcript-matching context.
+
+## D013 — Keep corpora and experiment stages distinct
+
+- Status: confirmed by the approved September 2026 proposal
+- Decision: Produce separate IAM- and READ-derived connectivity analyses.
+  Construct and evaluate Bigram first. Extend to BPE and Unigram only if the
+  Bigram outcome is promising. Treat any pooled IAM+READ evidence as a separate
+  documented condition.
+- Reason: Separate analysis exposes language and dataset effects, while staged
+  tokenizer development controls experimental cost and technical risk.
+
+## D014 — Test the proposed WI advantage explicitly
+
+- Status: confirmed by the approved September 2026 proposal
+- Decision: Evaluate the same controlled tokenizer comparisons separately in
+  WD/RH and WI/RH and test whether the handwriting-aware benefit is larger in
+  WI. Do not assume that outcome from fold-0 development.
+- Reason: A stronger benefit in writer-independent recognition is one of the
+  proposal's two stated hypotheses.

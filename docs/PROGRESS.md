@@ -130,13 +130,15 @@ before starting the full WD/RH fold-0 B0 experiment.
 - `latest.pth` remains the recovery checkpoint, while the best-CER checkpoint
   is the preferred model for forced alignment.
 
-## 2026-08-02 — Tokenizer-family scope clarification
+## 2026-08-02 — Tokenizer-family scope clarification (historical IMU-first plan)
 
 - Clarified that the thesis plans handwriting-aware Bigram, BPE, and Unigram
   tokenizers, not only one motion-selected pair vocabulary.
 - Each proposed variant will be compared with its linguistic counterpart at a
   matched vocabulary size; the character baseline remains the common reference.
-- Motion continuity is the primary token-selection evidence. Frequency,
+- At that stage, motion continuity was the primary token-selection evidence.
+  The approved September 2026 proposal supersedes this with image-derived ink
+  connectivity as the primary evidence. Frequency,
   occurrence count, and writer coverage are retained as reliability conditions.
 - Implementation remains staged: establish forced alignment and motion-aware
   Bigram first, then reuse the shared evidence for BPE and Unigram.
@@ -391,3 +393,36 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Four focused scorer tests cover correction/ranking, support gates, atomic
   output writing, and training-only enforcement. All 29 repository tests pass
   in the `tva-thesis` environment.
+
+## 2026-09-15 — Approved proposal makes image connectivity primary
+
+- Reconciled the repository documentation with the approved proposal,
+  *Handwriting-Aware Tokenization for IMU-Based Online Handwriting Recognition*.
+- The primary evidence pipeline now uses IAM and READ separately, pretrained
+  DTLR character identities and boxes, transcript matching with uncertainty
+  rejection, binarization, and connected-component labelling.
+- Static connected ink is documented as a cross-modal handwriting prior for
+  OnHW IMU recognition, not as proof of continuous IMU pen motion.
+- Bigram is the required first tokenizer experiment. BPE and Unigram are
+  conditional extensions if Bigram results are promising. Individual
+  characters always remain fallback tokens.
+- The core evaluation remains separate right-handed WD and WI OnHW-Words500
+  recognition with fixed BLConv-B + BiLSTM-B + CTC models, matched linguistic
+  baselines, fresh training per tokenizer, and CER/WER on reconstructed text.
+- Added the proposal's explicit hypothesis that any benefit will be larger in
+  WI than WD; this must be tested rather than assumed.
+- Reclassified the completed CTC alignment and force-continuity work as a
+  secondary/fallback comparison if the image method is unreliable and time
+  remains. Historical implementation and experiment records were preserved.
+- Optional image-domain recognition remains distinct from the primary use of
+  image data to construct tokenizers.
+
+### Immediate next steps
+
+1. Prepare IAM and READ as separate evidence datasets.
+2. Integrate the pretrained DTLR model and define auditable
+   detection-to-transcription matching and rejection rules.
+3. Pilot binarization, CCL, box-to-component association, and pair scoring on a
+   small manually reviewed subset from each dataset.
+4. Freeze the first connectivity definition and build matched handwriting- and
+   frequency-based Bigram vocabularies before recognition training.

@@ -1,5 +1,11 @@
 # CTC Forced Alignment
 
+> **Thesis-scope note (September 2026):** This is a completed secondary and
+> fallback pipeline. The approved proposal uses DTLR-assisted connected ink in
+> IAM and READ images as the primary handwriting prior. Use this IMU alignment
+> work as an additional comparison only if the image method is unreliable and
+> time remains. CTC alignments are not ground-truth physical boundaries.
+
 ## Purpose
 
 The character model predicts a probability for every character at every
@@ -335,15 +341,16 @@ averaged within writer and then across writers. The defaults rank only pairs
 with at least 100 reliable occurrences and 30 writers.
 
 The provisional score is 75% corrected 100 ms local contact and 25% corrected
-complete-region contact. It is a force-only development baseline for the first
-handwriting-aware Bigram experiment, not the final combined force/motion score.
+complete-region contact. It is a force-only development baseline for a
+possible secondary IMU-informed Bigram experiment, not the primary proposed
+image-informed score or a final combined force/motion score.
 
-## Next development steps
+## Next development steps if the fallback is activated
 
 1. Run the corrected force scorer on the complete A0 WI training export and
    inspect its top, middle, and bottom supported pairs.
 2. Check ranking sensitivity to local/region weights, duration bins, and the
    support gate without using validation or test recognition results.
 3. Define a motion-only component from accelerometer and gyroscope evidence.
-4. Compare force-only, motion-only, and combined scores before constructing the
-   first handwriting-aware Bigram vocabulary.
+4. Compare force-only, motion-only, and combined scores before constructing a
+   secondary IMU-informed Bigram vocabulary.
