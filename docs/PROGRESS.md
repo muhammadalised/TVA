@@ -469,9 +469,77 @@ before starting the full WD/RH fold-0 B0 experiment.
 
 1. Implement a dedicated handwriting-bigram tokenizer that exactly preserves
    the DTLR NFC and dynamic-programming behavior.
-2. Implement and checksum the deterministic OnHW compatibility adapter after
-   explicitly freezing the 419-versus-496 policy.
+2. Implement and checksum the now-frozen deterministic 419-class OnHW
+   compatibility adapter.
 3. Add complete coverage, round-trip, blank, ID, provenance, and DTLR-reference
    conformance tests before any recognition training.
 4. Build matched fold-specific linguistic Bigram vocabularies from OnHW
    training labels only.
+
+## 2026-09-17 — Primary handwriting adapter policy frozen
+
+- Froze policy `onhw-words500-rh-iam-read-v1` at 419 output classes: blank ID
+  0, the exact pre-existing 59-character OnHW alphabet at IDs 1–59, and the
+  359 source bigrams whose two characters are in that alphabet at IDs 60–418.
+- The construction preserves source-vocabulary order, utilities, NFC, and the
+  DTLR maximum-total-utility dynamic program. It adds `Ä` and `Ü` only as
+  fallback singles and derives no new bigrams from OnHW labels.
+- Excluded the 496-class full-artifact extension from the primary experiment.
+  It may be used only as a separately named, predeclared sensitivity analysis.
+- Validated an in-memory reference construction against every train and
+  validation label in all five WD and all five WI folds. All 20 fold/split
+  checks passed coverage, non-empty target, no-blank target, ID-range, and NFC
+  encode/decode round-trip invariants.
+- This was a compatibility validation, not vocabulary selection: construction
+  used the fixed task alphabet and frozen source only, without OnHW label
+  frequencies, validation membership, or recognition results.
+- Recorded a comparator-design caveat: a size-matched linguistic vocabulary
+  does not isolate token membership if it uses greedy segmentation while the
+  handwriting tokenizer uses utility-maximizing dynamic programming. This
+  segmentation-policy choice must be predeclared before comparative training.
+- Full policy: `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
+
+### Immediate next steps
+
+1. Implement the deterministic adapter builder and canonical artifact, then
+   record the derived artifact SHA-256.
+2. Implement the dedicated tokenizer and DTLR-reference conformance tests.
+3. Add complete coverage, round-trip, blank, ID, and provenance tests.
+4. Resolve and predeclare the linguistic comparator's segmentation policy.
+5. Correct `evaluate.py`'s hard-coded 500-class complexity head before model
+   size or MAC reporting.
+
+## 2026-09-17 — Canonical 419-class adapter implemented
+
+- Added a deterministic builder and CLI in
+  `tva/handwriting_bigram_adapter.py` and
+  `build_handwriting_bigram_adapter.py`.
+- The builder authenticates the source checksum and audited schema/model
+  invariants before projection. It rejects changed provenance, non-contiguous
+  mappings, invalid blank conventions, altered DP policy, and unexpected
+  source or output counts. It also checks the completed canonical bytes against
+  the frozen adapter checksum, preventing silent regeneration drift under the
+  same policy ID.
+- Generated the canonical artifact at
+  `artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json` with SHA-256
+  `12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2bfe`.
+- Confirmed that rebuilding from the pinned source produces byte-identical
+  canonical JSON. The artifact records that no annotation files were read.
+- Ran the canonical artifact through the independent DTLR reference tokenizer
+  on every WD/WI train and validation label. All 251,990 fold/split label
+  instances across the 20 checks passed coverage, non-empty target, no-blank
+  target, ID-range, and NFC round-trip assertions.
+- Added six unit/integration tests covering alphabet-only projection, source
+  order and metadata preservation, duplicate-alphabet rejection, source hash
+  rejection, canonical UTF-8 serialization, frozen mapping invariants, and a
+  byte-identical rebuild when the external source is available.
+
+### Immediate next steps
+
+1. Implement TVA's dedicated handwriting-bigram tokenizer using the artifact's
+   NFC and maximum-total-utility DP policy.
+2. Add DTLR-reference segmentation conformance and complete OnHW label tests
+   for that runtime tokenizer.
+3. Resolve and predeclare the matched linguistic comparator's segmentation
+   policy.
+4. Correct `evaluate.py`'s hard-coded 500-class complexity head.

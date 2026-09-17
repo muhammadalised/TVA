@@ -96,11 +96,17 @@ Before training, project or extend the frozen vocabulary using a predeclared
 task-alphabet rule so every OnHW character remains representable. This rule may
 use the fixed 59-character OnHW alphabet but must not use label frequencies or
 validation-label presence. See `docs/TOKENIZER_COMPATIBILITY_AUDIT.md` for the
-2026-09-15 coverage and segmentation audit.
+2026-09-15 coverage and segmentation audit. The resulting 419-class primary
+policy was frozen on 2026-09-17; its exact deterministic construction is in
+`docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
 
 Create a frequency-based Bigram vocabulary of the same or nearly the same size
 as the direct comparator. First analyse token coverage and composition, then
-train the recognition models.
+train the recognition models. Matching output size does not by itself control
+the segmentation algorithm: before training, explicitly decide whether the
+linguistic condition also uses the dynamic program or retains TVA's greedy
+rule. If the rules differ, report segmentation policy as an experimental
+factor or limitation rather than describing the contrast as vocabulary-only.
 
 ## 7. Conditional BPE and Unigram extensions
 

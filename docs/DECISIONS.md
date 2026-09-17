@@ -167,8 +167,8 @@ the reason no longer valid.
 
 ## D015 — Do not load the combined artifact through TVA's greedy tokenizer
 
-- Status: compatibility finding confirmed on 2026-09-15; final adapter size
-  pending freeze
+- Status: compatibility finding confirmed on 2026-09-15; adapter policy frozen
+  on 2026-09-17
 - Decision: Integrate the frozen combined IAM+READ model through a dedicated
   tokenizer that preserves its NFC normalization and maximum-total-utility
   dynamic-programming segmentation. Do not load it through TVA's existing
@@ -183,8 +183,18 @@ the reason no longer valid.
   presence, or recognition results. The same frozen handwriting adapter must
   be used for every WD/WI fold. Matched linguistic vocabularies remain
   fold-specific and training-only.
-- Candidate primary adapter: 419 classes consisting of blank, all 59 OnHW
-  fallback characters, and 359 frozen bigrams whose characters belong to the
-  task alphabet. Retaining the complete artifact and appending `Ä`/`Ü` gives
-  496 classes and may be kept as a sensitivity condition.
-- Evidence: `docs/TOKENIZER_COMPATIBILITY_AUDIT.md`.
+- Frozen primary adapter: policy `onhw-words500-rh-iam-read-v1`, containing
+  419 classes: blank ID 0, the fixed 59 OnHW characters in configuration order,
+  and 359 frozen bigrams whose two characters belong to that alphabet. Source
+  bigram order and utilities are preserved. Retaining the complete artifact
+  and appending `Ä`/`Ü` would give 496 classes; that is excluded from the
+  primary experiment and may be used only as a separately predeclared
+  sensitivity analysis.
+- Comparator caveat: The matched linguistic condition's segmentation policy
+  must be predeclared. Equal output size does not isolate vocabulary membership
+  if the linguistic tokenizer remains greedy while the handwriting tokenizer
+  uses utility-maximizing dynamic programming.
+- Evidence and exact construction:
+  `docs/TOKENIZER_COMPATIBILITY_AUDIT.md` and
+  `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`. The canonical adapter SHA-256 is
+  `12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2bfe`.

@@ -190,9 +190,14 @@ Do not load this artifact through TVA's existing `BigramTokenizer`. TVA uses
 greedy matching, while the frozen model uses maximum-total-utility dynamic
 programming; their segmentations differed on 36.64% of encodable OnHW labels.
 A dedicated tokenizer and explicit compatibility adapter are required before
-training. The full audit, per-fold counts, leakage rules, and proposed
+training. The full audit, per-fold counts, leakage rules, and frozen
 419-class alphabet projection are in
-`docs/TOKENIZER_COMPATIBILITY_AUDIT.md`.
+`docs/TOKENIZER_COMPATIBILITY_AUDIT.md`. The primary adapter was frozen on
+2026-09-17 as policy `onhw-words500-rh-iam-read-v1`; exact construction and
+all-fold validation results are in `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
+The implemented canonical artifact is
+`artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json`, SHA-256
+`12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2bfe`.
 
 ## 5. Current branch and important files
 
@@ -206,6 +211,9 @@ docs/PROGRESS.md                 Chronological work record
 docs/EXPERIMENTS.md              Experiment values and caveats
 docs/DECISIONS.md                Scientific decisions and limitations
 docs/TOKENIZER_COMPATIBILITY_AUDIT.md  Frozen-model/OnHW compatibility evidence
+docs/HANDWRITING_BIGRAM_ADAPTER_V1.md  Frozen 419-class adapter policy
+artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json  Canonical adapter
+build_handwriting_bigram_adapter.py  Deterministic adapter builder CLI
 docs/FORCED_ALIGNMENT.md         Commands and technical explanation
 docs/PROJECT_HANDOFF_RTX.md      This handoff
 ```
@@ -331,13 +339,14 @@ TVA step.
 
 1. Implement a dedicated TVA handwriting-bigram tokenizer that preserves the
    frozen model's NFC normalization and maximum-total-utility dynamic program.
-2. Freeze the compatibility policy: the recommended primary candidate is the
-   419-class OnHW-alphabet projection; the 496-class full-artifact extension is
-   a possible sensitivity condition.
-3. Build the deterministic adapter without reading OnHW annotation lists and
-   record source/adapter checksums.
-4. Add complete label-coverage, round-trip, blank/ID, and DTLR-reference
+2. Use the implemented frozen 419-class adapter; do not regenerate it from
+   OnHW annotation lists or change its recorded checksum.
+3. Add runtime-tokenizer label-coverage, round-trip, blank/ID, and
+   DTLR-reference
    conformance tests.
+4. Predeclare whether the matched linguistic tokenizer uses the same dynamic
+   program or TVA's existing greedy segmentation, and treat any difference as
+   an experimental factor.
 5. Correct the hard-coded 500-class complexity calculation before reporting
    model-size comparisons.
 

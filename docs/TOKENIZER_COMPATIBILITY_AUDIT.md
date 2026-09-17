@@ -121,9 +121,13 @@ Three integration sizes are consequently relevant:
 The 419-class projection removes 43 bigrams containing characters outside the
 declared OnHW alphabet. This projection can be constructed without label or
 frequency inspection: it uses only the fixed task alphabet already present in
-the dataset metadata/configuration. It is the current recommended primary
-adapter, while the 496-class form can be retained as a fidelity sensitivity
-condition. This policy remains to be explicitly frozen before training.
+the dataset metadata/configuration. On 2026-09-17 it was frozen as the primary
+adapter under policy ID `onhw-words500-rh-iam-read-v1`. The 496-class form is
+excluded from the primary experiment and may be used only as a separately
+predeclared sensitivity condition. The exact construction and ID assignment
+are recorded in `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`. The implemented
+canonical artifact has SHA-256
+`12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2bfe`.
 
 Existing character or differently sized tokenizer checkpoints cannot be loaded
 as complete TVA models because their output-head shapes differ. Main comparison
@@ -175,5 +179,7 @@ The artifact's structure, provenance metadata, CTC blank convention, and
 round-trip behavior passed. Complete OnHW coverage and direct compatibility
 with TVA's current greedy tokenizer failed. The frozen artifact is therefore
 valid input to a dedicated integration, but it is not directly trainable in
-TVA. The next milestone is a handwriting-aware tokenizer implementation,
-deterministic adapter builder, and conformance/coverage test suite.
+TVA. The 419-class adapter policy was subsequently frozen and passed an
+in-memory all-fold reference validation on 2026-09-17. The next milestone is
+its implementation as a canonical artifact, a handwriting-aware tokenizer,
+and the conformance/coverage test suite.
