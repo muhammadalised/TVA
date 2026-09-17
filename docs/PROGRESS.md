@@ -659,3 +659,18 @@ before starting the full WD/RH fold-0 B0 experiment.
    scratch; do not initialize them from character or smoke checkpoints.
 2. Compare CER/WER only after all matched fold-0 runs finish, preserving each
    configuration, log, checkpoint, prediction file, and commit identifier.
+
+## 2026-09-18 — Handwriting-aware tokenizer notebook
+
+- Added `train_handwriting_tokenizer.ipynb` as the handwriting-aware
+  counterpart to TVA's baseline `train_tokenizers.ipynb`.
+- The notebook explicitly distinguishes external IAM+READ tokenizer training
+  from the deterministic OnHW compatibility projection: it does not train or
+  select handwriting bigrams from OnHW labels.
+- It authenticates the pinned DTLR source checksum, reproduces the frozen
+  419-class adapter in memory, verifies byte identity with the canonical
+  artifact, demonstrates production DP segmentation, and runs the complete
+  post-construction WD/WI label compatibility audit.
+- Canonical writes are disabled by default. Enabling the write flag can only
+  emit the already-frozen artifact because the builder rejects any unexpected
+  source checksum, schema, class count, bigram count, or final artifact hash.

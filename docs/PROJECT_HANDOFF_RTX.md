@@ -229,6 +229,7 @@ build_handwriting_bigram_adapter.py  Deterministic adapter builder CLI
 tva/handwriting_bigram_tokenizer.py  NFC + utility-DP runtime tokenizer
 docs/LINGUISTIC_BIGRAM_BASELINE_V1.md  Frozen matched-baseline policy and audit
 build_linguistic_bigram_tokenizers.py  Fold-specific baseline builder
+train_handwriting_tokenizer.ipynb  Reproducible handwriting adapter notebook
 docs/FORCED_ALIGNMENT.md         Commands and technical explanation
 docs/PROJECT_HANDOFF_RTX.md      This handoff
 ```
