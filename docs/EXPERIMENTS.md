@@ -4,6 +4,28 @@ This file records scientific runs and important development experiments. All
 reported values must be traceable to the saved configuration, log, metrics,
 predictions, code version, and experiment backup.
 
+## Bigram pipeline smoke validation — WD/RH and WI/RH fold 0
+
+### Setup and result
+
+- Date completed: 2026-09-18
+- Conditions: handwriting-aware Bigram and matched linguistic Bigram, each on
+  WD/RH and WI/RH fold 0
+- Scope: 16 training samples, eight validation samples, one CPU epoch, batch
+  size two, seed 42
+- Result: all four conditions completed training and validation and saved
+  resumable checkpoints.
+- Checkpoint verification: all four output heads contain 419 classes;
+  `decoder.fc.weight` is `(419, 256)` and `decoder.fc.bias` is `(419,)`.
+- Artifacts: `results/thesis/development/smoke_bigram_*/0/`
+
+CER and WER were both 1.0 in every run, which is expected for a single epoch on
+16 samples. These values are pipeline diagnostics and must not be reported as
+recognition evidence. A subsequent bounded run detected the NVIDIA GeForce RTX
+4060 Laptop GPU and successfully exercised CUDA mixed precision for the
+handwriting-aware WD condition. The pipeline is therefore cleared for full
+fold-0 training.
+
 ## B0 character baseline — WD/RH fold 0
 
 ### Setup

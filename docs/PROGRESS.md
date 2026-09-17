@@ -620,3 +620,36 @@ before starting the full WD/RH fold-0 B0 experiment.
 2. Run bounded pipeline smoke tests in the `tva` environment.
 3. Verify saved model heads contain 419 outputs and preserve smoke-test logs.
 4. Only after smoke tests pass, begin the predeclared fold-0 development runs.
+
+## 2026-09-18 — Matched fold-0 Bigram configurations and smoke tests
+
+- Added four fold-0 experiment configurations under `configs/thesis/`: the
+  handwriting-aware and matched linguistic Bigram conditions for WD/RH and
+  WI/RH. Architecture, augmentation, optimizer schedule, epoch budget, batch
+  size, seed, and evaluation settings match across all four conditions.
+- Loaded each frozen tokenizer through its production configuration and
+  confirmed `tokenizer.size == 419` and a 419-output model head.
+- Ran a bounded end-to-end CPU smoke test for every condition with 16 training
+  and eight validation samples, one epoch, batch size two, and seed 42. All
+  four completed data loading, augmentation, encoding, CTC loss, backward
+  updates, validation decoding, evaluation, and checkpoint saving.
+- Inspected each saved `latest.pth`: `decoder.fc.weight` has shape `(419, 256)`
+  and `decoder.fc.bias` has shape `(419,)` in all four runs.
+- Smoke logs, resolved configuration snapshots, metrics, predictions,
+  visualizations, and checkpoints are preserved under
+  `results/thesis/development/smoke_bigram_*/0/`. These bounded CPU results
+  (CER/WER both 1.0 after one tiny epoch) are software checks, not thesis
+  recognition results.
+- The initial sandboxed process could not see CUDA, but a permitted local run
+  detected the NVIDIA GeForce RTX 4060 Laptop GPU and completed the same
+  bounded handwriting-WD smoke test with CUDA mixed precision enabled.
+- Added regression tests that keep the four non-tokenizer configurations
+  matched and require every configured tokenizer and output head to have 419
+  classes. The complete suite passes 25 tests.
+
+### Immediate next steps
+
+1. Start the four predeclared fold-0 development runs from
+   scratch; do not initialize them from character or smoke checkpoints.
+2. Compare CER/WER only after all matched fold-0 runs finish, preserving each
+   configuration, log, checkpoint, prediction file, and commit identifier.

@@ -360,13 +360,19 @@ TVA step.
 3. Add matched fold-0 handwriting and linguistic configurations and run
    bounded pipeline smoke tests before full training.
 
+This integration step is complete as of 2026-09-18. The four configurations
+are under `configs/thesis/`. All four passed bounded CPU end-to-end smoke tests,
+and their saved output heads were verified as 419 classes. A subsequent
+bounded handwriting-WD run passed on the RTX 4060 with CUDA mixed precision.
+The full fold-0 jobs may now start from scratch.
+
 ### Controlled OnHW Bigram experiment
 
 1. Use the frozen fold-specific matched linguistic Bigram artifacts; never
    rebuild them using validation labels.
 2. Preserve the completed deterministic pre-training coverage report for each
    condition.
-3. Run small matched pipeline smoke tests in the `tva` environment.
+3. Preserve the completed CPU and CUDA pipeline smoke checks.
 4. Train fresh BLConv-B + BiLSTM-B + CTC models with all non-tokenizer settings
    held fixed, decode to plain text, and compare CER/WER.
 5. Develop on fold 0, freeze the final comparison, then run all five WD and WI
