@@ -4,8 +4,8 @@
 
 **Repository:** [muhammadalised/TVA](https://github.com/muhammadalised/TVA)
 
-**Current branch:** `forced-alignment`
-**Documentation baseline commit:** `f8ba00a` — *Add RTX project handoff*
+**Current experiment branch:** `handwriting-bigram-onhw-v1`
+**Documentation baseline commit:** `d6f99c6` — *Align thesis documentation with proposal*
 
 This is the starting document for continuing the thesis on another machine. Read this file first, then read `docs/THESIS_PROJECT.md`, `docs/PROGRESS.md`, and `docs/DECISIONS.md` for the full technical record.
 
@@ -174,16 +174,38 @@ The unit-test suite had **29 passing tests** at commit `52868fe`.
 4. The complete blank-region measurement finds more contact loss than a fixed 100 ms midpoint window, but region duration and word position confound raw rates. Therefore the scorer corrects for broad position/duration groups.
 5. The current IMU score is deliberately an interpretable **force-only development baseline**: 75% corrected local contact and 25% corrected whole-region contact. It is not a final proof of motion continuity.
 
+### Combined IAM+READ tokenizer compatibility audit
+
+The combined tokenizer is already prepared outside TVA. Its frozen artifact is
+`iam-read-combined-v1`, SHA-256
+`5c5d9f1689a4802fc5e9451e5afe8abdfb090562587ab78ddd343211feb94dd4`,
+with 494 classes and CTC blank ID 0.
+
+The 2026-09-15 audit ran every OnHW training label in all five WD and WI folds
+through the unmodified tokenizer. The artifact lacks uppercase `Ä` and `Ü`, so
+608 of the complete 25,199 samples cannot be encoded. All otherwise encodable
+labels passed NFC encode/decode round trips.
+
+Do not load this artifact through TVA's existing `BigramTokenizer`. TVA uses
+greedy matching, while the frozen model uses maximum-total-utility dynamic
+programming; their segmentations differed on 36.64% of encodable OnHW labels.
+A dedicated tokenizer and explicit compatibility adapter are required before
+training. The full audit, per-fold counts, leakage rules, and proposed
+419-class alphabet projection are in
+`docs/TOKENIZER_COMPATIBILITY_AUDIT.md`.
+
 ## 5. Current branch and important files
 
 ```text
-forced-alignment                 Current branch and remote branch
-main                             Original / stable project branch
+handwriting-bigram-onhw-v1       Current Bigram integration branch
+main                             Stable branch with proposal-aligned docs
+forced-alignment                 Isolated IMU alignment implementation branch
 configs/thesis/                  Baseline and alignment YAML configurations
 docs/THESIS_PROJECT.md           Original detailed IMU-first thesis plan
 docs/PROGRESS.md                 Chronological work record
 docs/EXPERIMENTS.md              Experiment values and caveats
 docs/DECISIONS.md                Scientific decisions and limitations
+docs/TOKENIZER_COMPATIBILITY_AUDIT.md  Frozen-model/OnHW compatibility evidence
 docs/FORCED_ALIGNMENT.md         Commands and technical explanation
 docs/PROJECT_HANDOFF_RTX.md      This handoff
 ```
@@ -206,23 +228,26 @@ added to the repository.
 
    ```bash
    git fetch origin
-   git switch forced-alignment
-   git pull --ff-only origin forced-alignment
+   git switch handwriting-bigram-onhw-v1
+   git pull --ff-only origin handwriting-bigram-onhw-v1
    ```
 
 2. Create or update the environment:
 
    ```bash
    conda env create -f environment.yml
-   conda activate tva-thesis
+   conda activate tva
    ```
 
    If it already exists:
 
    ```bash
-   conda env update -n tva-thesis -f environment.yml --prune
-   conda activate tva-thesis
+   conda env update -n tva -f environment.yml --prune
+   conda activate tva
    ```
+
+   The checked-in environment file currently declares the historical name
+   `tva-thesis`; the RTX machine uses the existing environment name `tva`.
 
 3. Verify that PyTorch sees the NVIDIA GPU before a long run:
 
@@ -298,27 +323,35 @@ The scorer writes an auditable `pair_continuity_scores.csv` and a method JSON re
 
 ## 8. Recommended next steps
 
-### First: prepare the approved primary method
+### First: integrate the completed combined tokenizer
 
-1. Prepare IAM and READ as separate evidence datasets.
-2. Integrate the pretrained DTLR model and define character-to-transcription
-   matching and uncertainty-rejection rules.
-3. Define a small, manually audited CCL pilot for each dataset before scaling
-   evidence extraction.
+The IAM and READ evidence pipelines and the combined tokenizer were completed
+in the separate DTLR repository. Do not repeat evidence extraction as the next
+TVA step.
 
-### Primary image-based Bigram pilot
+1. Implement a dedicated TVA handwriting-bigram tokenizer that preserves the
+   frozen model's NFC normalization and maximum-total-utility dynamic program.
+2. Freeze the compatibility policy: the recommended primary candidate is the
+   419-class OnHW-alphabet projection; the 496-class full-artifact extension is
+   a possible sensitivity condition.
+3. Build the deterministic adapter without reading OnHW annotation lists and
+   record source/adapter checksums.
+4. Add complete label-coverage, round-trip, blank/ID, and DTLR-reference
+   conformance tests.
+5. Correct the hard-coded 500-class complexity calculation before reporting
+   model-size comparisons.
 
-1. Obtain/prepare image line samples and their transcripts.
-2. Run DTLR (or use suitable character-localization output) and verify that character boxes/identities align with the transcript. This alignment is a critical quality check.
-3. Implement transparent CCL-based pair connectivity features:
-   - same connected component or not;
-   - distance/gap between adjacent components as a secondary measure;
-   - support count and writer coverage;
-   - filters for uncertain detector/transcript alignments.
-4. Build **one handwriting-aware Bigram vocabulary** from training evidence only. Preserve individual characters as fallback tokens.
-5. Build a **matched-size linguistic Bigram** vocabulary as the proper baseline. The two vocabularies must have the same/near-identical size.
-6. Tokenize the OnHW labels deterministically, train a fresh BLConv-B + BiLSTM-B + CTC model, decode back to text, and compare CER/WER.
-7. Screen vocabulary sizes on fold 0, predeclare a small final size set, then run all five folds in both WD and WI settings.
+### Controlled OnHW Bigram experiment
+
+1. Build a matched-size linguistic Bigram separately from each OnHW training
+   fold; never use validation labels for its vocabulary.
+2. Tokenize all labels deterministically and preserve a pre-training coverage
+   report for each condition.
+3. Run a small pipeline smoke test in the `tva` environment.
+4. Train fresh BLConv-B + BiLSTM-B + CTC models with all non-tokenizer settings
+   held fixed, decode to plain text, and compare CER/WER.
+5. Develop on fold 0, freeze the final comparison, then run all five WD and WI
+   folds.
 
 ### Training-budget estimate
 

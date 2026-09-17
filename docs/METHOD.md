@@ -79,11 +79,24 @@ recognition validation results to compare tokenizers.
 
 ## 6. Handwriting-aware Bigram
 
-Retain every individual character as a fallback token. Rank eligible adjacent
-character pairs primarily by image-derived connectivity, with a documented
-tie-breaking rule. Add the highest-ranked pairs until the target vocabulary
-size is reached. Tokenize labels deterministically, for example with
-left-to-right greedy Bigram matching.
+Retain every individual task-alphabet character as a fallback token. Rank
+eligible adjacent character pairs primarily by image-derived connectivity,
+with a documented tie-breaking rule. Add the highest-ranked pairs until the
+target vocabulary size is reached.
+
+The prepared combined IAM+READ model does not use left-to-right greedy
+matching. It chooses non-overlapping bigrams by maximum-total-utility dynamic
+programming, with single-character utility zero and a deterministic preference
+for more bigrams when total utility ties. TVA must preserve that algorithm for
+the handwriting-aware condition. Its existing greedy Bigram implementation is
+appropriate only for a separately defined comparator, not for loading the
+frozen handwriting model.
+
+Before training, project or extend the frozen vocabulary using a predeclared
+task-alphabet rule so every OnHW character remains representable. This rule may
+use the fixed 59-character OnHW alphabet but must not use label frequencies or
+validation-label presence. See `docs/TOKENIZER_COMPATIBILITY_AUDIT.md` for the
+2026-09-15 coverage and segmentation audit.
 
 Create a frequency-based Bigram vocabulary of the same or nearly the same size
 as the direct comparator. First analyse token coverage and composition, then

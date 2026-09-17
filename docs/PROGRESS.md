@@ -4,6 +4,12 @@ This file records completed work, important observations, and immediate next
 steps. Add new entries chronologically. Do not remove failed attempts; they are
 part of the research record.
 
+For thesis traceability, record every material compatibility finding,
+methodological decision, failed or negative result, data-quality issue,
+experimental caveat, frozen parameter, and reproducibility identifier as the
+work occurs. Put detailed evidence in a focused document when needed and link
+it from this log and `docs/DECISIONS.md`.
+
 ## 2026-08-01 — Initial setup and dataset preparation
 
 ### Completed
@@ -426,3 +432,46 @@ before starting the full WD/RH fold-0 B0 experiment.
    small manually reviewed subset from each dataset.
 4. Freeze the first connectivity definition and build matched handwriting- and
    frequency-based Bigram vocabularies before recognition training.
+
+## 2026-09-15 — Combined tokenizer compatibility audit
+
+- Inspected TVA's tokenizer classes, OnHW label loader, fold-specific
+  vocabulary construction, CTC blank convention, decoder, and output-head
+  sizing before changing implementation code.
+- Pinned the combined IAM+READ artifact
+  `iam-read-combined-v1` at SHA-256
+  `5c5d9f1689a4802fc5e9451e5afe8abdfb090562587ab78ddd343211feb94dd4`.
+  It contains 494 classes: blank ID 0, 91 non-empty single characters, and 402
+  handwriting bigrams.
+- Submitted every OnHW training label in all five WD and all five WI folds to
+  the unmodified combined tokenizer. Every successful encoding round-tripped
+  to the NFC label, and NFC changed no OnHW label.
+- Complete coverage failed because uppercase `Ä` and `Ü` are absent. In each
+  complete 25,199-sample train-plus-validation partition, 608 samples (2.41%)
+  contain one of these characters. Every WD and WI fold is affected.
+- Confirmed that TVA's current Bigram tokenizer cannot be reused for this
+  artifact: it applies greedy left-to-right matching, whereas the frozen model
+  maximizes total handwriting utility with dynamic programming. The two
+  segmentations differed for 9,009 of 24,591 otherwise encodable labels
+  (36.64%).
+- Confirmed that TVA correctly passes `tokenizer.size`, including blank, to the
+  training output head. Found a separate reporting issue: `evaluate.py`
+  hard-codes 500 classes for complexity calculation.
+- Designed a leakage-safe adapter option using only the fixed OnHW alphabet:
+  blank + all 59 OnHW characters + 359 frozen in-alphabet bigrams, for 419
+  classes. A 496-class full-artifact-plus-fallback form remains a possible
+  sensitivity condition. The primary policy must be frozen before training.
+- Recorded the complete evidence, per-fold failure counts, methodological
+  implications, and required conformance tests in
+  `docs/TOKENIZER_COMPATIBILITY_AUDIT.md`.
+
+### Immediate next steps
+
+1. Implement a dedicated handwriting-bigram tokenizer that exactly preserves
+   the DTLR NFC and dynamic-programming behavior.
+2. Implement and checksum the deterministic OnHW compatibility adapter after
+   explicitly freezing the 419-versus-496 policy.
+3. Add complete coverage, round-trip, blank, ID, provenance, and DTLR-reference
+   conformance tests before any recognition training.
+4. Build matched fold-specific linguistic Bigram vocabularies from OnHW
+   training labels only.

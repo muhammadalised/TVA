@@ -164,3 +164,27 @@ the reason no longer valid.
   WI. Do not assume that outcome from fold-0 development.
 - Reason: A stronger benefit in writer-independent recognition is one of the
   proposal's two stated hypotheses.
+
+## D015 — Do not load the combined artifact through TVA's greedy tokenizer
+
+- Status: compatibility finding confirmed on 2026-09-15; final adapter size
+  pending freeze
+- Decision: Integrate the frozen combined IAM+READ model through a dedicated
+  tokenizer that preserves its NFC normalization and maximum-total-utility
+  dynamic-programming segmentation. Do not load it through TVA's existing
+  greedy `BigramTokenizer`. Add missing OnHW characters only as fallback
+  singles and never derive new handwriting bigrams from OnHW labels.
+- Reason: `Ä` and `Ü` are absent from the frozen vocabulary, affecting 608 of
+  25,199 OnHW samples. Greedy and frozen-model segmentations differ for 9,009
+  of 24,591 otherwise encodable labels, so direct loading would silently test a
+  different tokenizer.
+- Leakage rule: A compatibility projection may use the fixed 59-character
+  OnHW task alphabet, but not OnHW label frequencies, validation-label
+  presence, or recognition results. The same frozen handwriting adapter must
+  be used for every WD/WI fold. Matched linguistic vocabularies remain
+  fold-specific and training-only.
+- Candidate primary adapter: 419 classes consisting of blank, all 59 OnHW
+  fallback characters, and 359 frozen bigrams whose characters belong to the
+  task alphabet. Retaining the complete artifact and appending `Ä`/`Ü` gives
+  496 classes and may be kept as a sensitivity condition.
+- Evidence: `docs/TOKENIZER_COMPATIBILITY_AUDIT.md`.
