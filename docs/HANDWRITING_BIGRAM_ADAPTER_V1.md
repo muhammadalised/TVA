@@ -121,3 +121,18 @@ not be silently treated as a vocabulary-only comparison.
 Detailed compatibility evidence is in
 `docs/TOKENIZER_COMPATIBILITY_AUDIT.md`; the governing decision is D015 in
 `docs/DECISIONS.md`.
+
+## TVA runtime integration
+
+TVA loads this condition with tokenizer key `handwriting_bigram`. The runtime
+implementation is `tva/handwriting_bigram_tokenizer.py`; unlike TVA's legacy
+`bigram` condition, it uses NFC normalization and the frozen
+maximum-total-utility dynamic program. File loading authenticates the complete
+canonical artifact checksum before accepting the model, validates its source
+provenance and leakage declaration, and exposes `size == 419` including blank
+ID 0.
+
+On 2026-09-17, the TVA implementation matched the independent DTLR reference
+tokenizer exactly—both complete segmentation dictionaries and encoded IDs—for
+all 501 unique OnHW words. It also passed coverage, ID-range, no-blank-target,
+and NFC round-trip checks for all 251,990 WD/WI fold/split label instances.

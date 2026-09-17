@@ -1,17 +1,22 @@
 import json
 import os
 from collections import Counter
+from pathlib import Path
 from typing import Any
 
 from loguru import logger
 from tokenizers import Tokenizer, decoders, models, pre_tokenizers, trainers
 
+from tva.handwriting_bigram_tokenizer import HandwritingBigramTokenizer
+
 __all__ = [
     'CharacterTokenizer',
     'BigramTokenizer',
+    'HandwritingBigramTokenizer',
     'BPETokenizer',
-    'UnigramTokenizer'
+    'UnigramTokenizer',
     'get_tokenizer',
+    'resolve_tokenizer_path',
 ]
 
 
@@ -495,8 +500,8 @@ def get_tokenizer(tokenizer: str) -> Any:
     '''Factory function to get a tokenizer instance.
 
     Args:
-        tokenizer: Key of the tokenizer. Options: 'char', 'bigram', 'bpe',
-            'embed'.
+        tokenizer: Key of the tokenizer. Options: 'char', 'bigram',
+            'handwriting_bigram', 'bpe', or 'unigram'.
 
     Returns:
         The requested tokenizer object.
@@ -506,12 +511,23 @@ def get_tokenizer(tokenizer: str) -> Any:
             return CharacterTokenizer()
         case 'bigram':
             return BigramTokenizer()
+        case 'handwriting_bigram':
+            return HandwritingBigramTokenizer()
         case 'bpe':
             return BPETokenizer()
         case 'unigram':
             return UnigramTokenizer()
         case _:
             raise ValueError(
-                f'Unknown loss function: "{tokenizer}". '
-                'Supported: ["char", "bigram", "bpe", "unigram"]'
+                f'Unknown tokenizer: "{tokenizer}". '
+                'Supported: ["char", "bigram", "handwriting_bigram", '
+                '"bpe", "unigram"]'
             )
+
+
+def resolve_tokenizer_path(path_config: str, idx_fold: int) -> str:
+    """Resolve a shared tokenizer file or a legacy fold directory."""
+    path = Path(path_config)
+    if path.is_file():
+        return str(path)
+    return str(path / f'{idx_fold}.json')

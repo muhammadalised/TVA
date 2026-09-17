@@ -543,3 +543,41 @@ before starting the full WD/RH fold-0 B0 experiment.
 3. Resolve and predeclare the matched linguistic comparator's segmentation
    policy.
 4. Correct `evaluate.py`'s hard-coded 500-class complexity head.
+
+## 2026-09-18 — TVA handwriting-bigram runtime implemented
+
+- Added `HandwritingBigramTokenizer` in
+  `tva/handwriting_bigram_tokenizer.py` and exposed it through
+  `get_tokenizer('handwriting_bigram')`.
+- Updated tokenizer-path resolution so the canonical shared artifact can be
+  supplied directly through the existing `dir_tokenizer` configuration field;
+  legacy per-fold tokenizer directories retain their previous behavior. The
+  shared resolver is used consistently by training, evaluation, and token
+  counting.
+- The training load path authenticates the entire canonical adapter SHA-256,
+  then validates schema, inverse and contiguous mappings, blank ID 0,
+  normalization, overlap policy, finite utility values, output size, bigram
+  count, source checksum, policy ID, and the leakage-safe construction flag.
+- Reimplemented the DTLR right-to-left maximum-total-utility dynamic program,
+  including its preference for more bigrams and its deterministic pair choice
+  when utility and bigram count tie. NFC normalization occurs before
+  segmentation.
+- Confirmed exact TVA-versus-DTLR equality of both segmentation dictionaries
+  and encoded IDs for all 501 unique OnHW words, including the previously
+  documented overlap cases.
+- Confirmed complete runtime coverage on all 251,990 WD/WI fold/split label
+  instances: targets were non-empty, used IDs 1–418 only, and decoded to the
+  NFC-normalized label.
+- Removed `evaluate.py`'s hard-coded 500-class complexity head. Training and
+  complexity reporting now both size the output head from `tokenizer.size`, so
+  the frozen condition uses exactly 419 logits including blank.
+- The complete suite now has 16 passing tests: six adapter tests and ten
+  runtime/integration tests. No recognition training was run.
+
+### Immediate next steps
+
+1. Resolve and predeclare the matched linguistic comparator's segmentation
+   policy before constructing its fold-specific vocabularies.
+2. Add a thesis experiment configuration using tokenizer key
+   `handwriting_bigram` and the canonical shared artifact, then run a small
+   pipeline smoke test before full training.

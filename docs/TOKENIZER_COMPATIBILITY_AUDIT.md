@@ -49,9 +49,10 @@ Important implementation facts are:
 - TVA's existing `BigramTokenizer` can read the artifact's `vocab` and
   `idx_token` keys, but it would apply greedy left-to-right matching. That is
   not the segmentation algorithm defined by the frozen model.
-- The complexity calculation in `evaluate.py` currently uses a hard-coded
-  500-class head rather than `tokenizer.size`; it must be corrected before
-  reporting parameter or MAC comparisons for this experiment.
+- The audit found that the complexity calculation in `evaluate.py` used a
+  hard-coded 500-class head rather than `tokenizer.size`. This was corrected on
+  2026-09-17 as part of runtime integration; parameter and MAC calculations now
+  use the loaded tokenizer's actual output size.
 
 ## 3. Complete OnHW label audit
 

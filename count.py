@@ -10,7 +10,7 @@ import yaml
 from torch.utils.data import DataLoader
 
 from tva.dataset import HRDataset, fn_collate
-from tva.tokenizers import get_tokenizer
+from tva.tokenizers import get_tokenizer, resolve_tokenizer_path
 from tva.model import BaseModel
 
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -23,7 +23,7 @@ def main(cfgs: argparse.Namespace) -> None:
         cfgs: Configurations.
     '''
     tokenizer = get_tokenizer(cfgs.tokenizer)
-    tokenizer.load(os.path.join(cfgs.dir_tokenizer, f'{cfgs.idx_fold}.json'))
+    tokenizer.load(resolve_tokenizer_path(cfgs.dir_tokenizer, cfgs.idx_fold))
     model = BaseModel(
         cfgs.arch_en,
         cfgs.arch_de,

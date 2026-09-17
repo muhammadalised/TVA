@@ -13,7 +13,7 @@ from tva.dataset import HRDataset, fn_collate
 from tva.decoder_ctc import BestPath
 from tva.evaluate import evaluate
 from tva.loss import CTCLoss
-from tva.tokenizers import get_tokenizer
+from tva.tokenizers import get_tokenizer, resolve_tokenizer_path
 from tva.manager import RunManager
 from tva.model import BaseModel
 from tva.utils import (
@@ -149,7 +149,7 @@ def main(cfgs: argparse.Namespace) -> None:
         f'{"enabled" if amp_enabled else "disabled"}.'
     )
     tokenizer = get_tokenizer(cfgs.tokenizer)
-    tokenizer.load(os.path.join(cfgs.dir_tokenizer, f'{cfgs.idx_fold}.json'))
+    tokenizer.load(resolve_tokenizer_path(cfgs.dir_tokenizer, cfgs.idx_fold))
     ctc_decoder = BestPath(tokenizer)
     model = BaseModel(
         cfgs.arch_en,

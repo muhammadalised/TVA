@@ -10,7 +10,7 @@ import yaml
 from thop import profile
 
 from tva.model import BaseModel
-from tva.tokenizers import get_tokenizer
+from tva.tokenizers import get_tokenizer, resolve_tokenizer_path
 
 
 def get_mean_std_cv(
@@ -93,14 +93,13 @@ def get_macs_params(
 
     tokenizer = get_tokenizer(cfgs['tokenizer'])
     tokenizer.load(
-        os.path.join(cfgs['dir_tokenizer'], f'{cfgs["idx_fold"]}.json')
+        resolve_tokenizer_path(cfgs['dir_tokenizer'], cfgs['idx_fold'])
     )
     model = BaseModel(
         cfgs['arch_en'],
         cfgs['arch_de'],
         cfgs['num_channel'],
-        # tokenizer.size,
-        500,
+        tokenizer.size,
         cfgs['len_seq'],
     ).eval()
 
