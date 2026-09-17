@@ -7,12 +7,16 @@ from typing import Any
 from loguru import logger
 from tokenizers import Tokenizer, decoders, models, pre_tokenizers, trainers
 
-from tva.handwriting_bigram_tokenizer import HandwritingBigramTokenizer
+from tva.handwriting_bigram_tokenizer import (
+    HandwritingBigramTokenizer,
+    LinguisticBigramTokenizer,
+)
 
 __all__ = [
     'CharacterTokenizer',
     'BigramTokenizer',
     'HandwritingBigramTokenizer',
+    'LinguisticBigramTokenizer',
     'BPETokenizer',
     'UnigramTokenizer',
     'get_tokenizer',
@@ -501,7 +505,7 @@ def get_tokenizer(tokenizer: str) -> Any:
 
     Args:
         tokenizer: Key of the tokenizer. Options: 'char', 'bigram',
-            'handwriting_bigram', 'bpe', or 'unigram'.
+            'handwriting_bigram', 'linguistic_bigram', 'bpe', or 'unigram'.
 
     Returns:
         The requested tokenizer object.
@@ -513,6 +517,8 @@ def get_tokenizer(tokenizer: str) -> Any:
             return BigramTokenizer()
         case 'handwriting_bigram':
             return HandwritingBigramTokenizer()
+        case 'linguistic_bigram':
+            return LinguisticBigramTokenizer()
         case 'bpe':
             return BPETokenizer()
         case 'unigram':
@@ -521,7 +527,7 @@ def get_tokenizer(tokenizer: str) -> Any:
             raise ValueError(
                 f'Unknown tokenizer: "{tokenizer}". '
                 'Supported: ["char", "bigram", "handwriting_bigram", '
-                '"bpe", "unigram"]'
+                '"linguistic_bigram", "bpe", "unigram"]'
             )
 
 

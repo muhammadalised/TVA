@@ -1,0 +1,3450 @@
+{
+  "blank_id": 0,
+  "blank_token": "",
+  "candidate_bigram_count": 413,
+  "dataset": "onhw_words500_wd_word_rh",
+  "eligible_bigram_count": 359,
+  "fold": 0,
+  "idx_token": {
+    "0": "",
+    "1": "A",
+    "10": "J",
+    "100": "as",
+    "101": "di",
+    "102": "me",
+    "103": "ta",
+    "104": "et",
+    "105": "ht",
+    "106": "ue",
+    "107": "eh",
+    "108": "ig",
+    "109": "la",
+    "11": "K",
+    "110": "ns",
+    "111": "us",
+    "112": "eu",
+    "113": "or",
+    "114": "rd",
+    "115": "rt",
+    "116": "ur",
+    "117": "ab",
+    "118": "at",
+    "119": "ih",
+    "12": "L",
+    "120": "ma",
+    "121": "ni",
+    "122": "oc",
+    "123": "ol",
+    "124": "si",
+    "125": "so",
+    "126": "ts",
+    "127": "tt",
+    "128": "ac",
+    "129": "ah",
+    "13": "M",
+    "130": "am",
+    "131": "eg",
+    "132": "ha",
+    "133": "il",
+    "134": "ri",
+    "135": "ru",
+    "136": "ss",
+    "137": "ut",
+    "138": "wi",
+    "139": "ze",
+    "14": "N",
+    "140": "Ma",
+    "141": "Qu",
+    "142": "bi",
+    "143": "hn",
+    "144": "ke",
+    "145": "mi",
+    "146": "qu",
+    "147": "rn",
+    "148": "ro",
+    "149": "rs",
+    "15": "O",
+    "150": "sp",
+    "151": "um",
+    "152": "wa",
+    "153": "wo",
+    "154": "zu",
+    "155": "Üb",
+    "156": "ür",
+    "157": "De",
+    "158": "Fr",
+    "159": "Ja",
+    "16": "P",
+    "160": "Pr",
+    "161": "ga",
+    "162": "gt",
+    "163": "gu",
+    "164": "lt",
+    "165": "mm",
+    "166": "ua",
+    "167": "vo",
+    "168": "zw",
+    "169": "Be",
+    "17": "Q",
+    "170": "Ch",
+    "171": "La",
+    "172": "Mi",
+    "173": "Re",
+    "174": "We",
+    "175": "ad",
+    "176": "eb",
+    "177": "fe",
+    "178": "fü",
+    "179": "gi",
+    "18": "R",
+    "180": "hm",
+    "181": "id",
+    "182": "io",
+    "183": "ir",
+    "184": "je",
+    "185": "ka",
+    "186": "ko",
+    "187": "kö",
+    "188": "pi",
+    "189": "rg",
+    "19": "S",
+    "190": "rk",
+    "191": "rl",
+    "192": "sa",
+    "193": "ti",
+    "194": "tr",
+    "195": "tz",
+    "196": "ve",
+    "197": "vi",
+    "198": "ät",
+    "199": "ön",
+    "2": "B",
+    "20": "T",
+    "200": "An",
+    "201": "Au",
+    "202": "Da",
+    "203": "Di",
+    "204": "Gr",
+    "205": "Ha",
+    "206": "Ki",
+    "207": "Le",
+    "208": "Na",
+    "209": "Se",
+    "21": "U",
+    "210": "Si",
+    "211": "St",
+    "212": "Tr",
+    "213": "Yo",
+    "214": "Ze",
+    "215": "Zu",
+    "216": "ai",
+    "217": "av",
+    "218": "ax",
+    "219": "dr",
+    "22": "V",
+    "220": "ed",
+    "221": "fi",
+    "222": "gr",
+    "223": "gs",
+    "224": "hi",
+    "225": "hl",
+    "226": "ho",
+    "227": "hs",
+    "228": "hä",
+    "229": "kt",
+    "23": "W",
+    "230": "ls",
+    "231": "na",
+    "232": "nf",
+    "233": "ob",
+    "234": "om",
+    "235": "po",
+    "236": "rh",
+    "237": "rr",
+    "238": "rz",
+    "239": "tu",
+    "24": "X",
+    "240": "tw",
+    "241": "uf",
+    "242": "zt",
+    "243": "ße",
+    "244": "äs",
+    "245": "Al",
+    "246": "Am",
+    "247": "Ba",
+    "248": "Do",
+    "249": "Ei",
+    "25": "Y",
+    "250": "Er",
+    "251": "Fa",
+    "252": "Ge",
+    "253": "Hi",
+    "254": "Ko",
+    "255": "Me",
+    "256": "Mo",
+    "257": "No",
+    "258": "Or",
+    "259": "Po",
+    "26": "Z",
+    "260": "PÖ",
+    "261": "SP",
+    "262": "So",
+    "263": "Sp",
+    "264": "US",
+    "265": "Un",
+    "266": "Ve",
+    "267": "Vo",
+    "268": "Wa",
+    "269": "Wi",
+    "27": "Ä",
+    "270": "Wo",
+    "271": "Xa",
+    "272": "aß",
+    "273": "bl",
+    "274": "bt",
+    "275": "ck",
+    "276": "do",
+    "277": "dt",
+    "278": "du",
+    "279": "ec",
+    "28": "Ö",
+    "280": "ee",
+    "281": "ef",
+    "282": "ek",
+    "283": "eq",
+    "284": "fa",
+    "285": "ff",
+    "286": "hu",
+    "287": "ib",
+    "288": "if",
+    "289": "ik",
+    "29": "Ü",
+    "290": "im",
+    "291": "kl",
+    "292": "ld",
+    "293": "lf",
+    "294": "lg",
+    "295": "mb",
+    "296": "mu",
+    "297": "mö",
+    "298": "nk",
+    "299": "nu",
+    "3": "C",
+    "30": "a",
+    "300": "nz",
+    "301": "og",
+    "302": "oh",
+    "303": "os",
+    "304": "oß",
+    "305": "pt",
+    "306": "pu",
+    "307": "rb",
+    "308": "rc",
+    "309": "rf",
+    "31": "b",
+    "310": "rä",
+    "311": "ty",
+    "312": "uc",
+    "313": "ug",
+    "314": "ul",
+    "315": "up",
+    "316": "uß",
+    "317": "wu",
+    "318": "wä",
+    "319": "wü",
+    "32": "c",
+    "320": "ye",
+    "321": "Är",
+    "322": "Ös",
+    "323": "äh",
+    "324": "är",
+    "325": "üb",
+    "326": "AB",
+    "327": "AX",
+    "328": "Ab",
+    "329": "Ar",
+    "33": "d",
+    "330": "BI",
+    "331": "Bl",
+    "332": "CD",
+    "333": "Ci",
+    "334": "DA",
+    "335": "DU",
+    "336": "Dr",
+    "337": "Dw",
+    "338": "EU",
+    "339": "El",
+    "34": "e",
+    "340": "En",
+    "341": "Es",
+    "342": "Eu",
+    "343": "Ex",
+    "344": "FC",
+    "345": "FP",
+    "346": "Fo",
+    "347": "Fu",
+    "348": "Fü",
+    "349": "Gä",
+    "35": "f",
+    "350": "He",
+    "351": "Ho",
+    "352": "II",
+    "353": "IL",
+    "354": "IX",
+    "355": "Id",
+    "356": "Im",
+    "357": "In",
+    "358": "Ju",
+    "359": "Ka",
+    "36": "g",
+    "360": "Kl",
+    "361": "LO",
+    "362": "Mu",
+    "363": "Mä",
+    "364": "Ni",
+    "365": "Nu",
+    "366": "Ob",
+    "367": "Ok",
+    "368": "PD",
+    "369": "Pa",
+    "37": "h",
+    "370": "Pe",
+    "371": "Pl",
+    "372": "Ra",
+    "373": "Rh",
+    "374": "Ro",
+    "375": "SA",
+    "376": "ST",
+    "377": "Sa",
+    "378": "Sy",
+    "379": "TA",
+    "38": "i",
+    "380": "TV",
+    "381": "Ta",
+    "382": "Th",
+    "383": "Ti",
+    "384": "Uh",
+    "385": "VP",
+    "386": "XI",
+    "387": "Ye",
+    "388": "Yv",
+    "389": "Zi",
+    "39": "j",
+    "390": "ae",
+    "391": "af",
+    "392": "ay",
+    "393": "az",
+    "394": "ba",
+    "395": "bs",
+    "396": "ce",
+    "397": "cq",
+    "398": "dg",
+    "399": "dp",
+    "4": "D",
+    "40": "k",
+    "400": "ep",
+    "401": "ew",
+    "402": "ex",
+    "403": "ey",
+    "404": "fo",
+    "405": "ft",
+    "406": "fu",
+    "407": "gh",
+    "408": "gl",
+    "409": "hk",
+    "41": "l",
+    "410": "hö",
+    "411": "ia",
+    "412": "iz",
+    "413": "iß",
+    "414": "ja",
+    "415": "jä",
+    "416": "km",
+    "417": "ku",
+    "418": "lb",
+    "42": "m",
+    "43": "n",
+    "44": "o",
+    "45": "p",
+    "46": "q",
+    "47": "r",
+    "48": "s",
+    "49": "t",
+    "5": "E",
+    "50": "u",
+    "51": "v",
+    "52": "w",
+    "53": "x",
+    "54": "y",
+    "55": "z",
+    "56": "ä",
+    "57": "ö",
+    "58": "ü",
+    "59": "ß",
+    "6": "F",
+    "60": "en",
+    "61": "er",
+    "62": "ei",
+    "63": "ch",
+    "64": "te",
+    "65": "in",
+    "66": "ie",
+    "67": "de",
+    "68": "ge",
+    "69": "ne",
+    "7": "G",
+    "70": "be",
+    "71": "st",
+    "72": "he",
+    "73": "se",
+    "74": "it",
+    "75": "nd",
+    "76": "re",
+    "77": "an",
+    "78": "ic",
+    "79": "un",
+    "8": "H",
+    "80": "al",
+    "81": "es",
+    "82": "ll",
+    "83": "li",
+    "84": "ng",
+    "85": "nn",
+    "86": "el",
+    "87": "hr",
+    "88": "le",
+    "89": "on",
+    "9": "I",
+    "90": "au",
+    "91": "em",
+    "92": "is",
+    "93": "nt",
+    "94": "ra",
+    "95": "da",
+    "96": "sc",
+    "97": "we",
+    "98": "ag",
+    "99": "ar"
+  },
+  "model_version": "onhw-frequency-bigram-v1",
+  "note": "Matched linguistic baseline built from distinct word types in this fold training split only. Validation labels are excluded.",
+  "policy": {
+    "overlap_resolution": "maximum-total-utility-non-overlapping-v1",
+    "pair_policy": "fixed-task-alphabet-only",
+    "ranking": "adjacency-count-descending_then-token-ascending-v1",
+    "required_characters": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "Ä",
+      "Ö",
+      "Ü",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z",
+      "ä",
+      "ö",
+      "ü",
+      "ß"
+    ],
+    "sample_duplicates_collapsed": true,
+    "selection": "training-word-type-adjacency-frequency-v1",
+    "single_character_utility": 0.0,
+    "target_bigram_count": 359,
+    "utility": "adjacency-count-divided-by-maximum-selected-count-v1",
+    "validation_annotations_read": false
+  },
+  "schema_version": "tva.frequency-bigram-tokenizer.v1",
+  "selection_cutoff_count": 1,
+  "size": 419,
+  "source_annotations": {
+    "sample_count": 20163,
+    "sha256": "badc0ce8972780de5f1cd8d7aacdf1ea360e89efac480138ed417ebccc4e81cd",
+    "unique_word_type_count": 479
+  },
+  "status": "frozen-matched-linguistic-baseline",
+  "text_normalization": "NFC",
+  "training_split": "train",
+  "vocab": {
+    "": 0,
+    "A": 1,
+    "AB": 326,
+    "AX": 327,
+    "Ab": 328,
+    "Al": 245,
+    "Am": 246,
+    "An": 200,
+    "Ar": 329,
+    "Au": 201,
+    "B": 2,
+    "BI": 330,
+    "Ba": 247,
+    "Be": 169,
+    "Bl": 331,
+    "C": 3,
+    "CD": 332,
+    "Ch": 170,
+    "Ci": 333,
+    "D": 4,
+    "DA": 334,
+    "DU": 335,
+    "Da": 202,
+    "De": 157,
+    "Di": 203,
+    "Do": 248,
+    "Dr": 336,
+    "Dw": 337,
+    "E": 5,
+    "EU": 338,
+    "Ei": 249,
+    "El": 339,
+    "En": 340,
+    "Er": 250,
+    "Es": 341,
+    "Eu": 342,
+    "Ex": 343,
+    "F": 6,
+    "FC": 344,
+    "FP": 345,
+    "Fa": 251,
+    "Fo": 346,
+    "Fr": 158,
+    "Fu": 347,
+    "Fü": 348,
+    "G": 7,
+    "Ge": 252,
+    "Gr": 204,
+    "Gä": 349,
+    "H": 8,
+    "Ha": 205,
+    "He": 350,
+    "Hi": 253,
+    "Ho": 351,
+    "I": 9,
+    "II": 352,
+    "IL": 353,
+    "IX": 354,
+    "Id": 355,
+    "Im": 356,
+    "In": 357,
+    "J": 10,
+    "Ja": 159,
+    "Ju": 358,
+    "K": 11,
+    "Ka": 359,
+    "Ki": 206,
+    "Kl": 360,
+    "Ko": 254,
+    "L": 12,
+    "LO": 361,
+    "La": 171,
+    "Le": 207,
+    "M": 13,
+    "Ma": 140,
+    "Me": 255,
+    "Mi": 172,
+    "Mo": 256,
+    "Mu": 362,
+    "Mä": 363,
+    "N": 14,
+    "Na": 208,
+    "Ni": 364,
+    "No": 257,
+    "Nu": 365,
+    "O": 15,
+    "Ob": 366,
+    "Ok": 367,
+    "Or": 258,
+    "P": 16,
+    "PD": 368,
+    "Pa": 369,
+    "Pe": 370,
+    "Pl": 371,
+    "Po": 259,
+    "Pr": 160,
+    "PÖ": 260,
+    "Q": 17,
+    "Qu": 141,
+    "R": 18,
+    "Ra": 372,
+    "Re": 173,
+    "Rh": 373,
+    "Ro": 374,
+    "S": 19,
+    "SA": 375,
+    "SP": 261,
+    "ST": 376,
+    "Sa": 377,
+    "Se": 209,
+    "Si": 210,
+    "So": 262,
+    "Sp": 263,
+    "St": 211,
+    "Sy": 378,
+    "T": 20,
+    "TA": 379,
+    "TV": 380,
+    "Ta": 381,
+    "Th": 382,
+    "Ti": 383,
+    "Tr": 212,
+    "U": 21,
+    "US": 264,
+    "Uh": 384,
+    "Un": 265,
+    "V": 22,
+    "VP": 385,
+    "Ve": 266,
+    "Vo": 267,
+    "W": 23,
+    "Wa": 268,
+    "We": 174,
+    "Wi": 269,
+    "Wo": 270,
+    "X": 24,
+    "XI": 386,
+    "Xa": 271,
+    "Y": 25,
+    "Ye": 387,
+    "Yo": 213,
+    "Yv": 388,
+    "Z": 26,
+    "Ze": 214,
+    "Zi": 389,
+    "Zu": 215,
+    "a": 30,
+    "ab": 117,
+    "ac": 128,
+    "ad": 175,
+    "ae": 390,
+    "af": 391,
+    "ag": 98,
+    "ah": 129,
+    "ai": 216,
+    "al": 80,
+    "am": 130,
+    "an": 77,
+    "ar": 99,
+    "as": 100,
+    "at": 118,
+    "au": 90,
+    "av": 217,
+    "ax": 218,
+    "ay": 392,
+    "az": 393,
+    "aß": 272,
+    "b": 31,
+    "ba": 394,
+    "be": 70,
+    "bi": 142,
+    "bl": 273,
+    "bs": 395,
+    "bt": 274,
+    "c": 32,
+    "ce": 396,
+    "ch": 63,
+    "ck": 275,
+    "cq": 397,
+    "d": 33,
+    "da": 95,
+    "de": 67,
+    "dg": 398,
+    "di": 101,
+    "do": 276,
+    "dp": 399,
+    "dr": 219,
+    "dt": 277,
+    "du": 278,
+    "e": 34,
+    "eb": 176,
+    "ec": 279,
+    "ed": 220,
+    "ee": 280,
+    "ef": 281,
+    "eg": 131,
+    "eh": 107,
+    "ei": 62,
+    "ek": 282,
+    "el": 86,
+    "em": 91,
+    "en": 60,
+    "ep": 400,
+    "eq": 283,
+    "er": 61,
+    "es": 81,
+    "et": 104,
+    "eu": 112,
+    "ew": 401,
+    "ex": 402,
+    "ey": 403,
+    "f": 35,
+    "fa": 284,
+    "fe": 177,
+    "ff": 285,
+    "fi": 221,
+    "fo": 404,
+    "ft": 405,
+    "fu": 406,
+    "fü": 178,
+    "g": 36,
+    "ga": 161,
+    "ge": 68,
+    "gh": 407,
+    "gi": 179,
+    "gl": 408,
+    "gr": 222,
+    "gs": 223,
+    "gt": 162,
+    "gu": 163,
+    "h": 37,
+    "ha": 132,
+    "he": 72,
+    "hi": 224,
+    "hk": 409,
+    "hl": 225,
+    "hm": 180,
+    "hn": 143,
+    "ho": 226,
+    "hr": 87,
+    "hs": 227,
+    "ht": 105,
+    "hu": 286,
+    "hä": 228,
+    "hö": 410,
+    "i": 38,
+    "ia": 411,
+    "ib": 287,
+    "ic": 78,
+    "id": 181,
+    "ie": 66,
+    "if": 288,
+    "ig": 108,
+    "ih": 119,
+    "ik": 289,
+    "il": 133,
+    "im": 290,
+    "in": 65,
+    "io": 182,
+    "ir": 183,
+    "is": 92,
+    "it": 74,
+    "iz": 412,
+    "iß": 413,
+    "j": 39,
+    "ja": 414,
+    "je": 184,
+    "jä": 415,
+    "k": 40,
+    "ka": 185,
+    "ke": 144,
+    "kl": 291,
+    "km": 416,
+    "ko": 186,
+    "kt": 229,
+    "ku": 417,
+    "kö": 187,
+    "l": 41,
+    "la": 109,
+    "lb": 418,
+    "ld": 292,
+    "le": 88,
+    "lf": 293,
+    "lg": 294,
+    "li": 83,
+    "ll": 82,
+    "ls": 230,
+    "lt": 164,
+    "m": 42,
+    "ma": 120,
+    "mb": 295,
+    "me": 102,
+    "mi": 145,
+    "mm": 165,
+    "mu": 296,
+    "mö": 297,
+    "n": 43,
+    "na": 231,
+    "nd": 75,
+    "ne": 69,
+    "nf": 232,
+    "ng": 84,
+    "ni": 121,
+    "nk": 298,
+    "nn": 85,
+    "ns": 110,
+    "nt": 93,
+    "nu": 299,
+    "nz": 300,
+    "o": 44,
+    "ob": 233,
+    "oc": 122,
+    "og": 301,
+    "oh": 302,
+    "ol": 123,
+    "om": 234,
+    "on": 89,
+    "or": 113,
+    "os": 303,
+    "oß": 304,
+    "p": 45,
+    "pi": 188,
+    "po": 235,
+    "pt": 305,
+    "pu": 306,
+    "q": 46,
+    "qu": 146,
+    "r": 47,
+    "ra": 94,
+    "rb": 307,
+    "rc": 308,
+    "rd": 114,
+    "re": 76,
+    "rf": 309,
+    "rg": 189,
+    "rh": 236,
+    "ri": 134,
+    "rk": 190,
+    "rl": 191,
+    "rn": 147,
+    "ro": 148,
+    "rr": 237,
+    "rs": 149,
+    "rt": 115,
+    "ru": 135,
+    "rz": 238,
+    "rä": 310,
+    "s": 48,
+    "sa": 192,
+    "sc": 96,
+    "se": 73,
+    "si": 124,
+    "so": 125,
+    "sp": 150,
+    "ss": 136,
+    "st": 71,
+    "t": 49,
+    "ta": 103,
+    "te": 64,
+    "ti": 193,
+    "tr": 194,
+    "ts": 126,
+    "tt": 127,
+    "tu": 239,
+    "tw": 240,
+    "ty": 311,
+    "tz": 195,
+    "u": 50,
+    "ua": 166,
+    "uc": 312,
+    "ue": 106,
+    "uf": 241,
+    "ug": 313,
+    "ul": 314,
+    "um": 151,
+    "un": 79,
+    "up": 315,
+    "ur": 116,
+    "us": 111,
+    "ut": 137,
+    "uß": 316,
+    "v": 51,
+    "ve": 196,
+    "vi": 197,
+    "vo": 167,
+    "w": 52,
+    "wa": 152,
+    "we": 97,
+    "wi": 138,
+    "wo": 153,
+    "wu": 317,
+    "wä": 318,
+    "wü": 319,
+    "x": 53,
+    "y": 54,
+    "ye": 320,
+    "z": 55,
+    "ze": 139,
+    "zt": 242,
+    "zu": 154,
+    "zw": 168,
+    "Ä": 27,
+    "Är": 321,
+    "Ö": 28,
+    "Ös": 322,
+    "Ü": 29,
+    "Üb": 155,
+    "ß": 59,
+    "ße": 243,
+    "ä": 56,
+    "äh": 323,
+    "är": 324,
+    "äs": 244,
+    "ät": 198,
+    "ö": 57,
+    "ön": 199,
+    "ü": 58,
+    "üb": 325,
+    "ür": 156
+  },
+  "vocabulary": [
+    {
+      "rank": 1,
+      "token": "en",
+      "training_word_type_adjacency_count": 97,
+      "training_word_type_support": 91,
+      "utility": 1.0
+    },
+    {
+      "rank": 2,
+      "token": "er",
+      "training_word_type_adjacency_count": 87,
+      "training_word_type_support": 84,
+      "utility": 0.8969072164948454
+    },
+    {
+      "rank": 3,
+      "token": "ei",
+      "training_word_type_adjacency_count": 59,
+      "training_word_type_support": 59,
+      "utility": 0.6082474226804123
+    },
+    {
+      "rank": 4,
+      "token": "ch",
+      "training_word_type_adjacency_count": 52,
+      "training_word_type_support": 50,
+      "utility": 0.5360824742268041
+    },
+    {
+      "rank": 5,
+      "token": "te",
+      "training_word_type_adjacency_count": 50,
+      "training_word_type_support": 48,
+      "utility": 0.5154639175257731
+    },
+    {
+      "rank": 6,
+      "token": "in",
+      "training_word_type_adjacency_count": 41,
+      "training_word_type_support": 40,
+      "utility": 0.422680412371134
+    },
+    {
+      "rank": 7,
+      "token": "ie",
+      "training_word_type_adjacency_count": 35,
+      "training_word_type_support": 35,
+      "utility": 0.36082474226804123
+    },
+    {
+      "rank": 8,
+      "token": "de",
+      "training_word_type_adjacency_count": 31,
+      "training_word_type_support": 31,
+      "utility": 0.31958762886597936
+    },
+    {
+      "rank": 9,
+      "token": "ge",
+      "training_word_type_adjacency_count": 30,
+      "training_word_type_support": 29,
+      "utility": 0.30927835051546393
+    },
+    {
+      "rank": 10,
+      "token": "ne",
+      "training_word_type_adjacency_count": 30,
+      "training_word_type_support": 30,
+      "utility": 0.30927835051546393
+    },
+    {
+      "rank": 11,
+      "token": "be",
+      "training_word_type_adjacency_count": 29,
+      "training_word_type_support": 29,
+      "utility": 0.29896907216494845
+    },
+    {
+      "rank": 12,
+      "token": "st",
+      "training_word_type_adjacency_count": 29,
+      "training_word_type_support": 28,
+      "utility": 0.29896907216494845
+    },
+    {
+      "rank": 13,
+      "token": "he",
+      "training_word_type_adjacency_count": 26,
+      "training_word_type_support": 25,
+      "utility": 0.26804123711340205
+    },
+    {
+      "rank": 14,
+      "token": "se",
+      "training_word_type_adjacency_count": 26,
+      "training_word_type_support": 26,
+      "utility": 0.26804123711340205
+    },
+    {
+      "rank": 15,
+      "token": "it",
+      "training_word_type_adjacency_count": 24,
+      "training_word_type_support": 24,
+      "utility": 0.24742268041237114
+    },
+    {
+      "rank": 16,
+      "token": "nd",
+      "training_word_type_adjacency_count": 23,
+      "training_word_type_support": 23,
+      "utility": 0.23711340206185566
+    },
+    {
+      "rank": 17,
+      "token": "re",
+      "training_word_type_adjacency_count": 23,
+      "training_word_type_support": 23,
+      "utility": 0.23711340206185566
+    },
+    {
+      "rank": 18,
+      "token": "an",
+      "training_word_type_adjacency_count": 22,
+      "training_word_type_support": 22,
+      "utility": 0.2268041237113402
+    },
+    {
+      "rank": 19,
+      "token": "ic",
+      "training_word_type_adjacency_count": 19,
+      "training_word_type_support": 19,
+      "utility": 0.1958762886597938
+    },
+    {
+      "rank": 20,
+      "token": "un",
+      "training_word_type_adjacency_count": 19,
+      "training_word_type_support": 19,
+      "utility": 0.1958762886597938
+    },
+    {
+      "rank": 21,
+      "token": "al",
+      "training_word_type_adjacency_count": 18,
+      "training_word_type_support": 18,
+      "utility": 0.18556701030927836
+    },
+    {
+      "rank": 22,
+      "token": "es",
+      "training_word_type_adjacency_count": 18,
+      "training_word_type_support": 17,
+      "utility": 0.18556701030927836
+    },
+    {
+      "rank": 23,
+      "token": "ll",
+      "training_word_type_adjacency_count": 18,
+      "training_word_type_support": 18,
+      "utility": 0.18556701030927836
+    },
+    {
+      "rank": 24,
+      "token": "li",
+      "training_word_type_adjacency_count": 16,
+      "training_word_type_support": 16,
+      "utility": 0.16494845360824742
+    },
+    {
+      "rank": 25,
+      "token": "ng",
+      "training_word_type_adjacency_count": 16,
+      "training_word_type_support": 16,
+      "utility": 0.16494845360824742
+    },
+    {
+      "rank": 26,
+      "token": "nn",
+      "training_word_type_adjacency_count": 16,
+      "training_word_type_support": 16,
+      "utility": 0.16494845360824742
+    },
+    {
+      "rank": 27,
+      "token": "el",
+      "training_word_type_adjacency_count": 15,
+      "training_word_type_support": 15,
+      "utility": 0.15463917525773196
+    },
+    {
+      "rank": 28,
+      "token": "hr",
+      "training_word_type_adjacency_count": 15,
+      "training_word_type_support": 15,
+      "utility": 0.15463917525773196
+    },
+    {
+      "rank": 29,
+      "token": "le",
+      "training_word_type_adjacency_count": 15,
+      "training_word_type_support": 15,
+      "utility": 0.15463917525773196
+    },
+    {
+      "rank": 30,
+      "token": "on",
+      "training_word_type_adjacency_count": 15,
+      "training_word_type_support": 15,
+      "utility": 0.15463917525773196
+    },
+    {
+      "rank": 31,
+      "token": "au",
+      "training_word_type_adjacency_count": 14,
+      "training_word_type_support": 14,
+      "utility": 0.14432989690721648
+    },
+    {
+      "rank": 32,
+      "token": "em",
+      "training_word_type_adjacency_count": 14,
+      "training_word_type_support": 14,
+      "utility": 0.14432989690721648
+    },
+    {
+      "rank": 33,
+      "token": "is",
+      "training_word_type_adjacency_count": 14,
+      "training_word_type_support": 14,
+      "utility": 0.14432989690721648
+    },
+    {
+      "rank": 34,
+      "token": "nt",
+      "training_word_type_adjacency_count": 14,
+      "training_word_type_support": 14,
+      "utility": 0.14432989690721648
+    },
+    {
+      "rank": 35,
+      "token": "ra",
+      "training_word_type_adjacency_count": 14,
+      "training_word_type_support": 14,
+      "utility": 0.14432989690721648
+    },
+    {
+      "rank": 36,
+      "token": "da",
+      "training_word_type_adjacency_count": 13,
+      "training_word_type_support": 13,
+      "utility": 0.13402061855670103
+    },
+    {
+      "rank": 37,
+      "token": "sc",
+      "training_word_type_adjacency_count": 13,
+      "training_word_type_support": 13,
+      "utility": 0.13402061855670103
+    },
+    {
+      "rank": 38,
+      "token": "we",
+      "training_word_type_adjacency_count": 13,
+      "training_word_type_support": 13,
+      "utility": 0.13402061855670103
+    },
+    {
+      "rank": 39,
+      "token": "ag",
+      "training_word_type_adjacency_count": 12,
+      "training_word_type_support": 12,
+      "utility": 0.12371134020618557
+    },
+    {
+      "rank": 40,
+      "token": "ar",
+      "training_word_type_adjacency_count": 12,
+      "training_word_type_support": 12,
+      "utility": 0.12371134020618557
+    },
+    {
+      "rank": 41,
+      "token": "as",
+      "training_word_type_adjacency_count": 12,
+      "training_word_type_support": 12,
+      "utility": 0.12371134020618557
+    },
+    {
+      "rank": 42,
+      "token": "di",
+      "training_word_type_adjacency_count": 12,
+      "training_word_type_support": 12,
+      "utility": 0.12371134020618557
+    },
+    {
+      "rank": 43,
+      "token": "me",
+      "training_word_type_adjacency_count": 12,
+      "training_word_type_support": 12,
+      "utility": 0.12371134020618557
+    },
+    {
+      "rank": 44,
+      "token": "ta",
+      "training_word_type_adjacency_count": 12,
+      "training_word_type_support": 11,
+      "utility": 0.12371134020618557
+    },
+    {
+      "rank": 45,
+      "token": "et",
+      "training_word_type_adjacency_count": 11,
+      "training_word_type_support": 11,
+      "utility": 0.1134020618556701
+    },
+    {
+      "rank": 46,
+      "token": "ht",
+      "training_word_type_adjacency_count": 11,
+      "training_word_type_support": 11,
+      "utility": 0.1134020618556701
+    },
+    {
+      "rank": 47,
+      "token": "ue",
+      "training_word_type_adjacency_count": 11,
+      "training_word_type_support": 11,
+      "utility": 0.1134020618556701
+    },
+    {
+      "rank": 48,
+      "token": "eh",
+      "training_word_type_adjacency_count": 10,
+      "training_word_type_support": 10,
+      "utility": 0.10309278350515463
+    },
+    {
+      "rank": 49,
+      "token": "ig",
+      "training_word_type_adjacency_count": 10,
+      "training_word_type_support": 10,
+      "utility": 0.10309278350515463
+    },
+    {
+      "rank": 50,
+      "token": "la",
+      "training_word_type_adjacency_count": 10,
+      "training_word_type_support": 10,
+      "utility": 0.10309278350515463
+    },
+    {
+      "rank": 51,
+      "token": "ns",
+      "training_word_type_adjacency_count": 10,
+      "training_word_type_support": 10,
+      "utility": 0.10309278350515463
+    },
+    {
+      "rank": 52,
+      "token": "us",
+      "training_word_type_adjacency_count": 10,
+      "training_word_type_support": 10,
+      "utility": 0.10309278350515463
+    },
+    {
+      "rank": 53,
+      "token": "eu",
+      "training_word_type_adjacency_count": 9,
+      "training_word_type_support": 9,
+      "utility": 0.09278350515463918
+    },
+    {
+      "rank": 54,
+      "token": "or",
+      "training_word_type_adjacency_count": 9,
+      "training_word_type_support": 9,
+      "utility": 0.09278350515463918
+    },
+    {
+      "rank": 55,
+      "token": "rd",
+      "training_word_type_adjacency_count": 9,
+      "training_word_type_support": 9,
+      "utility": 0.09278350515463918
+    },
+    {
+      "rank": 56,
+      "token": "rt",
+      "training_word_type_adjacency_count": 9,
+      "training_word_type_support": 9,
+      "utility": 0.09278350515463918
+    },
+    {
+      "rank": 57,
+      "token": "ur",
+      "training_word_type_adjacency_count": 9,
+      "training_word_type_support": 9,
+      "utility": 0.09278350515463918
+    },
+    {
+      "rank": 58,
+      "token": "ab",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 59,
+      "token": "at",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 60,
+      "token": "ih",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 61,
+      "token": "ma",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 62,
+      "token": "ni",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 63,
+      "token": "oc",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 64,
+      "token": "ol",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 65,
+      "token": "si",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 66,
+      "token": "so",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 67,
+      "token": "ts",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 68,
+      "token": "tt",
+      "training_word_type_adjacency_count": 8,
+      "training_word_type_support": 8,
+      "utility": 0.08247422680412371
+    },
+    {
+      "rank": 69,
+      "token": "ac",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 70,
+      "token": "ah",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 71,
+      "token": "am",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 72,
+      "token": "eg",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 73,
+      "token": "ha",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 74,
+      "token": "il",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 75,
+      "token": "ri",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 76,
+      "token": "ru",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 77,
+      "token": "ss",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 78,
+      "token": "ut",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 79,
+      "token": "wi",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 80,
+      "token": "ze",
+      "training_word_type_adjacency_count": 7,
+      "training_word_type_support": 7,
+      "utility": 0.07216494845360824
+    },
+    {
+      "rank": 81,
+      "token": "Ma",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 82,
+      "token": "Qu",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 83,
+      "token": "bi",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 84,
+      "token": "hn",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 85,
+      "token": "ke",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 86,
+      "token": "mi",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 87,
+      "token": "qu",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 88,
+      "token": "rn",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 89,
+      "token": "ro",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 90,
+      "token": "rs",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 91,
+      "token": "sp",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 92,
+      "token": "um",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 93,
+      "token": "wa",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 94,
+      "token": "wo",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 95,
+      "token": "zu",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 96,
+      "token": "Üb",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 97,
+      "token": "ür",
+      "training_word_type_adjacency_count": 6,
+      "training_word_type_support": 6,
+      "utility": 0.061855670103092786
+    },
+    {
+      "rank": 98,
+      "token": "De",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 99,
+      "token": "Fr",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 100,
+      "token": "Ja",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 101,
+      "token": "Pr",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 102,
+      "token": "ga",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 103,
+      "token": "gt",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 104,
+      "token": "gu",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 105,
+      "token": "lt",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 106,
+      "token": "mm",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 107,
+      "token": "ua",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 108,
+      "token": "vo",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 109,
+      "token": "zw",
+      "training_word_type_adjacency_count": 5,
+      "training_word_type_support": 5,
+      "utility": 0.05154639175257732
+    },
+    {
+      "rank": 110,
+      "token": "Be",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 111,
+      "token": "Ch",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 112,
+      "token": "La",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 113,
+      "token": "Mi",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 114,
+      "token": "Re",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 115,
+      "token": "We",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 116,
+      "token": "ad",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 117,
+      "token": "eb",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 118,
+      "token": "fe",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 119,
+      "token": "fü",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 120,
+      "token": "gi",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 121,
+      "token": "hm",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 122,
+      "token": "id",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 123,
+      "token": "io",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 124,
+      "token": "ir",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 125,
+      "token": "je",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 126,
+      "token": "ka",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 127,
+      "token": "ko",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 128,
+      "token": "kö",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 129,
+      "token": "pi",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 3,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 130,
+      "token": "rg",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 131,
+      "token": "rk",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 132,
+      "token": "rl",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 133,
+      "token": "sa",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 134,
+      "token": "ti",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 135,
+      "token": "tr",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 136,
+      "token": "tz",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 137,
+      "token": "ve",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 138,
+      "token": "vi",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 139,
+      "token": "ät",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 140,
+      "token": "ön",
+      "training_word_type_adjacency_count": 4,
+      "training_word_type_support": 4,
+      "utility": 0.041237113402061855
+    },
+    {
+      "rank": 141,
+      "token": "An",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 142,
+      "token": "Au",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 143,
+      "token": "Da",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 144,
+      "token": "Di",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 145,
+      "token": "Gr",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 146,
+      "token": "Ha",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 147,
+      "token": "Ki",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 148,
+      "token": "Le",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 149,
+      "token": "Na",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 150,
+      "token": "Se",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 151,
+      "token": "Si",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 152,
+      "token": "St",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 153,
+      "token": "Tr",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 154,
+      "token": "Yo",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 155,
+      "token": "Ze",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 156,
+      "token": "Zu",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 157,
+      "token": "ai",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 158,
+      "token": "av",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 159,
+      "token": "ax",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 160,
+      "token": "dr",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 161,
+      "token": "ed",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 162,
+      "token": "fi",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 163,
+      "token": "gr",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 164,
+      "token": "gs",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 165,
+      "token": "hi",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 166,
+      "token": "hl",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 167,
+      "token": "ho",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 168,
+      "token": "hs",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 169,
+      "token": "hä",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 170,
+      "token": "kt",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 171,
+      "token": "ls",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 172,
+      "token": "na",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 173,
+      "token": "nf",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 174,
+      "token": "ob",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 175,
+      "token": "om",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 176,
+      "token": "po",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 177,
+      "token": "rh",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 178,
+      "token": "rr",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 179,
+      "token": "rz",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 180,
+      "token": "tu",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 181,
+      "token": "tw",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 182,
+      "token": "uf",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 183,
+      "token": "zt",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 184,
+      "token": "ße",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 185,
+      "token": "äs",
+      "training_word_type_adjacency_count": 3,
+      "training_word_type_support": 3,
+      "utility": 0.030927835051546393
+    },
+    {
+      "rank": 186,
+      "token": "Al",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 187,
+      "token": "Am",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 188,
+      "token": "Ba",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 189,
+      "token": "Do",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 190,
+      "token": "Ei",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 191,
+      "token": "Er",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 192,
+      "token": "Fa",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 193,
+      "token": "Ge",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 194,
+      "token": "Hi",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 195,
+      "token": "Ko",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 196,
+      "token": "Me",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 197,
+      "token": "Mo",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 198,
+      "token": "No",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 199,
+      "token": "Or",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 200,
+      "token": "Po",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 201,
+      "token": "PÖ",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 202,
+      "token": "SP",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 203,
+      "token": "So",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 204,
+      "token": "Sp",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 205,
+      "token": "US",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 206,
+      "token": "Un",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 207,
+      "token": "Ve",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 208,
+      "token": "Vo",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 209,
+      "token": "Wa",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 210,
+      "token": "Wi",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 211,
+      "token": "Wo",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 212,
+      "token": "Xa",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 213,
+      "token": "aß",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 214,
+      "token": "bl",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 215,
+      "token": "bt",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 216,
+      "token": "ck",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 217,
+      "token": "do",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 218,
+      "token": "dt",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 219,
+      "token": "du",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 220,
+      "token": "ec",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 221,
+      "token": "ee",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 222,
+      "token": "ef",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 223,
+      "token": "ek",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 224,
+      "token": "eq",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 225,
+      "token": "fa",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 226,
+      "token": "ff",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 227,
+      "token": "hu",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 228,
+      "token": "ib",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 229,
+      "token": "if",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 230,
+      "token": "ik",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 231,
+      "token": "im",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 232,
+      "token": "kl",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 233,
+      "token": "ld",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 234,
+      "token": "lf",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 235,
+      "token": "lg",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 236,
+      "token": "mb",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 237,
+      "token": "mu",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 238,
+      "token": "mö",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 239,
+      "token": "nk",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 240,
+      "token": "nu",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 241,
+      "token": "nz",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 242,
+      "token": "og",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 243,
+      "token": "oh",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 244,
+      "token": "os",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 245,
+      "token": "oß",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 246,
+      "token": "pt",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 247,
+      "token": "pu",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 248,
+      "token": "rb",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 249,
+      "token": "rc",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 250,
+      "token": "rf",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 251,
+      "token": "rä",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 252,
+      "token": "ty",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 253,
+      "token": "uc",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 254,
+      "token": "ug",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 255,
+      "token": "ul",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 256,
+      "token": "up",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 257,
+      "token": "uß",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 258,
+      "token": "wu",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 259,
+      "token": "wä",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 260,
+      "token": "wü",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 261,
+      "token": "ye",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 262,
+      "token": "Är",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 263,
+      "token": "Ös",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 264,
+      "token": "äh",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 265,
+      "token": "är",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 266,
+      "token": "üb",
+      "training_word_type_adjacency_count": 2,
+      "training_word_type_support": 2,
+      "utility": 0.020618556701030927
+    },
+    {
+      "rank": 267,
+      "token": "AB",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 268,
+      "token": "AX",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 269,
+      "token": "Ab",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 270,
+      "token": "Ar",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 271,
+      "token": "BI",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 272,
+      "token": "Bl",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 273,
+      "token": "CD",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 274,
+      "token": "Ci",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 275,
+      "token": "DA",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 276,
+      "token": "DU",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 277,
+      "token": "Dr",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 278,
+      "token": "Dw",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 279,
+      "token": "EU",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 280,
+      "token": "El",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 281,
+      "token": "En",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 282,
+      "token": "Es",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 283,
+      "token": "Eu",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 284,
+      "token": "Ex",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 285,
+      "token": "FC",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 286,
+      "token": "FP",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 287,
+      "token": "Fo",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 288,
+      "token": "Fu",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 289,
+      "token": "Fü",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 290,
+      "token": "Gä",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 291,
+      "token": "He",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 292,
+      "token": "Ho",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 293,
+      "token": "II",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 294,
+      "token": "IL",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 295,
+      "token": "IX",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 296,
+      "token": "Id",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 297,
+      "token": "Im",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 298,
+      "token": "In",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 299,
+      "token": "Ju",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 300,
+      "token": "Ka",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 301,
+      "token": "Kl",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 302,
+      "token": "LO",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 303,
+      "token": "Mu",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 304,
+      "token": "Mä",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 305,
+      "token": "Ni",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 306,
+      "token": "Nu",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 307,
+      "token": "Ob",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 308,
+      "token": "Ok",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 309,
+      "token": "PD",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 310,
+      "token": "Pa",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 311,
+      "token": "Pe",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 312,
+      "token": "Pl",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 313,
+      "token": "Ra",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 314,
+      "token": "Rh",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 315,
+      "token": "Ro",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 316,
+      "token": "SA",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 317,
+      "token": "ST",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 318,
+      "token": "Sa",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 319,
+      "token": "Sy",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 320,
+      "token": "TA",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 321,
+      "token": "TV",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 322,
+      "token": "Ta",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 323,
+      "token": "Th",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 324,
+      "token": "Ti",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 325,
+      "token": "Uh",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 326,
+      "token": "VP",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 327,
+      "token": "XI",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 328,
+      "token": "Ye",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 329,
+      "token": "Yv",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 330,
+      "token": "Zi",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 331,
+      "token": "ae",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 332,
+      "token": "af",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 333,
+      "token": "ay",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 334,
+      "token": "az",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 335,
+      "token": "ba",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 336,
+      "token": "bs",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 337,
+      "token": "ce",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 338,
+      "token": "cq",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 339,
+      "token": "dg",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 340,
+      "token": "dp",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 341,
+      "token": "ep",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 342,
+      "token": "ew",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 343,
+      "token": "ex",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 344,
+      "token": "ey",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 345,
+      "token": "fo",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 346,
+      "token": "ft",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 347,
+      "token": "fu",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 348,
+      "token": "gh",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 349,
+      "token": "gl",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 350,
+      "token": "hk",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 351,
+      "token": "hö",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 352,
+      "token": "ia",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 353,
+      "token": "iz",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 354,
+      "token": "iß",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 355,
+      "token": "ja",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 356,
+      "token": "jä",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 357,
+      "token": "km",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 358,
+      "token": "ku",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    },
+    {
+      "rank": 359,
+      "token": "lb",
+      "training_word_type_adjacency_count": 1,
+      "training_word_type_support": 1,
+      "utility": 0.010309278350515464
+    }
+  ]
+}

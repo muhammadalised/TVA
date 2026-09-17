@@ -102,11 +102,12 @@ policy was frozen on 2026-09-17; its exact deterministic construction is in
 
 Create a frequency-based Bigram vocabulary of the same or nearly the same size
 as the direct comparator. First analyse token coverage and composition, then
-train the recognition models. Matching output size does not by itself control
-the segmentation algorithm: before training, explicitly decide whether the
-linguistic condition also uses the dynamic program or retains TVA's greedy
-rule. If the rules differ, report segmentation policy as an experimental
-factor or limitation rather than describing the contrast as vocabulary-only.
+train the recognition models. The frozen comparator uses 359 pairs selected
+from distinct training word types, normalized frequency as utility, and the
+same dynamic program as the handwriting condition. This controls the
+segmentation algorithm while changing the evidence used for pair membership
+and utility. Exact rules, fold artifacts, checksums, and the count-one cutoff
+limitation are in `docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
 
 ## 7. Conditional BPE and Unigram extensions
 

@@ -202,6 +202,15 @@ TVA's runtime implementation is now available under tokenizer key
 `handwriting_bigram`. It matched the DTLR reference exactly on all 501 unique
 OnHW words and passed all-label checks over 251,990 fold/split instances.
 
+The matched linguistic baseline is also frozen and generated for all five WD
+and five WI folds under
+`artifacts/tokenizers/linguistic_bigram/`. It uses tokenizer key
+`linguistic_bigram`, selects 359 pairs from distinct fold-training word types,
+and applies normalized frequency utility through the same dynamic program. No
+validation labels were used for construction. The count-one vocabulary-tail
+limitation and complete checksums are recorded in
+`docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
+
 ## 5. Current branch and important files
 
 ```text
@@ -218,6 +227,8 @@ docs/HANDWRITING_BIGRAM_ADAPTER_V1.md  Frozen 419-class adapter policy
 artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json  Canonical adapter
 build_handwriting_bigram_adapter.py  Deterministic adapter builder CLI
 tva/handwriting_bigram_tokenizer.py  NFC + utility-DP runtime tokenizer
+docs/LINGUISTIC_BIGRAM_BASELINE_V1.md  Frozen matched-baseline policy and audit
+build_linguistic_bigram_tokenizers.py  Fold-specific baseline builder
 docs/FORCED_ALIGNMENT.md         Commands and technical explanation
 docs/PROJECT_HANDOFF_RTX.md      This handoff
 ```
@@ -343,19 +354,19 @@ TVA step.
 
 1. Use the implemented frozen 419-class adapter and dedicated runtime; do not
    regenerate it from OnHW annotation lists or change its recorded checksum.
-2. Predeclare whether the matched linguistic tokenizer uses the same dynamic
-   program or TVA's existing greedy segmentation, and treat any difference as
-   an experimental factor.
-3. Add the handwriting-bigram experiment configuration and run a bounded
-   pipeline smoke test before full training.
+2. Use the implemented matched linguistic artifacts. They use the same dynamic
+   program with fold-training frequency utilities; full policy and checksums
+   are in `docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
+3. Add matched fold-0 handwriting and linguistic configurations and run
+   bounded pipeline smoke tests before full training.
 
 ### Controlled OnHW Bigram experiment
 
-1. Build a matched-size linguistic Bigram separately from each OnHW training
-   fold; never use validation labels for its vocabulary.
-2. Tokenize all labels deterministically and preserve a pre-training coverage
-   report for each condition.
-3. Run a small pipeline smoke test in the `tva` environment.
+1. Use the frozen fold-specific matched linguistic Bigram artifacts; never
+   rebuild them using validation labels.
+2. Preserve the completed deterministic pre-training coverage report for each
+   condition.
+3. Run small matched pipeline smoke tests in the `tva` environment.
 4. Train fresh BLConv-B + BiLSTM-B + CTC models with all non-tokenizer settings
    held fixed, decode to plain text, and compare CER/WER.
 5. Develop on fold 0, freeze the final comparison, then run all five WD and WI

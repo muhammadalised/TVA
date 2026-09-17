@@ -581,3 +581,42 @@ before starting the full WD/RH fold-0 B0 experiment.
 2. Add a thesis experiment configuration using tokenizer key
    `handwriting_bigram` and the canonical shared artifact, then run a small
    pipeline smoke test before full training.
+
+## 2026-09-18 — Matched linguistic Bigram baseline frozen and generated
+
+- Froze D016: the linguistic baseline uses the same NFC and
+  maximum-total-utility dynamic program as the handwriting condition. Its pair
+  membership and utilities come only from fold-specific OnHW training text.
+- Preserved TVA's existing distinct-word convention so repeated writers and
+  samples do not dominate language frequency. Pairs are ranked by descending
+  adjacency count and lexical tie-breaking; utilities are counts divided by
+  the fold maximum.
+- Generated ten 419-class artifacts: five WD/RH and five WI/RH, each containing
+  blank ID 0, the same 59 characters, and 359 training-derived bigrams. Full
+  checksums are recorded in per-dataset manifests and
+  `docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
+- Runtime loading verifies the pinned dataset-manifest checksum and its
+  per-fold artifact checksum before accepting a linguistic tokenizer.
+- Confirmed the builder accepts only `train.json`; no validation annotation or
+  recognition result participates in vocabulary construction.
+- Found an important baseline limitation before training: every fold reaches a
+  frequency cutoff of one. Between 87 and 97 selected pairs per fold come from
+  a larger 147–155-pair count-one tie, resolved deterministically by token.
+- The linguistic and handwriting vocabularies share 223–225 of 359 pairs.
+  Their DP segmentations differ on 52.28%–53.29% of complete fold samples, and
+  their mean target lengths are approximately 3.221 and 3.321 tokens,
+  respectively. These are composition measurements, not recognition results.
+- Every linguistic artifact passed train/validation coverage, no-blank target,
+  ID-range, and round-trip checks over 251,990 fold/split label instances.
+- The suite now has 22 passing tests. No recognition training was run.
+- Predeclared a possible greedy-for-both fallback as a secondary segmentation
+  ablation if DP training is unsuccessful. It must retain both DP results and
+  cannot be promoted post hoc based on validation performance.
+
+### Immediate next steps
+
+1. Add matched fold-0 WD and WI experiment configurations for handwriting and
+   linguistic Bigram conditions.
+2. Run bounded pipeline smoke tests in the `tva` environment.
+3. Verify saved model heads contain 419 outputs and preserve smoke-test logs.
+4. Only after smoke tests pass, begin the predeclared fold-0 development runs.

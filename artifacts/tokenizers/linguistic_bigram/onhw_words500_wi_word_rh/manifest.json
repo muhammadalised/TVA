@@ -1,0 +1,43 @@
+{
+  "artifacts": {
+    "0": {
+      "eligible_bigram_count": 359,
+      "filename": "0.json",
+      "sha256": "c48475fa7e5d2add26db7520d89b6ecda9a38a6187210d5094a66edbbb61f5ee",
+      "size": 419,
+      "source_annotations_sha256": "3d8355292880518095f9c1a44d207339c4f18dcfb8ba0b0c189e1d7aaf9949cf"
+    },
+    "1": {
+      "eligible_bigram_count": 359,
+      "filename": "1.json",
+      "sha256": "97848f94cf238d4017cc4359f080271510e1d99b8f4267a1a18039f4409e47ef",
+      "size": 419,
+      "source_annotations_sha256": "3d8355292880518095f9c1a44d207339c4f18dcfb8ba0b0c189e1d7aaf9949cf"
+    },
+    "2": {
+      "eligible_bigram_count": 359,
+      "filename": "2.json",
+      "sha256": "9be7c17b08c833a6332a55dbd18332fbd92f1b56da86f2b3ea440de448731d71",
+      "size": 419,
+      "source_annotations_sha256": "3d8355292880518095f9c1a44d207339c4f18dcfb8ba0b0c189e1d7aaf9949cf"
+    },
+    "3": {
+      "eligible_bigram_count": 359,
+      "filename": "3.json",
+      "sha256": "2cd131d04625666ee1780e4110d189593f212178f46fecf9b69c59cf2d95aadf",
+      "size": 419,
+      "source_annotations_sha256": "3d8355292880518095f9c1a44d207339c4f18dcfb8ba0b0c189e1d7aaf9949cf"
+    },
+    "4": {
+      "eligible_bigram_count": 359,
+      "filename": "4.json",
+      "sha256": "f2e8aab79dabee5fcc887e52f1796a922f438d88a56ae33f8cd8ccaf524911f1",
+      "size": 419,
+      "source_annotations_sha256": "3d8355292880518095f9c1a44d207339c4f18dcfb8ba0b0c189e1d7aaf9949cf"
+    }
+  },
+  "dataset": "onhw_words500_wi_word_rh",
+  "fold_count": 5,
+  "model_version": "onhw-frequency-bigram-v1",
+  "schema_version": "tva.frequency-bigram-manifest.v1"
+}

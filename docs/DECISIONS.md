@@ -198,3 +198,32 @@ the reason no longer valid.
   `docs/TOKENIZER_COMPATIBILITY_AUDIT.md` and
   `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`. The canonical adapter SHA-256 is
   `12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2bfe`.
+
+## D016 — Match the linguistic baseline's segmentation algorithm
+
+- Status: frozen on 2026-09-18 before recognition training
+- Decision: Build 419-class linguistic Bigram tokenizers separately from each
+  WD/WI fold's training annotations. Collapse repeated samples to distinct word
+  types, rank adjacent pairs by descending type-weighted occurrence count with
+  lexical tie-breaking, and retain 359 pairs. Use normalized pair frequency as
+  utility in the same maximum-total-utility dynamic program as the handwriting
+  tokenizer.
+- Reason: Using the existing greedy tokenizer would confound evidence source
+  with segmentation algorithm. Distinct-word weighting follows TVA's previous
+  Bigram construction and avoids treating writer/sample multiplicity as
+  linguistic evidence.
+- Leakage rule: Read `train.json` only. Never inspect validation labels or
+  recognition results during construction. Validation may be used afterward
+  only for compatibility checks.
+- Interpretation: The controlled factor is the source of pair evidence and
+  utility—training-text frequency versus IAM+READ handwriting connectivity.
+  This is not a token-membership-only comparison because the utilities also
+  differ by evidence source.
+- Limitation: The matched 359-bigram size reaches a count-one tie in every
+  fold, so 87–97 selected tail pairs are chosen lexically from larger tied
+  groups. This deterministic but weakly supported tail must be reported.
+- Contingency: If DP-based training is unsuccessful, greedy left-to-right
+  segmentation may be evaluated for both handwriting and linguistic
+  vocabularies as a separately named secondary ablation. It cannot replace or
+  suppress the predeclared primary DP result based on observed performance.
+- Specification: `docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
