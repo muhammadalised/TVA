@@ -646,6 +646,12 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Added regression tests that keep the four non-tokenizer configurations
   matched and require every configured tokenizer and output head to have 419
   classes. The complete suite passes 25 tests.
+- A manual full-data, one-epoch timing run of the handwriting-aware WD/RH
+  fold-0 configuration on the RTX 4060 measured 29 seconds for training and
+  four seconds for validation. This implies approximately 2 hours 45 minutes
+  per 300-epoch fold and about 11 hours for the four fold-0 Bigram development
+  runs when executed sequentially. It is a runtime measurement, not a
+  recognition result.
 
 ### Immediate next steps
 

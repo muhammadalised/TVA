@@ -26,6 +26,16 @@ recognition evidence. A subsequent bounded run detected the NVIDIA GeForce RTX
 handwriting-aware WD condition. The pipeline is therefore cleared for full
 fold-0 training.
 
+### Full-data timing measurement
+
+A separate one-epoch timing run used the complete handwriting-aware WD/RH
+fold-0 training and validation splits on the RTX 4060. Training took 29
+seconds and validation took four seconds. The resulting estimate is about 2
+hours 45 minutes for one 300-epoch fold, or about 11 hours for the four fold-0
+Bigram conditions run sequentially. This run measures computational cost only;
+its one-epoch recognition metrics and checkpoint are not experimental results
+and must not be used to initialize a full run.
+
 ## B0 character baseline — WD/RH fold 0
 
 ### Setup

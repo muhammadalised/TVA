@@ -380,14 +380,19 @@ The full fold-0 jobs may now start from scratch.
 
 ### Training-budget estimate
 
-Current full runs use 300 epochs. The RTX 4060 measurement was about **20 seconds per epoch**, so one fold takes roughly **2 hours** including overhead.
+Current full runs use 300 epochs. A full-data handwriting-aware WD/RH fold-0
+timing run on the RTX 4060 measured about **29 seconds for training plus 4
+seconds for validation per epoch**. At roughly 33 seconds per complete epoch,
+one 300-epoch fold is approximately **2 hours 45 minutes**, excluding one-time
+startup, dataset caching, and backup overhead.
 
 | Experiment scope | Approximate training time |
 | --- | ---: |
-| One tokenizer, one setting, five folds | 10–12 hours |
-| Handwriting-aware Bigram for WD + WI | 20–24 hours |
-| Linguistic Bigram comparison for WD + WI | another 20–24 hours |
-| Bigram handwriting-aware + linguistic, all WD/WI folds | about 40–48 hours |
+| Four fold-0 Bigram development runs | about 11 hours |
+| One tokenizer, one setting, five folds | about 14–15 hours |
+| Handwriting-aware Bigram for WD + WI | about 28–30 hours |
+| Linguistic Bigram comparison for WD + WI | another 28–30 hours |
+| Bigram handwriting-aware + linguistic, all WD/WI folds | about 56–60 hours |
 
 Tokenizer construction is quick; model training is the expensive part. Run one setting/fold at a time, use unique result directories, and back up each completed run.
 
