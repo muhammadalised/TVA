@@ -36,6 +36,71 @@ Bigram conditions run sequentially. This run measures computational cost only;
 its one-epoch recognition metrics and checkpoint are not experimental results
 and must not be used to initialize a full run.
 
+## Handwriting-aware Bigram — WI/RH fold 0
+
+### Setup
+
+- Date completed: 2026-09-18
+- Dataset: OnHW-Words500, writer-independent, right-handed, fold 0
+- Tokenizer: frozen IAM+READ handwriting-aware Bigram adapter
+- Tokenizer classes: 419 including CTC blank ID 0
+- Segmentation: frozen maximum-total-utility dynamic program
+- Architecture: BLConv-B + BiLSTM-B + CTC
+- Seed: 42
+- Epochs: 300 (epochs 0–299)
+- Batch size: 64
+- Training machine: WSL laptop with NVIDIA GeForce RTX 4060
+- Configuration: `configs/thesis/bigram_handwriting_wi_rh.yaml`
+- Code commit at training start: `0298374`
+
+### Best validation results
+
+| Metric | Value | Epoch |
+| --- | ---: | ---: |
+| Levenshtein distance | 0.872260 | 272 |
+| Character error rate | 0.159850 (15.99%) | 272 |
+| Word error rate | 0.246221 (24.62%) | 274 |
+| Average reference length | 5.456727 characters | Not optimized |
+
+The metric optima belong to different checkpoints. At the best-CER checkpoint
+(epoch 272), WER is 0.248110 (24.81%). At the best-WER checkpoint (epoch 274),
+CER is 0.160266 (16.03%). Do not present the independently best CER and WER as
+if they came from one model state.
+
+### Fold-0 character comparison
+
+Compared with the B0 WI/RH character run, independently best WER improves from
+27.95% to 24.62%: a 3.33-percentage-point reduction, or an 11.9% relative
+error reduction. Independently best CER changes from 15.60% to 15.99%, a
+0.38-percentage-point increase. This mixed fold-0 result suggests that the
+handwriting-aware labels improve exact-word recognition without improving
+character error. It is a development observation, not a final thesis claim.
+The matched linguistic Bigram run and all five folds are still required before
+attributing the WER change to handwriting-derived pair evidence.
+
+### Interruption, recovery, and artifacts
+
+The first process completed training epoch 233 but stopped before its
+validation/checkpoint stage because Tkinter objects from Matplotlib's GUI
+backend were destroyed outside the main loop. The intact `latest.pth` from
+epoch 232 contained the complete model, optimizer, scheduler, scaler, random,
+DataLoader-generator, and metrics states. Training resumed at epoch 233 with
+`MPLBACKEND=Agg` and completed epoch 299. Epoch 233 was therefore repeated;
+the complete resumed metrics file contains exactly epochs 0–299.
+
+Checkpoint SHA-256 values:
+
+| Checkpoint | Epoch | SHA-256 |
+| --- | ---: | --- |
+| `best_cer.pth` | 272 | `e8037512f745b2105767ba519cf5118394f8e23fda163ba791a99fea688fdeef` |
+| `best_wer.pth` | 274 | `3ee167a19f829a43436f63dfd843368207b160ad13e52f2d828100080438f3d8` |
+| `latest.pth` | 299 | `a7beef28b9fd29095f52ec5a8729898280c560d51727c8456f25572abc77d10f` |
+
+The complete run directory is
+`results/thesis/bigram/handwriting_wi_rh/0/`. Preserve both logs and resolved
+configuration snapshots so the interruption and resume remain auditable.
+External backup location and checksum: not yet recorded.
+
 ## B0 character baseline — WD/RH fold 0
 
 ### Setup

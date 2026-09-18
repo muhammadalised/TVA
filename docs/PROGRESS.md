@@ -674,3 +674,23 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Canonical writes are disabled by default. Enabling the write flag can only
   emit the already-frozen artifact because the builder rejects any unexpected
   source checksum, schema, class count, bigram count, or final artifact hash.
+
+## 2026-09-18 — Handwriting-aware Bigram WI/RH fold-0 result
+
+- Completed all 300 epochs of the frozen 419-class handwriting-aware Bigram
+  condition on WI/RH fold 0 using BLConv-B + BiLSTM-B + CTC and seed 42.
+- Best validation CER is 0.159850 (15.99%) at epoch 272. Best validation WER is
+  0.246221 (24.62%) at epoch 274. These optima are from different checkpoints:
+  epoch 272 has WER 24.81%, while epoch 274 has CER 16.03%.
+- Relative to the existing WI/RH fold-0 character baseline, independently best
+  WER improves by 3.33 percentage points (11.9% relative error reduction),
+  while CER worsens by 0.38 percentage points. This mixed single-fold result
+  must not be generalized before the matched linguistic run and five-fold
+  evaluation.
+- A Tkinter/Matplotlib GUI-backend cleanup failure interrupted the first
+  process after training epoch 233 and before validation. The complete epoch
+  232 checkpoint was resumed with `MPLBACKEND=Agg`, causing epoch 233 to be
+  repeated safely. The resumed metrics contain a complete epoch 0–299 series.
+- Verified `best_cer.pth`, `best_wer.pth`, and `latest.pth` all have 419-output
+  heads and complete resumable training state. Exact checkpoint hashes and the
+  recovery record are in `docs/EXPERIMENTS.md`.

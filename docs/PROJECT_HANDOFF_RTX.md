@@ -150,6 +150,23 @@ Details:
 - WI has `best_cer.pth` (epoch 244), `best_wer.pth` (epoch 269), and `latest.pth`.
 - A0 has worse recognition accuracy and is **not** a baseline replacement. It was made only to obtain less biased alignment timing.
 
+### Handwriting-aware Bigram completed (WI/RH fold 0)
+
+The frozen 419-class handwriting-aware condition completed 300 epochs. Best
+validation CER is **15.99% at epoch 272** and best validation WER is **24.62%
+at epoch 274**. The two values come from separate saved checkpoints. Against
+the fold-0 WI character baseline, WER improves by 3.33 percentage points
+(11.9% relative), while CER is 0.38 percentage points worse. This is a mixed
+development result; do not attribute it to handwriting evidence until the
+matched linguistic Bigram run is complete, and do not make a final claim from
+one fold.
+
+The run was interrupted after the training phase of epoch 233 by a
+Tkinter/Matplotlib GUI-backend cleanup failure. Its complete epoch-232 state
+was resumed at epoch 233 with `MPLBACKEND=Agg` and finished normally. Preserve
+both run logs and configuration snapshots. Full metrics, checkpoint hashes,
+and recovery details are recorded in `docs/EXPERIMENTS.md`.
+
 ### CTC forced alignment implementation
 
 The following is implemented, tested, and pushed on `forced-alignment`:
