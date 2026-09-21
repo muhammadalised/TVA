@@ -1,0 +1,1520 @@
+{
+  "adapter": {
+    "fau_annotation_label_values_read_by_builder": false,
+    "frequency_evidence": {
+      "dataset": "IAM",
+      "labels_sha256": "5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab",
+      "line_count": 5694,
+      "schema_version": "tva.iam-letter-bigram-counts.v1",
+      "selection_sha256": "7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2",
+      "sha256": "3a2d90f7233dd550f399e3296f92390291201482ca690c9cd85eb30d8b8079ca",
+      "split": "train"
+    },
+    "frozen_date": "2026-09-21",
+    "iam_training_transcripts_read": true,
+    "policy_id": "fau-english-iam-frequency-bigram-greedy-v1",
+    "projection": "declared-task-alphabet-v1",
+    "task": "FAU English sentence recognition, WD and WI",
+    "task_alphabet": [
+      " ",
+      "!",
+      "\"",
+      "%",
+      "'",
+      "(",
+      ")",
+      "+",
+      ",",
+      "-",
+      ".",
+      "/",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      ":",
+      ";",
+      "=",
+      "?",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z"
+    ]
+  },
+  "blank_id": 0,
+  "blank_token": "",
+  "dataset": "FAU English",
+  "eligible_bigram_count": 145,
+  "idx_token": {
+    "0": "",
+    "1": " ",
+    "10": "-",
+    "100": "ti",
+    "101": "as",
+    "102": "of",
+    "103": "ou",
+    "104": "nt",
+    "105": "ve",
+    "106": "al",
+    "107": "le",
+    "108": "se",
+    "109": "ea",
+    "11": ".",
+    "110": "hi",
+    "111": "me",
+    "112": "de",
+    "113": "ri",
+    "114": "be",
+    "115": "ne",
+    "116": "ll",
+    "117": "ro",
+    "118": "ic",
+    "119": "li",
+    "12": "/",
+    "120": "ce",
+    "121": "ch",
+    "122": "ma",
+    "123": "ho",
+    "124": "om",
+    "125": "io",
+    "126": "ra",
+    "127": "co",
+    "128": "el",
+    "129": "il",
+    "13": "0",
+    "130": "ur",
+    "131": "la",
+    "132": "pe",
+    "133": "ta",
+    "134": "ad",
+    "135": "ee",
+    "136": "fo",
+    "137": "si",
+    "138": "ut",
+    "139": "ns",
+    "14": "1",
+    "140": "et",
+    "141": "ot",
+    "142": "ly",
+    "143": "wa",
+    "144": "us",
+    "145": "ie",
+    "146": "un",
+    "147": "tr",
+    "148": "no",
+    "149": "di",
+    "15": "2",
+    "150": "wi",
+    "151": "em",
+    "152": "ai",
+    "153": "wh",
+    "154": "ac",
+    "155": "ca",
+    "156": "nc",
+    "157": "rs",
+    "158": "we",
+    "159": "ec",
+    "16": "3",
+    "160": "ul",
+    "161": "ir",
+    "162": "ol",
+    "163": "ow",
+    "164": "mo",
+    "165": "rt",
+    "166": "sh",
+    "167": "ct",
+    "168": "so",
+    "169": "ss",
+    "17": "4",
+    "170": "ay",
+    "171": "po",
+    "172": "ge",
+    "173": "Th",
+    "174": "pr",
+    "175": "ld",
+    "176": "mi",
+    "177": "ni",
+    "178": "ev",
+    "179": "lo",
+    "18": "5",
+    "180": "pa",
+    "181": "pl",
+    "182": "ts",
+    "183": "iv",
+    "184": "fi",
+    "185": "ig",
+    "186": "gh",
+    "187": "su",
+    "188": "ke",
+    "189": "op",
+    "19": "6",
+    "190": "ry",
+    "191": "id",
+    "192": "ab",
+    "193": "na",
+    "194": "os",
+    "195": "fe",
+    "196": "bl",
+    "197": "wo",
+    "198": "vi",
+    "199": "im",
+    "2": "!",
+    "20": "7",
+    "200": "rd",
+    "201": "od",
+    "202": "rn",
+    "203": "ei",
+    "204": "oo",
+    "205": "ia",
+    "206": "ey",
+    "207": "mp",
+    "208": "av",
+    "209": "tt",
+    "21": "8",
+    "210": "am",
+    "211": "ci",
+    "212": "ap",
+    "213": "ov",
+    "214": "sa",
+    "215": "rm",
+    "216": "fr",
+    "217": "bo",
+    "218": "ag",
+    "219": "do",
+    "22": "9",
+    "220": "by",
+    "221": "ef",
+    "222": "Mr",
+    "223": "bu",
+    "23": ":",
+    "24": ";",
+    "25": "=",
+    "26": "?",
+    "27": "A",
+    "28": "B",
+    "29": "C",
+    "3": "\"",
+    "30": "D",
+    "31": "E",
+    "32": "F",
+    "33": "G",
+    "34": "H",
+    "35": "I",
+    "36": "J",
+    "37": "K",
+    "38": "L",
+    "39": "M",
+    "4": "%",
+    "40": "N",
+    "41": "O",
+    "42": "P",
+    "43": "Q",
+    "44": "R",
+    "45": "S",
+    "46": "T",
+    "47": "U",
+    "48": "V",
+    "49": "W",
+    "5": "'",
+    "50": "X",
+    "51": "Y",
+    "52": "Z",
+    "53": "a",
+    "54": "b",
+    "55": "c",
+    "56": "d",
+    "57": "e",
+    "58": "f",
+    "59": "g",
+    "6": "(",
+    "60": "h",
+    "61": "i",
+    "62": "j",
+    "63": "k",
+    "64": "l",
+    "65": "m",
+    "66": "n",
+    "67": "o",
+    "68": "p",
+    "69": "q",
+    "7": ")",
+    "70": "r",
+    "71": "s",
+    "72": "t",
+    "73": "u",
+    "74": "v",
+    "75": "w",
+    "76": "x",
+    "77": "y",
+    "78": "z",
+    "79": "th",
+    "8": "+",
+    "80": "he",
+    "81": "in",
+    "82": "er",
+    "83": "an",
+    "84": "re",
+    "85": "on",
+    "86": "en",
+    "87": "at",
+    "88": "is",
+    "89": "ed",
+    "9": ",",
+    "90": "nd",
+    "91": "to",
+    "92": "ha",
+    "93": "es",
+    "94": "or",
+    "95": "ar",
+    "96": "te",
+    "97": "st",
+    "98": "ng",
+    "99": "it"
+  },
+  "model_version": "fau-english-iam-frequency-bigram-greedy-v1",
+  "note": "Matched linguistic comparator selected from IAM training-text frequency only. FAU labels and recognition results did not select or rank tokens.",
+  "policy": {
+    "overlap_resolution": "greedy-left-to-right-v1",
+    "required_characters": [
+      " ",
+      "!",
+      "\"",
+      "%",
+      "'",
+      "(",
+      ")",
+      "+",
+      ",",
+      "-",
+      ".",
+      "/",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      ":",
+      ";",
+      "=",
+      "?",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z"
+    ],
+    "selection_count": 145,
+    "single_character_utility": 0.0,
+    "tie_breaking": "descending-count-then-lexical-token",
+    "vocabulary_selection": "iam-train-adjacent-pair-frequency-v1"
+  },
+  "schema_version": "tva.fau-frequency-bigram-adapter.v1",
+  "size": 224,
+  "status": "frozen-matched-comparator",
+  "text_normalization": "NFC",
+  "vocab": {
+    "": 0,
+    " ": 1,
+    "!": 2,
+    "\"": 3,
+    "%": 4,
+    "'": 5,
+    "(": 6,
+    ")": 7,
+    "+": 8,
+    ",": 9,
+    "-": 10,
+    ".": 11,
+    "/": 12,
+    "0": 13,
+    "1": 14,
+    "2": 15,
+    "3": 16,
+    "4": 17,
+    "5": 18,
+    "6": 19,
+    "7": 20,
+    "8": 21,
+    "9": 22,
+    ":": 23,
+    ";": 24,
+    "=": 25,
+    "?": 26,
+    "A": 27,
+    "B": 28,
+    "C": 29,
+    "D": 30,
+    "E": 31,
+    "F": 32,
+    "G": 33,
+    "H": 34,
+    "I": 35,
+    "J": 36,
+    "K": 37,
+    "L": 38,
+    "M": 39,
+    "Mr": 222,
+    "N": 40,
+    "O": 41,
+    "P": 42,
+    "Q": 43,
+    "R": 44,
+    "S": 45,
+    "T": 46,
+    "Th": 173,
+    "U": 47,
+    "V": 48,
+    "W": 49,
+    "X": 50,
+    "Y": 51,
+    "Z": 52,
+    "a": 53,
+    "ab": 192,
+    "ac": 154,
+    "ad": 134,
+    "ag": 218,
+    "ai": 152,
+    "al": 106,
+    "am": 210,
+    "an": 83,
+    "ap": 212,
+    "ar": 95,
+    "as": 101,
+    "at": 87,
+    "av": 208,
+    "ay": 170,
+    "b": 54,
+    "be": 114,
+    "bl": 196,
+    "bo": 217,
+    "bu": 223,
+    "by": 220,
+    "c": 55,
+    "ca": 155,
+    "ce": 120,
+    "ch": 121,
+    "ci": 211,
+    "co": 127,
+    "ct": 167,
+    "d": 56,
+    "de": 112,
+    "di": 149,
+    "do": 219,
+    "e": 57,
+    "ea": 109,
+    "ec": 159,
+    "ed": 89,
+    "ee": 135,
+    "ef": 221,
+    "ei": 203,
+    "el": 128,
+    "em": 151,
+    "en": 86,
+    "er": 82,
+    "es": 93,
+    "et": 140,
+    "ev": 178,
+    "ey": 206,
+    "f": 58,
+    "fe": 195,
+    "fi": 184,
+    "fo": 136,
+    "fr": 216,
+    "g": 59,
+    "ge": 172,
+    "gh": 186,
+    "h": 60,
+    "ha": 92,
+    "he": 80,
+    "hi": 110,
+    "ho": 123,
+    "i": 61,
+    "ia": 205,
+    "ic": 118,
+    "id": 191,
+    "ie": 145,
+    "ig": 185,
+    "il": 129,
+    "im": 199,
+    "in": 81,
+    "io": 125,
+    "ir": 161,
+    "is": 88,
+    "it": 99,
+    "iv": 183,
+    "j": 62,
+    "k": 63,
+    "ke": 188,
+    "l": 64,
+    "la": 131,
+    "ld": 175,
+    "le": 107,
+    "li": 119,
+    "ll": 116,
+    "lo": 179,
+    "ly": 142,
+    "m": 65,
+    "ma": 122,
+    "me": 111,
+    "mi": 176,
+    "mo": 164,
+    "mp": 207,
+    "n": 66,
+    "na": 193,
+    "nc": 156,
+    "nd": 90,
+    "ne": 115,
+    "ng": 98,
+    "ni": 177,
+    "no": 148,
+    "ns": 139,
+    "nt": 104,
+    "o": 67,
+    "od": 201,
+    "of": 102,
+    "ol": 162,
+    "om": 124,
+    "on": 85,
+    "oo": 204,
+    "op": 189,
+    "or": 94,
+    "os": 194,
+    "ot": 141,
+    "ou": 103,
+    "ov": 213,
+    "ow": 163,
+    "p": 68,
+    "pa": 180,
+    "pe": 132,
+    "pl": 181,
+    "po": 171,
+    "pr": 174,
+    "q": 69,
+    "r": 70,
+    "ra": 126,
+    "rd": 200,
+    "re": 84,
+    "ri": 113,
+    "rm": 215,
+    "rn": 202,
+    "ro": 117,
+    "rs": 157,
+    "rt": 165,
+    "ry": 190,
+    "s": 71,
+    "sa": 214,
+    "se": 108,
+    "sh": 166,
+    "si": 137,
+    "so": 168,
+    "ss": 169,
+    "st": 97,
+    "su": 187,
+    "t": 72,
+    "ta": 133,
+    "te": 96,
+    "th": 79,
+    "ti": 100,
+    "to": 91,
+    "tr": 147,
+    "ts": 182,
+    "tt": 209,
+    "u": 73,
+    "ul": 160,
+    "un": 146,
+    "ur": 130,
+    "us": 144,
+    "ut": 138,
+    "v": 74,
+    "ve": 105,
+    "vi": 198,
+    "w": 75,
+    "wa": 143,
+    "we": 158,
+    "wh": 153,
+    "wi": 150,
+    "wo": 197,
+    "x": 76,
+    "y": 77,
+    "z": 78
+  },
+  "vocabulary": [
+    {
+      "iam_training_occurrence_count": 5049,
+      "rank": 1,
+      "token": "th",
+      "utility": 1.0
+    },
+    {
+      "iam_training_occurrence_count": 4849,
+      "rank": 2,
+      "token": "he",
+      "utility": 0.9603881956823134
+    },
+    {
+      "iam_training_occurrence_count": 3479,
+      "rank": 3,
+      "token": "in",
+      "utility": 0.6890473361061596
+    },
+    {
+      "iam_training_occurrence_count": 3302,
+      "rank": 4,
+      "token": "er",
+      "utility": 0.6539908892850069
+    },
+    {
+      "iam_training_occurrence_count": 2793,
+      "rank": 5,
+      "token": "an",
+      "utility": 0.5531788472964944
+    },
+    {
+      "iam_training_occurrence_count": 2638,
+      "rank": 6,
+      "token": "re",
+      "utility": 0.5224796989502872
+    },
+    {
+      "iam_training_occurrence_count": 2365,
+      "rank": 7,
+      "token": "on",
+      "utility": 0.4684095860566449
+    },
+    {
+      "iam_training_occurrence_count": 2284,
+      "rank": 8,
+      "token": "en",
+      "utility": 0.4523668053079818
+    },
+    {
+      "iam_training_occurrence_count": 2098,
+      "rank": 9,
+      "token": "at",
+      "utility": 0.4155278272925332
+    },
+    {
+      "iam_training_occurrence_count": 1947,
+      "rank": 10,
+      "token": "is",
+      "utility": 0.38562091503267976
+    },
+    {
+      "iam_training_occurrence_count": 1901,
+      "rank": 11,
+      "token": "ed",
+      "utility": 0.37651020003961183
+    },
+    {
+      "iam_training_occurrence_count": 1848,
+      "rank": 12,
+      "token": "nd",
+      "utility": 0.3660130718954248
+    },
+    {
+      "iam_training_occurrence_count": 1846,
+      "rank": 13,
+      "token": "to",
+      "utility": 0.36561695385224796
+    },
+    {
+      "iam_training_occurrence_count": 1828,
+      "rank": 14,
+      "token": "ha",
+      "utility": 0.3620518914636562
+    },
+    {
+      "iam_training_occurrence_count": 1827,
+      "rank": 15,
+      "token": "es",
+      "utility": 0.36185383244206776
+    },
+    {
+      "iam_training_occurrence_count": 1723,
+      "rank": 16,
+      "token": "or",
+      "utility": 0.3412556941968707
+    },
+    {
+      "iam_training_occurrence_count": 1715,
+      "rank": 17,
+      "token": "ar",
+      "utility": 0.3396712220241632
+    },
+    {
+      "iam_training_occurrence_count": 1679,
+      "rank": 18,
+      "token": "te",
+      "utility": 0.3325410972469796
+    },
+    {
+      "iam_training_occurrence_count": 1646,
+      "rank": 19,
+      "token": "st",
+      "utility": 0.3260051495345613
+    },
+    {
+      "iam_training_occurrence_count": 1623,
+      "rank": 20,
+      "token": "ng",
+      "utility": 0.3214497920380273
+    },
+    {
+      "iam_training_occurrence_count": 1584,
+      "rank": 21,
+      "token": "it",
+      "utility": 0.3137254901960784
+    },
+    {
+      "iam_training_occurrence_count": 1562,
+      "rank": 22,
+      "token": "ti",
+      "utility": 0.3093681917211329
+    },
+    {
+      "iam_training_occurrence_count": 1515,
+      "rank": 23,
+      "token": "as",
+      "utility": 0.30005941770647654
+    },
+    {
+      "iam_training_occurrence_count": 1466,
+      "rank": 24,
+      "token": "of",
+      "utility": 0.2903545256486433
+    },
+    {
+      "iam_training_occurrence_count": 1445,
+      "rank": 25,
+      "token": "ou",
+      "utility": 0.28619528619528617
+    },
+    {
+      "iam_training_occurrence_count": 1414,
+      "rank": 26,
+      "token": "nt",
+      "utility": 0.28005545652604474
+    },
+    {
+      "iam_training_occurrence_count": 1395,
+      "rank": 27,
+      "token": "ve",
+      "utility": 0.27629233511586454
+    },
+    {
+      "iam_training_occurrence_count": 1379,
+      "rank": 28,
+      "token": "al",
+      "utility": 0.2731233907704496
+    },
+    {
+      "iam_training_occurrence_count": 1328,
+      "rank": 29,
+      "token": "le",
+      "utility": 0.2630223806694395
+    },
+    {
+      "iam_training_occurrence_count": 1274,
+      "rank": 30,
+      "token": "se",
+      "utility": 0.2523271935036641
+    },
+    {
+      "iam_training_occurrence_count": 1271,
+      "rank": 31,
+      "token": "ea",
+      "utility": 0.2517330164388988
+    },
+    {
+      "iam_training_occurrence_count": 1217,
+      "rank": 32,
+      "token": "hi",
+      "utility": 0.2410378292731234
+    },
+    {
+      "iam_training_occurrence_count": 1160,
+      "rank": 33,
+      "token": "me",
+      "utility": 0.2297484650425827
+    },
+    {
+      "iam_training_occurrence_count": 1130,
+      "rank": 34,
+      "token": "de",
+      "utility": 0.2238066943949297
+    },
+    {
+      "iam_training_occurrence_count": 1114,
+      "rank": 35,
+      "token": "ri",
+      "utility": 0.22063775004951475
+    },
+    {
+      "iam_training_occurrence_count": 1112,
+      "rank": 36,
+      "token": "be",
+      "utility": 0.2202416320063379
+    },
+    {
+      "iam_training_occurrence_count": 1075,
+      "rank": 37,
+      "token": "ne",
+      "utility": 0.21291344820756586
+    },
+    {
+      "iam_training_occurrence_count": 1013,
+      "rank": 38,
+      "token": "ll",
+      "utility": 0.20063378886908298
+    },
+    {
+      "iam_training_occurrence_count": 1009,
+      "rank": 39,
+      "token": "ro",
+      "utility": 0.19984155278272925
+    },
+    {
+      "iam_training_occurrence_count": 938,
+      "rank": 40,
+      "token": "ic",
+      "utility": 0.18577936224995048
+    },
+    {
+      "iam_training_occurrence_count": 937,
+      "rank": 41,
+      "token": "li",
+      "utility": 0.18558130322836205
+    },
+    {
+      "iam_training_occurrence_count": 918,
+      "rank": 42,
+      "token": "ce",
+      "utility": 0.18181818181818182
+    },
+    {
+      "iam_training_occurrence_count": 893,
+      "rank": 43,
+      "token": "ch",
+      "utility": 0.17686670627847098
+    },
+    {
+      "iam_training_occurrence_count": 879,
+      "rank": 44,
+      "token": "ma",
+      "utility": 0.1740938799762329
+    },
+    {
+      "iam_training_occurrence_count": 862,
+      "rank": 45,
+      "token": "ho",
+      "utility": 0.17072687660922956
+    },
+    {
+      "iam_training_occurrence_count": 843,
+      "rank": 46,
+      "token": "om",
+      "utility": 0.16696375519904932
+    },
+    {
+      "iam_training_occurrence_count": 838,
+      "rank": 47,
+      "token": "io",
+      "utility": 0.16597346009110714
+    },
+    {
+      "iam_training_occurrence_count": 826,
+      "rank": 48,
+      "token": "ra",
+      "utility": 0.16359675183204594
+    },
+    {
+      "iam_training_occurrence_count": 805,
+      "rank": 49,
+      "token": "co",
+      "utility": 0.15943751237868886
+    },
+    {
+      "iam_training_occurrence_count": 794,
+      "rank": 50,
+      "token": "el",
+      "utility": 0.1572588631412161
+    },
+    {
+      "iam_training_occurrence_count": 791,
+      "rank": 51,
+      "token": "il",
+      "utility": 0.1566646860764508
+    },
+    {
+      "iam_training_occurrence_count": 789,
+      "rank": 52,
+      "token": "ur",
+      "utility": 0.1562685680332739
+    },
+    {
+      "iam_training_occurrence_count": 784,
+      "rank": 53,
+      "token": "la",
+      "utility": 0.15527827292533175
+    },
+    {
+      "iam_training_occurrence_count": 776,
+      "rank": 54,
+      "token": "pe",
+      "utility": 0.1536938007526243
+    },
+    {
+      "iam_training_occurrence_count": 775,
+      "rank": 55,
+      "token": "ta",
+      "utility": 0.15349574173103586
+    },
+    {
+      "iam_training_occurrence_count": 734,
+      "rank": 56,
+      "token": "ad",
+      "utility": 0.1453753218459101
+    },
+    {
+      "iam_training_occurrence_count": 707,
+      "rank": 57,
+      "token": "ee",
+      "utility": 0.14002772826302237
+    },
+    {
+      "iam_training_occurrence_count": 697,
+      "rank": 58,
+      "token": "fo",
+      "utility": 0.13804713804713806
+    },
+    {
+      "iam_training_occurrence_count": 681,
+      "rank": 59,
+      "token": "si",
+      "utility": 0.1348781937017231
+    },
+    {
+      "iam_training_occurrence_count": 676,
+      "rank": 60,
+      "token": "ut",
+      "utility": 0.13388789859378095
+    },
+    {
+      "iam_training_occurrence_count": 665,
+      "rank": 61,
+      "token": "ns",
+      "utility": 0.13170924935630818
+    },
+    {
+      "iam_training_occurrence_count": 662,
+      "rank": 62,
+      "token": "et",
+      "utility": 0.13111507229154287
+    },
+    {
+      "iam_training_occurrence_count": 662,
+      "rank": 63,
+      "token": "ot",
+      "utility": 0.13111507229154287
+    },
+    {
+      "iam_training_occurrence_count": 654,
+      "rank": 64,
+      "token": "ly",
+      "utility": 0.1295306001188354
+    },
+    {
+      "iam_training_occurrence_count": 643,
+      "rank": 65,
+      "token": "wa",
+      "utility": 0.12735195088136264
+    },
+    {
+      "iam_training_occurrence_count": 635,
+      "rank": 66,
+      "token": "us",
+      "utility": 0.12576747870865518
+    },
+    {
+      "iam_training_occurrence_count": 627,
+      "rank": 67,
+      "token": "ie",
+      "utility": 0.12418300653594772
+    },
+    {
+      "iam_training_occurrence_count": 622,
+      "rank": 68,
+      "token": "un",
+      "utility": 0.12319271142800554
+    },
+    {
+      "iam_training_occurrence_count": 620,
+      "rank": 69,
+      "token": "tr",
+      "utility": 0.12279659338482868
+    },
+    {
+      "iam_training_occurrence_count": 618,
+      "rank": 70,
+      "token": "no",
+      "utility": 0.12240047534165181
+    },
+    {
+      "iam_training_occurrence_count": 617,
+      "rank": 71,
+      "token": "di",
+      "utility": 0.12220241632006337
+    },
+    {
+      "iam_training_occurrence_count": 617,
+      "rank": 72,
+      "token": "wi",
+      "utility": 0.12220241632006337
+    },
+    {
+      "iam_training_occurrence_count": 615,
+      "rank": 73,
+      "token": "em",
+      "utility": 0.12180629827688651
+    },
+    {
+      "iam_training_occurrence_count": 612,
+      "rank": 74,
+      "token": "ai",
+      "utility": 0.12121212121212122
+    },
+    {
+      "iam_training_occurrence_count": 593,
+      "rank": 75,
+      "token": "wh",
+      "utility": 0.11744899980194098
+    },
+    {
+      "iam_training_occurrence_count": 587,
+      "rank": 76,
+      "token": "ac",
+      "utility": 0.11626064567241037
+    },
+    {
+      "iam_training_occurrence_count": 587,
+      "rank": 77,
+      "token": "ca",
+      "utility": 0.11626064567241037
+    },
+    {
+      "iam_training_occurrence_count": 581,
+      "rank": 78,
+      "token": "nc",
+      "utility": 0.11507229154287978
+    },
+    {
+      "iam_training_occurrence_count": 578,
+      "rank": 79,
+      "token": "rs",
+      "utility": 0.11447811447811448
+    },
+    {
+      "iam_training_occurrence_count": 574,
+      "rank": 80,
+      "token": "we",
+      "utility": 0.11368587839176074
+    },
+    {
+      "iam_training_occurrence_count": 570,
+      "rank": 81,
+      "token": "ec",
+      "utility": 0.11289364230540701
+    },
+    {
+      "iam_training_occurrence_count": 546,
+      "rank": 82,
+      "token": "ul",
+      "utility": 0.1081402257872846
+    },
+    {
+      "iam_training_occurrence_count": 540,
+      "rank": 83,
+      "token": "ir",
+      "utility": 0.10695187165775401
+    },
+    {
+      "iam_training_occurrence_count": 527,
+      "rank": 84,
+      "token": "ol",
+      "utility": 0.10437710437710437
+    },
+    {
+      "iam_training_occurrence_count": 526,
+      "rank": 85,
+      "token": "ow",
+      "utility": 0.10417904535551595
+    },
+    {
+      "iam_training_occurrence_count": 523,
+      "rank": 86,
+      "token": "mo",
+      "utility": 0.10358486829075064
+    },
+    {
+      "iam_training_occurrence_count": 512,
+      "rank": 87,
+      "token": "rt",
+      "utility": 0.10140621905327787
+    },
+    {
+      "iam_training_occurrence_count": 508,
+      "rank": 88,
+      "token": "sh",
+      "utility": 0.10061398296692414
+    },
+    {
+      "iam_training_occurrence_count": 505,
+      "rank": 89,
+      "token": "ct",
+      "utility": 0.10001980590215884
+    },
+    {
+      "iam_training_occurrence_count": 502,
+      "rank": 90,
+      "token": "so",
+      "utility": 0.09942562883739355
+    },
+    {
+      "iam_training_occurrence_count": 498,
+      "rank": 91,
+      "token": "ss",
+      "utility": 0.09863339275103981
+    },
+    {
+      "iam_training_occurrence_count": 497,
+      "rank": 92,
+      "token": "ay",
+      "utility": 0.09843533372945137
+    },
+    {
+      "iam_training_occurrence_count": 489,
+      "rank": 93,
+      "token": "po",
+      "utility": 0.09685086155674391
+    },
+    {
+      "iam_training_occurrence_count": 483,
+      "rank": 94,
+      "token": "ge",
+      "utility": 0.09566250742721331
+    },
+    {
+      "iam_training_occurrence_count": 478,
+      "rank": 95,
+      "token": "Th",
+      "utility": 0.09467221231927114
+    },
+    {
+      "iam_training_occurrence_count": 465,
+      "rank": 96,
+      "token": "pr",
+      "utility": 0.09209744503862151
+    },
+    {
+      "iam_training_occurrence_count": 463,
+      "rank": 97,
+      "token": "ld",
+      "utility": 0.09170132699544464
+    },
+    {
+      "iam_training_occurrence_count": 460,
+      "rank": 98,
+      "token": "mi",
+      "utility": 0.09110714993067934
+    },
+    {
+      "iam_training_occurrence_count": 460,
+      "rank": 99,
+      "token": "ni",
+      "utility": 0.09110714993067934
+    },
+    {
+      "iam_training_occurrence_count": 451,
+      "rank": 100,
+      "token": "ev",
+      "utility": 0.08932461873638345
+    },
+    {
+      "iam_training_occurrence_count": 450,
+      "rank": 101,
+      "token": "lo",
+      "utility": 0.08912655971479501
+    },
+    {
+      "iam_training_occurrence_count": 442,
+      "rank": 102,
+      "token": "pa",
+      "utility": 0.08754208754208755
+    },
+    {
+      "iam_training_occurrence_count": 438,
+      "rank": 103,
+      "token": "pl",
+      "utility": 0.08674985145573381
+    },
+    {
+      "iam_training_occurrence_count": 423,
+      "rank": 104,
+      "token": "ts",
+      "utility": 0.08377896613190731
+    },
+    {
+      "iam_training_occurrence_count": 419,
+      "rank": 105,
+      "token": "iv",
+      "utility": 0.08298673004555357
+    },
+    {
+      "iam_training_occurrence_count": 417,
+      "rank": 106,
+      "token": "fi",
+      "utility": 0.0825906120023767
+    },
+    {
+      "iam_training_occurrence_count": 413,
+      "rank": 107,
+      "token": "ig",
+      "utility": 0.08179837591602297
+    },
+    {
+      "iam_training_occurrence_count": 409,
+      "rank": 108,
+      "token": "gh",
+      "utility": 0.08100613982966924
+    },
+    {
+      "iam_training_occurrence_count": 402,
+      "rank": 109,
+      "token": "su",
+      "utility": 0.0796197266785502
+    },
+    {
+      "iam_training_occurrence_count": 401,
+      "rank": 110,
+      "token": "ke",
+      "utility": 0.07942166765696178
+    },
+    {
+      "iam_training_occurrence_count": 398,
+      "rank": 111,
+      "token": "op",
+      "utility": 0.07882749059219647
+    },
+    {
+      "iam_training_occurrence_count": 394,
+      "rank": 112,
+      "token": "ry",
+      "utility": 0.07803525450584274
+    },
+    {
+      "iam_training_occurrence_count": 393,
+      "rank": 113,
+      "token": "id",
+      "utility": 0.0778371954842543
+    },
+    {
+      "iam_training_occurrence_count": 384,
+      "rank": 114,
+      "token": "ab",
+      "utility": 0.07605466428995841
+    },
+    {
+      "iam_training_occurrence_count": 383,
+      "rank": 115,
+      "token": "na",
+      "utility": 0.07585660526836997
+    },
+    {
+      "iam_training_occurrence_count": 379,
+      "rank": 116,
+      "token": "os",
+      "utility": 0.07506436918201624
+    },
+    {
+      "iam_training_occurrence_count": 374,
+      "rank": 117,
+      "token": "fe",
+      "utility": 0.07407407407407407
+    },
+    {
+      "iam_training_occurrence_count": 370,
+      "rank": 118,
+      "token": "bl",
+      "utility": 0.07328183798772034
+    },
+    {
+      "iam_training_occurrence_count": 369,
+      "rank": 119,
+      "token": "wo",
+      "utility": 0.07308377896613191
+    },
+    {
+      "iam_training_occurrence_count": 362,
+      "rank": 120,
+      "token": "vi",
+      "utility": 0.07169736581501288
+    },
+    {
+      "iam_training_occurrence_count": 361,
+      "rank": 121,
+      "token": "im",
+      "utility": 0.07149930679342444
+    },
+    {
+      "iam_training_occurrence_count": 360,
+      "rank": 122,
+      "token": "rd",
+      "utility": 0.07130124777183601
+    },
+    {
+      "iam_training_occurrence_count": 356,
+      "rank": 123,
+      "token": "od",
+      "utility": 0.07050901168548228
+    },
+    {
+      "iam_training_occurrence_count": 351,
+      "rank": 124,
+      "token": "rn",
+      "utility": 0.06951871657754011
+    },
+    {
+      "iam_training_occurrence_count": 349,
+      "rank": 125,
+      "token": "ei",
+      "utility": 0.06912259853436324
+    },
+    {
+      "iam_training_occurrence_count": 348,
+      "rank": 126,
+      "token": "oo",
+      "utility": 0.0689245395127748
+    },
+    {
+      "iam_training_occurrence_count": 346,
+      "rank": 127,
+      "token": "ia",
+      "utility": 0.06852842146959794
+    },
+    {
+      "iam_training_occurrence_count": 342,
+      "rank": 128,
+      "token": "ey",
+      "utility": 0.0677361853832442
+    },
+    {
+      "iam_training_occurrence_count": 336,
+      "rank": 129,
+      "token": "mp",
+      "utility": 0.06654783125371361
+    },
+    {
+      "iam_training_occurrence_count": 335,
+      "rank": 130,
+      "token": "av",
+      "utility": 0.06634977223212517
+    },
+    {
+      "iam_training_occurrence_count": 333,
+      "rank": 131,
+      "token": "tt",
+      "utility": 0.0659536541889483
+    },
+    {
+      "iam_training_occurrence_count": 329,
+      "rank": 132,
+      "token": "am",
+      "utility": 0.06516141810259457
+    },
+    {
+      "iam_training_occurrence_count": 328,
+      "rank": 133,
+      "token": "ci",
+      "utility": 0.06496335908100614
+    },
+    {
+      "iam_training_occurrence_count": 323,
+      "rank": 134,
+      "token": "ap",
+      "utility": 0.06397306397306397
+    },
+    {
+      "iam_training_occurrence_count": 320,
+      "rank": 135,
+      "token": "ov",
+      "utility": 0.06337888690829867
+    },
+    {
+      "iam_training_occurrence_count": 315,
+      "rank": 136,
+      "token": "sa",
+      "utility": 0.062388591800356503
+    },
+    {
+      "iam_training_occurrence_count": 308,
+      "rank": 137,
+      "token": "rm",
+      "utility": 0.06100217864923747
+    },
+    {
+      "iam_training_occurrence_count": 302,
+      "rank": 138,
+      "token": "fr",
+      "utility": 0.05981382451970687
+    },
+    {
+      "iam_training_occurrence_count": 296,
+      "rank": 139,
+      "token": "bo",
+      "utility": 0.05862547039017627
+    },
+    {
+      "iam_training_occurrence_count": 293,
+      "rank": 140,
+      "token": "ag",
+      "utility": 0.058031293325410974
+    },
+    {
+      "iam_training_occurrence_count": 286,
+      "rank": 141,
+      "token": "do",
+      "utility": 0.05664488017429194
+    },
+    {
+      "iam_training_occurrence_count": 285,
+      "rank": 142,
+      "token": "by",
+      "utility": 0.056446821152703504
+    },
+    {
+      "iam_training_occurrence_count": 284,
+      "rank": 143,
+      "token": "ef",
+      "utility": 0.05624876213111507
+    },
+    {
+      "iam_training_occurrence_count": 273,
+      "rank": 144,
+      "token": "Mr",
+      "utility": 0.0540701128936423
+    },
+    {
+      "iam_training_occurrence_count": 273,
+      "rank": 145,
+      "token": "bu",
+      "utility": 0.0540701128936423
+    }
+  ]
+}

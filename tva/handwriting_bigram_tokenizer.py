@@ -19,6 +19,23 @@ from tva.handwriting_bigram_adapter import (
     SOURCE_SHA256,
     sha256_bytes,
 )
+from tva.fau_handwriting_bigram import (
+    ADAPTER_BIGRAM_COUNT as FAU_ADAPTER_BIGRAM_COUNT,
+    ADAPTER_POLICY_ID as FAU_ADAPTER_POLICY_ID,
+    ADAPTER_SCHEMA as FAU_ADAPTER_SCHEMA,
+    ADAPTER_SHA256 as FAU_ADAPTER_SHA256,
+    ADAPTER_SIZE as FAU_ADAPTER_SIZE,
+    GREEDY_POLICY,
+    SOURCE_SHA256 as FAU_SOURCE_SHA256,
+)
+from tva.fau_linguistic_bigram import (
+    ADAPTER_BIGRAM_COUNT as FAU_LINGUISTIC_BIGRAM_COUNT,
+    ADAPTER_POLICY_ID as FAU_LINGUISTIC_POLICY_ID,
+    ADAPTER_SCHEMA as FAU_LINGUISTIC_SCHEMA,
+    ADAPTER_SHA256 as FAU_LINGUISTIC_SHA256,
+    ADAPTER_SIZE as FAU_LINGUISTIC_SIZE,
+    EVIDENCE_SHA256 as IAM_FREQUENCY_EVIDENCE_SHA256,
+)
 from tva.linguistic_bigram import MANIFEST_SHA256
 
 
@@ -45,6 +62,9 @@ def _normalize_text(text: str, policy: str) -> str:
 
 class HandwritingBigramTokenizer:
     """Tokenize text with the DTLR maximum-total-utility dynamic program."""
+
+    supported_schemas = SUPPORTED_SCHEMAS
+    supported_overlap_policy = SUPPORTED_OVERLAP_POLICY
 
     def __init__(self) -> None:
         self.model: dict[str, Any] = {}
@@ -89,7 +109,7 @@ class HandwritingBigramTokenizer:
         """
         if not isinstance(model, dict):
             raise ValueError('tokenizer model root must be a JSON object')
-        if model.get('schema_version') not in SUPPORTED_SCHEMAS:
+        if model.get('schema_version') not in self.supported_schemas:
             raise ValueError('unsupported utility-bigram tokenizer schema')
         if model.get('blank_token') != '' or model.get('blank_id') != 0:
             raise ValueError('CTC blank must be the empty token at ID 0')
@@ -98,7 +118,7 @@ class HandwritingBigramTokenizer:
         policy = model.get('policy')
         if not isinstance(policy, dict):
             raise ValueError('tokenizer model lacks its policy object')
-        if policy.get('overlap_resolution') != SUPPORTED_OVERLAP_POLICY:
+        if policy.get('overlap_resolution') != self.supported_overlap_policy:
             raise ValueError('tokenizer model has an unsupported overlap policy')
         if policy.get('single_character_utility') != 0.0:
             raise ValueError('single-character utility must be zero')
@@ -220,7 +240,7 @@ class HandwritingBigramTokenizer:
                     'end': index + 2,
                     'kind': (
                         'handwriting-bigram'
-                        if self.model['schema_version'] == HANDWRITING_SCHEMA
+                        if self.model['schema_version'] != LINGUISTIC_SCHEMA
                         else 'linguistic-bigram'
                     ),
                     'utility': row['utility'],
@@ -334,3 +354,158 @@ class LinguisticBigramTokenizer(HandwritingBigramTokenizer):
         if policy.get('validation_annotations_read') is not False:
             raise ValueError('linguistic Bigram does not declare validation exclusion')
         logger.info(f'LinguisticBigramTokenizer is loaded from {path}.')
+
+
+class GreedyHandwritingBigramTokenizer(HandwritingBigramTokenizer):
+    """Greedy left-to-right runtime for the frozen FAU English adapter."""
+
+    supported_schemas = {FAU_ADAPTER_SCHEMA}
+    supported_overlap_policy = GREEDY_POLICY
+    bigram_kind = 'handwriting-bigram'
+
+    def load(self, path_config: str | Path) -> None:
+        """Load and authenticate the canonical frozen FAU adapter."""
+        path = Path(path_config)
+        content = path.read_bytes()
+        digest = sha256_bytes(content)
+        if digest != FAU_ADAPTER_SHA256:
+            raise ValueError(
+                'frozen FAU adapter SHA-256 mismatch: expected '
+                f'{FAU_ADAPTER_SHA256}, got {digest}'
+            )
+        try:
+            model = json.loads(content)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError('tokenizer model is not valid UTF-8 JSON') from error
+        self.load_model(model)
+        self._validate_fau_adapter(model)
+        logger.info(f'GreedyHandwritingBigramTokenizer is loaded from {path}.')
+
+    @staticmethod
+    def _validate_fau_adapter(model: dict[str, Any]) -> None:
+        if model.get('model_version') != FAU_ADAPTER_POLICY_ID:
+            raise ValueError('tokenizer is not the frozen FAU adapter policy')
+        if model.get('size') != FAU_ADAPTER_SIZE:
+            raise ValueError('frozen FAU adapter has an unexpected output size')
+        if model.get('eligible_bigram_count') != FAU_ADAPTER_BIGRAM_COUNT:
+            raise ValueError('frozen FAU adapter has an unexpected bigram count')
+        if model.get('text_normalization') != 'NFC':
+            raise ValueError('frozen FAU adapter must use NFC normalization')
+        adapter = model.get('adapter')
+        if not isinstance(adapter, dict):
+            raise ValueError('frozen FAU adapter lacks provenance metadata')
+        if adapter.get('policy_id') != FAU_ADAPTER_POLICY_ID:
+            raise ValueError('frozen FAU adapter policy metadata does not match')
+        source = adapter.get('source_model')
+        if not isinstance(source, dict) or source.get('sha256') != FAU_SOURCE_SHA256:
+            raise ValueError('frozen FAU adapter source provenance does not match')
+        if adapter.get('annotation_label_values_read_by_builder') is not False:
+            raise ValueError(
+                'frozen FAU adapter does not declare leakage-safe construction'
+            )
+
+    def segment(self, text: str) -> dict[str, Any]:
+        """Segment by taking an available bigram at each leftmost position."""
+        if not self.model:
+            raise ValueError('Tokenizer not trained or loaded.')
+        if not isinstance(text, str):
+            raise TypeError('text must be a string')
+        input_text = text
+        text = _normalize_text(text, self.model['text_normalization'])
+        segments: list[dict[str, Any]] = []
+        index = 0
+        total_utility = 0.0
+        while index < len(text):
+            pair = text[index:index + 2]
+            row = self._bigram_rows.get(pair) if len(pair) == 2 else None
+            if row is not None:
+                segment = {
+                    'token': pair,
+                    'start': index,
+                    'end': index + 2,
+                    'kind': self.bigram_kind,
+                    'utility': row['utility'],
+                }
+                for metadata_key in (
+                    'n_exact_alignment',
+                    'exact_alignment_connected_rate',
+                    'iam_training_occurrence_count',
+                    'rank',
+                ):
+                    if metadata_key in row:
+                        segment[metadata_key] = row[metadata_key]
+                segments.append(segment)
+                total_utility += row['utility']
+                index += 2
+                continue
+            segments.append({
+                'token': text[index],
+                'start': index,
+                'end': index + 1,
+                'kind': 'single',
+                'utility': 0.0,
+            })
+            index += 1
+
+        output = {
+            'text': text,
+            'tokens': [segment['token'] for segment in segments],
+            'total_utility': total_utility,
+            'bigram_token_count': sum(
+                segment['kind'] == self.bigram_kind for segment in segments
+            ),
+            'segments': segments,
+        }
+        if input_text != text:
+            output['input_text'] = input_text
+        return output
+
+
+class GreedyLinguisticBigramTokenizer(GreedyHandwritingBigramTokenizer):
+    """Greedy runtime for the frozen IAM-frequency FAU comparator."""
+
+    supported_schemas = {FAU_LINGUISTIC_SCHEMA}
+    bigram_kind = 'linguistic-bigram'
+
+    def load(self, path_config: str | Path) -> None:
+        path = Path(path_config)
+        content = path.read_bytes()
+        digest = sha256_bytes(content)
+        if digest != FAU_LINGUISTIC_SHA256:
+            raise ValueError(
+                'frozen FAU linguistic adapter SHA-256 mismatch: expected '
+                f'{FAU_LINGUISTIC_SHA256}, got {digest}'
+            )
+        try:
+            model = json.loads(content)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError('tokenizer model is not valid UTF-8 JSON') from error
+        self.load_model(model)
+        self._validate_fau_linguistic_adapter(model)
+        logger.info(f'GreedyLinguisticBigramTokenizer is loaded from {path}.')
+
+    @staticmethod
+    def _validate_fau_linguistic_adapter(model: dict[str, Any]) -> None:
+        if model.get('model_version') != FAU_LINGUISTIC_POLICY_ID:
+            raise ValueError('tokenizer is not the frozen FAU linguistic policy')
+        if model.get('size') != FAU_LINGUISTIC_SIZE:
+            raise ValueError('FAU linguistic tokenizer has an unexpected size')
+        if model.get('eligible_bigram_count') != FAU_LINGUISTIC_BIGRAM_COUNT:
+            raise ValueError('FAU linguistic tokenizer has an unexpected pair count')
+        adapter = model.get('adapter')
+        if not isinstance(adapter, dict):
+            raise ValueError('FAU linguistic tokenizer lacks provenance metadata')
+        evidence = adapter.get('frequency_evidence')
+        if (
+            not isinstance(evidence, dict)
+            or evidence.get('sha256') != IAM_FREQUENCY_EVIDENCE_SHA256
+            or evidence.get('dataset') != 'IAM'
+            or evidence.get('split') != 'train'
+        ):
+            raise ValueError('FAU linguistic evidence provenance does not match')
+        if adapter.get('iam_training_transcripts_read') is not True:
+            raise ValueError('FAU linguistic adapter omits its IAM text input')
+        if adapter.get('fau_annotation_label_values_read_by_builder') is not False:
+            raise ValueError(
+                'FAU linguistic adapter does not declare leakage-safe construction'
+            )

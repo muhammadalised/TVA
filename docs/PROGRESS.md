@@ -694,3 +694,189 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Verified `best_cer.pth`, `best_wer.pth`, and `latest.pth` all have 419-output
   heads and complete resumable training state. Exact checkpoint hashes and the
   recovery record are in `docs/EXPERIMENTS.md`.
+
+## 2026-09-18 — Matched linguistic Bigram WI/RH fold-0 result
+
+- Completed all 300 epochs of the fold-specific 419-class linguistic Bigram
+  condition on WI/RH fold 0 with the matched DP segmentation algorithm and the
+  same recognition settings as the handwriting condition.
+- Best CER and WER occur together at epoch 262: CER 0.159712 (15.97%) and WER
+  0.249055 (24.91%). All checkpoint invariants pass; exact hashes are recorded
+  in `docs/EXPERIMENTS.md`.
+- Against the character fold-0 baseline, linguistic Bigram improves WER by
+  3.04 percentage points (10.9% relative) while worsening CER by 0.37 points.
+- Handwriting Bigram has 0.28-point lower WER than linguistic Bigram, whereas
+  linguistic has 0.014-point lower CER. Handwriting recognizes 15 additional
+  words exactly among 5,292 validation samples.
+- An exploratory paired exact comparison of word correctness gives `p =
+  0.497`. Because both checkpoints were selected on the same validation fold,
+  this is descriptive post-selection analysis. The small fold-0 difference is
+  not reliable evidence that either Bigram evidence source is superior; the
+  remaining folds are required.
+
+## 2026-09-18 — Handwriting-aware Bigram WD/RH fold-0 result
+
+- Completed all 300 epochs of the frozen 419-class handwriting-aware Bigram
+  condition on WD/RH fold 0. Best CER is 20.24% at epoch 276 and best WER is
+  39.87% at epoch 281; the optima belong to different checkpoints.
+- Compared with the WD/RH character fold-0 baseline, handwriting Bigram is
+  worse by 7.49 CER percentage points and 3.89 WER points. At the respective
+  best-WER checkpoints it recognizes 196 fewer of 5,036 words exactly.
+- An exploratory paired exact comparison gives `p = 6.02e-13`. Although this
+  is post-selection validation analysis, the fold-0 WD effect is large and
+  negative rather than a marginal tie.
+- The contrast between negative WD and positive WI WER changes is
+  directionally consistent with the proposed larger WI benefit, but no claim
+  should be made until the matched linguistic WD run and remaining folds are
+  complete.
+- The run completed uninterrupted; all three principal checkpoints have
+  419-output heads and complete state. Exact hashes are in
+  `docs/EXPERIMENTS.md`.
+
+## 2026-09-19 — Matched linguistic Bigram WD/RH fold-0 result
+
+- Completed all 300 epochs of the fold-specific 419-class linguistic Bigram
+  condition on WD/RH fold 0. Best CER is 20.02% at epoch 282 and best WER is
+  40.07% at epoch 278.
+- Linguistic Bigram is worse than the WD character baseline by 7.26 CER points
+  and 4.09 WER points. Both matched Bigram conditions therefore underperform
+  character recognition on WD fold 0.
+- Between Bigram conditions, linguistic has a 0.22-point CER advantage and
+  handwriting has a 0.20-point WER advantage. Handwriting recognizes only ten
+  more of 5,036 words exactly. An exploratory paired exact test gives `p =
+  0.716`, providing no reliable fold-0 difference between evidence sources.
+- Combined fold-0 interpretation: both Bigram conditions improve WER relative
+  to character in WI, both degrade WD, and handwriting versus linguistic is a
+  near-tie in both settings. The proposed handwriting-specific advantage is
+  not supported by fold 0; remaining folds are required.
+- The run completed uninterrupted with complete 419-output checkpoints. Exact
+  hashes are in `docs/EXPERIMENTS.md`.
+
+## 2026-09-21 — FAU English external-evaluation intake audit
+
+- Located the supervisor-supplied dataset in
+  `/mnt/c/Users/Ali/Downloads/fau-english-dataset/`; it consists of separately
+  packaged five-fold WD and WI splits over the same 2,550 recordings from 102
+  writers.
+- Confirmed this is a sentence-level seven-channel, 100 Hz IMU dataset with a
+  78-character English alphabet, rather than an IAM-related image dataset or a
+  direct replacement for OnHW's 13-channel word recordings.
+- Verified every supplied fold has disjoint train/validation sample IDs and
+  complete coverage. WD has writer overlap but disjoint label sets; WI has no
+  writer overlap but substantial repeated-prompt label overlap.
+- Recorded the two source-archive hashes, fold counts, and detailed
+  compatibility results in `docs/EXPERIMENTS.md`.
+- Supervisor direction: use English handwriting tokenizers first; do not use
+  the combined IAM+READ tokenizer for this initial FAU evaluation.
+- The IAM-only demonstration tokenizer has 145 handwriting bigrams and 222
+  total classes, but its singleton alphabet lacks `%`, `(`, and `=`. This
+  affects 906/2,550 labels. Deleting symbols or dropping samples is not an
+  acceptable workaround.
+- Proposed next step: formalize a frozen FAU adapter that retains the 145 IAM
+  bigrams and uses the declared FAU 78-character singleton alphabet, giving
+  224 CTC classes including blank. Freeze a matched English comparator and the
+  evaluation protocol before changing the loader or starting training.
+- Audited DTLR DP against TVA greedy segmentation on all FAU labels using the
+  same IAM bigram vocabulary. Token identities differ for 1,778/2,550 samples
+  (69.73%), although both yield 85,153 target tokens. Greedy is therefore a
+  meaningful experimental policy, not an implementation-equivalent rewrite;
+  whichever policy is selected must be used for both compared vocabularies.
+- Corrected the repository boundary before implementation: DTLR must construct
+  the generic English handwriting vocabulary from IAM training evidence only
+  and must not consume FAU labels. TVA will own the FAU alphabet projection,
+  greedy runtime segmentation, post-freeze label compatibility audit, and
+  recognition experiment. The declared FAU `categories` schema may define
+  singleton coverage, but label frequencies and validation results may not
+  influence handwriting-token construction.
+- Verified the finalized generic DTLR source artifact from commit `d2f4631`:
+  SHA-256 `2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`,
+  145 exactly preserved IAM bigrams, 76 singletons, 222 total classes, and
+  IAM-train-only provenance. DTLR reports 43/43 tests passing and byte-identical
+  reconstruction of the earlier model. The frozen count-20/rate-0.5 policy is
+  reproducible but remains provisional rather than statistically optimal.
+
+## 2026-09-21 — FAU IAM-handwriting greedy adapter frozen and audited
+
+- Pinned the exact DTLR IAM-only source artifact inside TVA at
+  `artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json`; its
+  SHA-256 remains
+  `2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`.
+- Built and froze the 224-class FAU adapter at
+  `artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json`.
+  Its SHA-256 is
+  `4c06828ac3b0ae03e98d569b0f3fea1cdfbc0a125f6eeffcc7ffb2a4935f3f52`.
+- Preserved all 145 IAM handwriting bigrams and their evidence rows. The only
+  vocabulary projection is from 76 IAM singletons to the declared 78-character
+  FAU alphabet: remove unused `*`; add `%`, `(`, and `=`. Blank remains ID 0.
+- Added the separate `handwriting_bigram_greedy` runtime. It consumes the
+  leftmost available pair and does not alter the existing DP
+  `handwriting_bigram` runtime or any completed OnHW experiment.
+- Froze greedy left-to-right as the primary FAU segmentation policy. The
+  matched comparator must use the same policy; DP is permitted only as a
+  separately named, symmetric ablation.
+- Ran the post-freeze audit across the canonical 2,550 annotations in both WD
+  and WI archives: 5,100 encodings and 170,306 target tokens, with zero blank
+  IDs and zero round-trip failures. The archives contain identical record-label
+  mappings and their declared alphabets match the frozen adapter.
+- Focused tests passed: 21 applicable tests passed and two unrelated optional
+  external-reference checks were skipped. No recognizer training was started.
+
+At this stage, the next step was to freeze the matched English linguistic
+comparator; that milestone is recorded immediately below.
+
+## 2026-09-21 — Matched FAU IAM-text linguistic comparator frozen
+
+- Authenticated the exact IAM training labels and complete 5,694-line selection
+  manifest used by DTLR. No IAM validation/test text or FAU labels contributed
+  to vocabulary construction.
+- Froze case-sensitive ASCII-letter adjacent-pair counts from IAM train:
+  861 candidates and 153,350 occurrences. Evidence SHA-256:
+  `3a2d90f7233dd550f399e3296f92390291201482ca690c9cd85eb30d8b8079ca`.
+- Selected exactly 145 pairs by descending count and lexical tie-breaking. The
+  boundary is unambiguous: selected `bu` has count 273 and excluded `tu` has
+  count 270.
+- Froze the matched comparator at
+  `artifacts/tokenizers/fau_english_iam_linguistic_bigram_greedy_v1.json`,
+  SHA-256
+  `0a7e173afdd2a911780c14517e651b9787c3b8b3c0fdedb74f915920b4d4f392`.
+- Added tokenizer key `linguistic_bigram_greedy`. Both FAU conditions have the
+  same blank and singleton IDs, 224 classes, 145 bigrams, NFC normalization,
+  and greedy left-to-right segmentation. They share 72 bigrams and each has 73
+  condition-specific pairs.
+- Audited all 2,550 labels in both archives: 5,100 encodings, 158,156 emitted
+  tokens, zero blank IDs, and zero round-trip failures. Per archive, linguistic
+  produces 79,078 tokens versus handwriting's 85,153, a 7.13% shorter target
+  sequence total that must be considered in result interpretation.
+- No recognition training was started.
+- Complete TVA regression suite: 40 tests run, 38 passed and two unrelated
+  optional external-reference tests skipped.
+
+Next step: implement the dedicated seven-channel FAU loader/configuration path
+and run bounded matched smoke tests before full training.
+
+## 2026-09-21 — FAU seven-channel loader and matched smoke tests complete
+
+- Added an authenticated ZIP-backed loader for the supervisor-supplied FAU
+  data. It validates archive hash, WD/WI identity, five-fold metadata, 100 Hz
+  sample rate, seven-channel shape, declared alphabet, member availability,
+  and finite signal values without extracting or modifying the archives.
+- Added portable environment override `TVA_FAU_DATASET_DIR`; committed configs
+  contain no machine-specific dataset path.
+- Updated the main training path and cross-validation launcher to support
+  `dataset_format: fau-zip` and explicit `fau_distribution: wd|wi` while
+  retaining the legacy JSON-directory behavior.
+- Added four strictly matched fold-0 smoke configurations under
+  `configs/thesis/fau/`: handwriting/linguistic × WD/WI. Each uses eight train
+  samples, four validation samples, one CPU epoch, BLConv-S + BiLSTM-S, no
+  augmentation, and the correct 224-class frozen tokenizer.
+- All four smoke runs completed end to end, including decoding, CER/WER,
+  visualization, and resumable checkpoint saving. Every decoder head has 224
+  outputs. The diagnostic CER/WER of 1.0 is not scientific evidence.
+- Exact checkpoint hashes are recorded in `docs/EXPERIMENTS.md`.
+- Complete TVA regression suite: 46 tests run, 44 passed and two unrelated
+  optional external-reference tests skipped.
+- No full-data or research-result training was started.
+
+Next step: freeze production FAU training settings, add the four full fold-0
+configs using BLConv-B + BiLSTM-B, and run one bounded CUDA timing check before
+launching any 300-epoch experiment.

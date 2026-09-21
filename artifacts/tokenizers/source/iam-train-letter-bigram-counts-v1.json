@@ -1,0 +1,3466 @@
+{
+  "candidate_bigram_count": 861,
+  "counting_unit": "adjacent-pair-occurrence-across-lines",
+  "counts": [
+    {
+      "count": 5049,
+      "token": "th"
+    },
+    {
+      "count": 4849,
+      "token": "he"
+    },
+    {
+      "count": 3479,
+      "token": "in"
+    },
+    {
+      "count": 3302,
+      "token": "er"
+    },
+    {
+      "count": 2793,
+      "token": "an"
+    },
+    {
+      "count": 2638,
+      "token": "re"
+    },
+    {
+      "count": 2365,
+      "token": "on"
+    },
+    {
+      "count": 2284,
+      "token": "en"
+    },
+    {
+      "count": 2098,
+      "token": "at"
+    },
+    {
+      "count": 1947,
+      "token": "is"
+    },
+    {
+      "count": 1901,
+      "token": "ed"
+    },
+    {
+      "count": 1848,
+      "token": "nd"
+    },
+    {
+      "count": 1846,
+      "token": "to"
+    },
+    {
+      "count": 1828,
+      "token": "ha"
+    },
+    {
+      "count": 1827,
+      "token": "es"
+    },
+    {
+      "count": 1723,
+      "token": "or"
+    },
+    {
+      "count": 1715,
+      "token": "ar"
+    },
+    {
+      "count": 1679,
+      "token": "te"
+    },
+    {
+      "count": 1646,
+      "token": "st"
+    },
+    {
+      "count": 1623,
+      "token": "ng"
+    },
+    {
+      "count": 1584,
+      "token": "it"
+    },
+    {
+      "count": 1562,
+      "token": "ti"
+    },
+    {
+      "count": 1515,
+      "token": "as"
+    },
+    {
+      "count": 1466,
+      "token": "of"
+    },
+    {
+      "count": 1445,
+      "token": "ou"
+    },
+    {
+      "count": 1414,
+      "token": "nt"
+    },
+    {
+      "count": 1395,
+      "token": "ve"
+    },
+    {
+      "count": 1379,
+      "token": "al"
+    },
+    {
+      "count": 1328,
+      "token": "le"
+    },
+    {
+      "count": 1274,
+      "token": "se"
+    },
+    {
+      "count": 1271,
+      "token": "ea"
+    },
+    {
+      "count": 1217,
+      "token": "hi"
+    },
+    {
+      "count": 1160,
+      "token": "me"
+    },
+    {
+      "count": 1130,
+      "token": "de"
+    },
+    {
+      "count": 1114,
+      "token": "ri"
+    },
+    {
+      "count": 1112,
+      "token": "be"
+    },
+    {
+      "count": 1075,
+      "token": "ne"
+    },
+    {
+      "count": 1013,
+      "token": "ll"
+    },
+    {
+      "count": 1009,
+      "token": "ro"
+    },
+    {
+      "count": 938,
+      "token": "ic"
+    },
+    {
+      "count": 937,
+      "token": "li"
+    },
+    {
+      "count": 918,
+      "token": "ce"
+    },
+    {
+      "count": 893,
+      "token": "ch"
+    },
+    {
+      "count": 879,
+      "token": "ma"
+    },
+    {
+      "count": 862,
+      "token": "ho"
+    },
+    {
+      "count": 843,
+      "token": "om"
+    },
+    {
+      "count": 838,
+      "token": "io"
+    },
+    {
+      "count": 826,
+      "token": "ra"
+    },
+    {
+      "count": 805,
+      "token": "co"
+    },
+    {
+      "count": 794,
+      "token": "el"
+    },
+    {
+      "count": 791,
+      "token": "il"
+    },
+    {
+      "count": 789,
+      "token": "ur"
+    },
+    {
+      "count": 784,
+      "token": "la"
+    },
+    {
+      "count": 776,
+      "token": "pe"
+    },
+    {
+      "count": 775,
+      "token": "ta"
+    },
+    {
+      "count": 734,
+      "token": "ad"
+    },
+    {
+      "count": 707,
+      "token": "ee"
+    },
+    {
+      "count": 697,
+      "token": "fo"
+    },
+    {
+      "count": 681,
+      "token": "si"
+    },
+    {
+      "count": 676,
+      "token": "ut"
+    },
+    {
+      "count": 665,
+      "token": "ns"
+    },
+    {
+      "count": 662,
+      "token": "et"
+    },
+    {
+      "count": 662,
+      "token": "ot"
+    },
+    {
+      "count": 654,
+      "token": "ly"
+    },
+    {
+      "count": 643,
+      "token": "wa"
+    },
+    {
+      "count": 635,
+      "token": "us"
+    },
+    {
+      "count": 627,
+      "token": "ie"
+    },
+    {
+      "count": 622,
+      "token": "un"
+    },
+    {
+      "count": 620,
+      "token": "tr"
+    },
+    {
+      "count": 618,
+      "token": "no"
+    },
+    {
+      "count": 617,
+      "token": "di"
+    },
+    {
+      "count": 617,
+      "token": "wi"
+    },
+    {
+      "count": 615,
+      "token": "em"
+    },
+    {
+      "count": 612,
+      "token": "ai"
+    },
+    {
+      "count": 593,
+      "token": "wh"
+    },
+    {
+      "count": 587,
+      "token": "ac"
+    },
+    {
+      "count": 587,
+      "token": "ca"
+    },
+    {
+      "count": 581,
+      "token": "nc"
+    },
+    {
+      "count": 578,
+      "token": "rs"
+    },
+    {
+      "count": 574,
+      "token": "we"
+    },
+    {
+      "count": 570,
+      "token": "ec"
+    },
+    {
+      "count": 546,
+      "token": "ul"
+    },
+    {
+      "count": 540,
+      "token": "ir"
+    },
+    {
+      "count": 527,
+      "token": "ol"
+    },
+    {
+      "count": 526,
+      "token": "ow"
+    },
+    {
+      "count": 523,
+      "token": "mo"
+    },
+    {
+      "count": 512,
+      "token": "rt"
+    },
+    {
+      "count": 508,
+      "token": "sh"
+    },
+    {
+      "count": 505,
+      "token": "ct"
+    },
+    {
+      "count": 502,
+      "token": "so"
+    },
+    {
+      "count": 498,
+      "token": "ss"
+    },
+    {
+      "count": 497,
+      "token": "ay"
+    },
+    {
+      "count": 489,
+      "token": "po"
+    },
+    {
+      "count": 483,
+      "token": "ge"
+    },
+    {
+      "count": 478,
+      "token": "Th"
+    },
+    {
+      "count": 465,
+      "token": "pr"
+    },
+    {
+      "count": 463,
+      "token": "ld"
+    },
+    {
+      "count": 460,
+      "token": "mi"
+    },
+    {
+      "count": 460,
+      "token": "ni"
+    },
+    {
+      "count": 451,
+      "token": "ev"
+    },
+    {
+      "count": 450,
+      "token": "lo"
+    },
+    {
+      "count": 442,
+      "token": "pa"
+    },
+    {
+      "count": 438,
+      "token": "pl"
+    },
+    {
+      "count": 423,
+      "token": "ts"
+    },
+    {
+      "count": 419,
+      "token": "iv"
+    },
+    {
+      "count": 417,
+      "token": "fi"
+    },
+    {
+      "count": 413,
+      "token": "ig"
+    },
+    {
+      "count": 409,
+      "token": "gh"
+    },
+    {
+      "count": 402,
+      "token": "su"
+    },
+    {
+      "count": 401,
+      "token": "ke"
+    },
+    {
+      "count": 398,
+      "token": "op"
+    },
+    {
+      "count": 394,
+      "token": "ry"
+    },
+    {
+      "count": 393,
+      "token": "id"
+    },
+    {
+      "count": 384,
+      "token": "ab"
+    },
+    {
+      "count": 383,
+      "token": "na"
+    },
+    {
+      "count": 379,
+      "token": "os"
+    },
+    {
+      "count": 374,
+      "token": "fe"
+    },
+    {
+      "count": 370,
+      "token": "bl"
+    },
+    {
+      "count": 369,
+      "token": "wo"
+    },
+    {
+      "count": 362,
+      "token": "vi"
+    },
+    {
+      "count": 361,
+      "token": "im"
+    },
+    {
+      "count": 360,
+      "token": "rd"
+    },
+    {
+      "count": 356,
+      "token": "od"
+    },
+    {
+      "count": 351,
+      "token": "rn"
+    },
+    {
+      "count": 349,
+      "token": "ei"
+    },
+    {
+      "count": 348,
+      "token": "oo"
+    },
+    {
+      "count": 346,
+      "token": "ia"
+    },
+    {
+      "count": 342,
+      "token": "ey"
+    },
+    {
+      "count": 336,
+      "token": "mp"
+    },
+    {
+      "count": 335,
+      "token": "av"
+    },
+    {
+      "count": 333,
+      "token": "tt"
+    },
+    {
+      "count": 329,
+      "token": "am"
+    },
+    {
+      "count": 328,
+      "token": "ci"
+    },
+    {
+      "count": 323,
+      "token": "ap"
+    },
+    {
+      "count": 320,
+      "token": "ov"
+    },
+    {
+      "count": 315,
+      "token": "sa"
+    },
+    {
+      "count": 308,
+      "token": "rm"
+    },
+    {
+      "count": 302,
+      "token": "fr"
+    },
+    {
+      "count": 296,
+      "token": "bo"
+    },
+    {
+      "count": 293,
+      "token": "ag"
+    },
+    {
+      "count": 286,
+      "token": "do"
+    },
+    {
+      "count": 285,
+      "token": "by"
+    },
+    {
+      "count": 284,
+      "token": "ef"
+    },
+    {
+      "count": 273,
+      "token": "Mr"
+    },
+    {
+      "count": 273,
+      "token": "bu"
+    },
+    {
+      "count": 270,
+      "token": "tu"
+    },
+    {
+      "count": 264,
+      "token": "fa"
+    },
+    {
+      "count": 260,
+      "token": "ht"
+    },
+    {
+      "count": 255,
+      "token": "da"
+    },
+    {
+      "count": 251,
+      "token": "gr"
+    },
+    {
+      "count": 247,
+      "token": "uc"
+    },
+    {
+      "count": 243,
+      "token": "ff"
+    },
+    {
+      "count": 243,
+      "token": "ty"
+    },
+    {
+      "count": 238,
+      "token": "cr"
+    },
+    {
+      "count": 237,
+      "token": "sp"
+    },
+    {
+      "count": 236,
+      "token": "pp"
+    },
+    {
+      "count": 231,
+      "token": "ye"
+    },
+    {
+      "count": 226,
+      "token": "ex"
+    },
+    {
+      "count": 224,
+      "token": "cu"
+    },
+    {
+      "count": 224,
+      "token": "if"
+    },
+    {
+      "count": 212,
+      "token": "rr"
+    },
+    {
+      "count": 212,
+      "token": "up"
+    },
+    {
+      "count": 209,
+      "token": "go"
+    },
+    {
+      "count": 205,
+      "token": "ug"
+    },
+    {
+      "count": 203,
+      "token": "ck"
+    },
+    {
+      "count": 203,
+      "token": "lt"
+    },
+    {
+      "count": 202,
+      "token": "ba"
+    },
+    {
+      "count": 199,
+      "token": "ep"
+    },
+    {
+      "count": 199,
+      "token": "sc"
+    },
+    {
+      "count": 198,
+      "token": "ga"
+    },
+    {
+      "count": 195,
+      "token": "ny"
+    },
+    {
+      "count": 193,
+      "token": "ew"
+    },
+    {
+      "count": 192,
+      "token": "cl"
+    },
+    {
+      "count": 192,
+      "token": "gi"
+    },
+    {
+      "count": 191,
+      "token": "au"
+    },
+    {
+      "count": 191,
+      "token": "rl"
+    },
+    {
+      "count": 191,
+      "token": "um"
+    },
+    {
+      "count": 188,
+      "token": "ds"
+    },
+    {
+      "count": 187,
+      "token": "ak"
+    },
+    {
+      "count": 178,
+      "token": "mb"
+    },
+    {
+      "count": 175,
+      "token": "mm"
+    },
+    {
+      "count": 175,
+      "token": "nn"
+    },
+    {
+      "count": 174,
+      "token": "He"
+    },
+    {
+      "count": 174,
+      "token": "ls"
+    },
+    {
+      "count": 164,
+      "token": "fu"
+    },
+    {
+      "count": 163,
+      "token": "Co"
+    },
+    {
+      "count": 161,
+      "token": "gl"
+    },
+    {
+      "count": 160,
+      "token": "ms"
+    },
+    {
+      "count": 159,
+      "token": "ue"
+    },
+    {
+      "count": 157,
+      "token": "mu"
+    },
+    {
+      "count": 155,
+      "token": "Ma"
+    },
+    {
+      "count": 155,
+      "token": "oc"
+    },
+    {
+      "count": 154,
+      "token": "tl"
+    },
+    {
+      "count": 153,
+      "token": "ua"
+    },
+    {
+      "count": 152,
+      "token": "It"
+    },
+    {
+      "count": 149,
+      "token": "br"
+    },
+    {
+      "count": 149,
+      "token": "qu"
+    },
+    {
+      "count": 147,
+      "token": "ki"
+    },
+    {
+      "count": 147,
+      "token": "wn"
+    },
+    {
+      "count": 143,
+      "token": "ru"
+    },
+    {
+      "count": 142,
+      "token": "An"
+    },
+    {
+      "count": 137,
+      "token": "pt"
+    },
+    {
+      "count": 136,
+      "token": "yo"
+    },
+    {
+      "count": 135,
+      "token": "We"
+    },
+    {
+      "count": 134,
+      "token": "Go"
+    },
+    {
+      "count": 134,
+      "token": "pi"
+    },
+    {
+      "count": 132,
+      "token": "eo"
+    },
+    {
+      "count": 131,
+      "token": "eg"
+    },
+    {
+      "count": 130,
+      "token": "Br"
+    },
+    {
+      "count": 129,
+      "token": "ip"
+    },
+    {
+      "count": 126,
+      "token": "In"
+    },
+    {
+      "count": 124,
+      "token": "rc"
+    },
+    {
+      "count": 123,
+      "token": "ub"
+    },
+    {
+      "count": 122,
+      "token": "pu"
+    },
+    {
+      "count": 121,
+      "token": "rk"
+    },
+    {
+      "count": 121,
+      "token": "va"
+    },
+    {
+      "count": 120,
+      "token": "Wh"
+    },
+    {
+      "count": 120,
+      "token": "du"
+    },
+    {
+      "count": 118,
+      "token": "ob"
+    },
+    {
+      "count": 118,
+      "token": "oi"
+    },
+    {
+      "count": 115,
+      "token": "ft"
+    },
+    {
+      "count": 115,
+      "token": "ui"
+    },
+    {
+      "count": 114,
+      "token": "Ge"
+    },
+    {
+      "count": 112,
+      "token": "bi"
+    },
+    {
+      "count": 111,
+      "token": "nu"
+    },
+    {
+      "count": 110,
+      "token": "Pr"
+    },
+    {
+      "count": 110,
+      "token": "lu"
+    },
+    {
+      "count": 109,
+      "token": "hr"
+    },
+    {
+      "count": 108,
+      "token": "dy"
+    },
+    {
+      "count": 108,
+      "token": "rg"
+    },
+    {
+      "count": 107,
+      "token": "nf"
+    },
+    {
+      "count": 105,
+      "token": "ks"
+    },
+    {
+      "count": 104,
+      "token": "ps"
+    },
+    {
+      "count": 103,
+      "token": "nm"
+    },
+    {
+      "count": 102,
+      "token": "No"
+    },
+    {
+      "count": 102,
+      "token": "tw"
+    },
+    {
+      "count": 101,
+      "token": "wr"
+    },
+    {
+      "count": 101,
+      "token": "ys"
+    },
+    {
+      "count": 99,
+      "token": "Bu"
+    },
+    {
+      "count": 99,
+      "token": "oy"
+    },
+    {
+      "count": 98,
+      "token": "cc"
+    },
+    {
+      "count": 98,
+      "token": "ud"
+    },
+    {
+      "count": 97,
+      "token": "nl"
+    },
+    {
+      "count": 97,
+      "token": "sy"
+    },
+    {
+      "count": 96,
+      "token": "La"
+    },
+    {
+      "count": 95,
+      "token": "hu"
+    },
+    {
+      "count": 95,
+      "token": "ok"
+    },
+    {
+      "count": 94,
+      "token": "dr"
+    },
+    {
+      "count": 94,
+      "token": "sk"
+    },
+    {
+      "count": 94,
+      "token": "sm"
+    },
+    {
+      "count": 93,
+      "token": "Mi"
+    },
+    {
+      "count": 93,
+      "token": "jo"
+    },
+    {
+      "count": 92,
+      "token": "Ho"
+    },
+    {
+      "count": 91,
+      "token": "lf"
+    },
+    {
+      "count": 84,
+      "token": "Ro"
+    },
+    {
+      "count": 84,
+      "token": "Si"
+    },
+    {
+      "count": 83,
+      "token": "rv"
+    },
+    {
+      "count": 82,
+      "token": "aw"
+    },
+    {
+      "count": 81,
+      "token": "Na"
+    },
+    {
+      "count": 81,
+      "token": "Pe"
+    },
+    {
+      "count": 81,
+      "token": "xp"
+    },
+    {
+      "count": 80,
+      "token": "ib"
+    },
+    {
+      "count": 80,
+      "token": "ik"
+    },
+    {
+      "count": 78,
+      "token": "dd"
+    },
+    {
+      "count": 77,
+      "token": "gn"
+    },
+    {
+      "count": 76,
+      "token": "gs"
+    },
+    {
+      "count": 76,
+      "token": "sl"
+    },
+    {
+      "count": 75,
+      "token": "gu"
+    },
+    {
+      "count": 74,
+      "token": "nk"
+    },
+    {
+      "count": 73,
+      "token": "af"
+    },
+    {
+      "count": 70,
+      "token": "Se"
+    },
+    {
+      "count": 69,
+      "token": "Lo"
+    },
+    {
+      "count": 69,
+      "token": "og"
+    },
+    {
+      "count": 69,
+      "token": "ph"
+    },
+    {
+      "count": 65,
+      "token": "kn"
+    },
+    {
+      "count": 64,
+      "token": "fl"
+    },
+    {
+      "count": 64,
+      "token": "lk"
+    },
+    {
+      "count": 63,
+      "token": "xt"
+    },
+    {
+      "count": 62,
+      "token": "dl"
+    },
+    {
+      "count": 62,
+      "token": "vo"
+    },
+    {
+      "count": 60,
+      "token": "oa"
+    },
+    {
+      "count": 60,
+      "token": "yi"
+    },
+    {
+      "count": 59,
+      "token": "Ch"
+    },
+    {
+      "count": 59,
+      "token": "Pa"
+    },
+    {
+      "count": 58,
+      "token": "dv"
+    },
+    {
+      "count": 57,
+      "token": "lm"
+    },
+    {
+      "count": 56,
+      "token": "hy"
+    },
+    {
+      "count": 56,
+      "token": "my"
+    },
+    {
+      "count": 54,
+      "token": "Af"
+    },
+    {
+      "count": 54,
+      "token": "St"
+    },
+    {
+      "count": 54,
+      "token": "hn"
+    },
+    {
+      "count": 53,
+      "token": "Fo"
+    },
+    {
+      "count": 53,
+      "token": "Fr"
+    },
+    {
+      "count": 53,
+      "token": "cy"
+    },
+    {
+      "count": 53,
+      "token": "oe"
+    },
+    {
+      "count": 52,
+      "token": "On"
+    },
+    {
+      "count": 51,
+      "token": "Po"
+    },
+    {
+      "count": 51,
+      "token": "je"
+    },
+    {
+      "count": 50,
+      "token": "tm"
+    },
+    {
+      "count": 50,
+      "token": "ym"
+    },
+    {
+      "count": 49,
+      "token": "Dr"
+    },
+    {
+      "count": 49,
+      "token": "So"
+    },
+    {
+      "count": 48,
+      "token": "Fe"
+    },
+    {
+      "count": 48,
+      "token": "To"
+    },
+    {
+      "count": 48,
+      "token": "ek"
+    },
+    {
+      "count": 46,
+      "token": "Am"
+    },
+    {
+      "count": 46,
+      "token": "Be"
+    },
+    {
+      "count": 46,
+      "token": "nv"
+    },
+    {
+      "count": 45,
+      "token": "eh"
+    },
+    {
+      "count": 44,
+      "token": "Ca"
+    },
+    {
+      "count": 44,
+      "token": "tc"
+    },
+    {
+      "count": 43,
+      "token": "Mo"
+    },
+    {
+      "count": 43,
+      "token": "Ne"
+    },
+    {
+      "count": 43,
+      "token": "Un"
+    },
+    {
+      "count": 42,
+      "token": "ws"
+    },
+    {
+      "count": 41,
+      "token": "En"
+    },
+    {
+      "count": 41,
+      "token": "Ha"
+    },
+    {
+      "count": 41,
+      "token": "iu"
+    },
+    {
+      "count": 41,
+      "token": "ju"
+    },
+    {
+      "count": 41,
+      "token": "rf"
+    },
+    {
+      "count": 40,
+      "token": "ah"
+    },
+    {
+      "count": 38,
+      "token": "lv"
+    },
+    {
+      "count": 36,
+      "token": "Sh"
+    },
+    {
+      "count": 36,
+      "token": "eq"
+    },
+    {
+      "count": 36,
+      "token": "sw"
+    },
+    {
+      "count": 35,
+      "token": "As"
+    },
+    {
+      "count": 35,
+      "token": "Fi"
+    },
+    {
+      "count": 35,
+      "token": "dg"
+    },
+    {
+      "count": 34,
+      "token": "Le"
+    },
+    {
+      "count": 34,
+      "token": "iz"
+    },
+    {
+      "count": 34,
+      "token": "lw"
+    },
+    {
+      "count": 34,
+      "token": "nw"
+    },
+    {
+      "count": 34,
+      "token": "rp"
+    },
+    {
+      "count": 33,
+      "token": "Ar"
+    },
+    {
+      "count": 33,
+      "token": "Ke"
+    },
+    {
+      "count": 33,
+      "token": "Re"
+    },
+    {
+      "count": 33,
+      "token": "bs"
+    },
+    {
+      "count": 33,
+      "token": "gg"
+    },
+    {
+      "count": 33,
+      "token": "gt"
+    },
+    {
+      "count": 33,
+      "token": "rh"
+    },
+    {
+      "count": 33,
+      "token": "xa"
+    },
+    {
+      "count": 32,
+      "token": "Ba"
+    },
+    {
+      "count": 32,
+      "token": "cm"
+    },
+    {
+      "count": 32,
+      "token": "eu"
+    },
+    {
+      "count": 32,
+      "token": "rb"
+    },
+    {
+      "count": 31,
+      "token": "De"
+    },
+    {
+      "count": 31,
+      "token": "Wi"
+    },
+    {
+      "count": 30,
+      "token": "Eu"
+    },
+    {
+      "count": 29,
+      "token": "Al"
+    },
+    {
+      "count": 29,
+      "token": "Rh"
+    },
+    {
+      "count": 29,
+      "token": "Ri"
+    },
+    {
+      "count": 29,
+      "token": "Ru"
+    },
+    {
+      "count": 29,
+      "token": "nj"
+    },
+    {
+      "count": 29,
+      "token": "ze"
+    },
+    {
+      "count": 29,
+      "token": "zi"
+    },
+    {
+      "count": 28,
+      "token": "Du"
+    },
+    {
+      "count": 28,
+      "token": "Wa"
+    },
+    {
+      "count": 28,
+      "token": "nb"
+    },
+    {
+      "count": 27,
+      "token": "bb"
+    },
+    {
+      "count": 27,
+      "token": "bt"
+    },
+    {
+      "count": 27,
+      "token": "uf"
+    },
+    {
+      "count": 27,
+      "token": "ya"
+    },
+    {
+      "count": 26,
+      "token": "Ea"
+    },
+    {
+      "count": 26,
+      "token": "Hi"
+    },
+    {
+      "count": 26,
+      "token": "bj"
+    },
+    {
+      "count": 25,
+      "token": "Fa"
+    },
+    {
+      "count": 25,
+      "token": "Ta"
+    },
+    {
+      "count": 25,
+      "token": "ao"
+    },
+    {
+      "count": 25,
+      "token": "yc"
+    },
+    {
+      "count": 25,
+      "token": "yt"
+    },
+    {
+      "count": 24,
+      "token": "Ad"
+    },
+    {
+      "count": 24,
+      "token": "Sa"
+    },
+    {
+      "count": 24,
+      "token": "Sc"
+    },
+    {
+      "count": 24,
+      "token": "eb"
+    },
+    {
+      "count": 24,
+      "token": "ka"
+    },
+    {
+      "count": 23,
+      "token": "At"
+    },
+    {
+      "count": 23,
+      "token": "Di"
+    },
+    {
+      "count": 23,
+      "token": "Vi"
+    },
+    {
+      "count": 23,
+      "token": "ax"
+    },
+    {
+      "count": 23,
+      "token": "hs"
+    },
+    {
+      "count": 23,
+      "token": "ix"
+    },
+    {
+      "count": 23,
+      "token": "uk"
+    },
+    {
+      "count": 22,
+      "token": "Ce"
+    },
+    {
+      "count": 22,
+      "token": "Ga"
+    },
+    {
+      "count": 22,
+      "token": "HE"
+    },
+    {
+      "count": 22,
+      "token": "Ve"
+    },
+    {
+      "count": 22,
+      "token": "lp"
+    },
+    {
+      "count": 21,
+      "token": "EN"
+    },
+    {
+      "count": 21,
+      "token": "Jo"
+    },
+    {
+      "count": 21,
+      "token": "Su"
+    },
+    {
+      "count": 21,
+      "token": "oh"
+    },
+    {
+      "count": 21,
+      "token": "ox"
+    },
+    {
+      "count": 20,
+      "token": "dm"
+    },
+    {
+      "count": 20,
+      "token": "ky"
+    },
+    {
+      "count": 20,
+      "token": "rw"
+    },
+    {
+      "count": 19,
+      "token": "Bo"
+    },
+    {
+      "count": 19,
+      "token": "Do"
+    },
+    {
+      "count": 19,
+      "token": "aj"
+    },
+    {
+      "count": 19,
+      "token": "tf"
+    },
+    {
+      "count": 19,
+      "token": "yw"
+    },
+    {
+      "count": 18,
+      "token": "By"
+    },
+    {
+      "count": 18,
+      "token": "Pi"
+    },
+    {
+      "count": 18,
+      "token": "gy"
+    },
+    {
+      "count": 18,
+      "token": "xi"
+    },
+    {
+      "count": 17,
+      "token": "Cl"
+    },
+    {
+      "count": 17,
+      "token": "Gr"
+    },
+    {
+      "count": 17,
+      "token": "Ju"
+    },
+    {
+      "count": 17,
+      "token": "Ph"
+    },
+    {
+      "count": 17,
+      "token": "TH"
+    },
+    {
+      "count": 17,
+      "token": "Va"
+    },
+    {
+      "count": 17,
+      "token": "hl"
+    },
+    {
+      "count": 17,
+      "token": "lg"
+    },
+    {
+      "count": 17,
+      "token": "sf"
+    },
+    {
+      "count": 17,
+      "token": "uv"
+    },
+    {
+      "count": 17,
+      "token": "xc"
+    },
+    {
+      "count": 16,
+      "token": "Li"
+    },
+    {
+      "count": 16,
+      "token": "RE"
+    },
+    {
+      "count": 16,
+      "token": "Tr"
+    },
+    {
+      "count": 16,
+      "token": "Yo"
+    },
+    {
+      "count": 16,
+      "token": "az"
+    },
+    {
+      "count": 16,
+      "token": "lc"
+    },
+    {
+      "count": 15,
+      "token": "Lu"
+    },
+    {
+      "count": 15,
+      "token": "Me"
+    },
+    {
+      "count": 15,
+      "token": "Pl"
+    },
+    {
+      "count": 15,
+      "token": "kl"
+    },
+    {
+      "count": 14,
+      "token": "ER"
+    },
+    {
+      "count": 14,
+      "token": "ES"
+    },
+    {
+      "count": 14,
+      "token": "Ed"
+    },
+    {
+      "count": 14,
+      "token": "Ja"
+    },
+    {
+      "count": 14,
+      "token": "Ko"
+    },
+    {
+      "count": 14,
+      "token": "ON"
+    },
+    {
+      "count": 14,
+      "token": "Of"
+    },
+    {
+      "count": 14,
+      "token": "Ps"
+    },
+    {
+      "count": 14,
+      "token": "UN"
+    },
+    {
+      "count": 14,
+      "token": "cs"
+    },
+    {
+      "count": 14,
+      "token": "nh"
+    },
+    {
+      "count": 14,
+      "token": "yp"
+    },
+    {
+      "count": 13,
+      "token": "El"
+    },
+    {
+      "count": 13,
+      "token": "sq"
+    },
+    {
+      "count": 13,
+      "token": "vy"
+    },
+    {
+      "count": 12,
+      "token": "AN"
+    },
+    {
+      "count": 12,
+      "token": "If"
+    },
+    {
+      "count": 12,
+      "token": "ja"
+    },
+    {
+      "count": 12,
+      "token": "pz"
+    },
+    {
+      "count": 12,
+      "token": "sd"
+    },
+    {
+      "count": 12,
+      "token": "ux"
+    },
+    {
+      "count": 12,
+      "token": "wl"
+    },
+    {
+      "count": 12,
+      "token": "xe"
+    },
+    {
+      "count": 11,
+      "token": "Ap"
+    },
+    {
+      "count": 11,
+      "token": "Au"
+    },
+    {
+      "count": 11,
+      "token": "Bi"
+    },
+    {
+      "count": 11,
+      "token": "Da"
+    },
+    {
+      "count": 11,
+      "token": "Ev"
+    },
+    {
+      "count": 11,
+      "token": "Gi"
+    },
+    {
+      "count": 11,
+      "token": "MR"
+    },
+    {
+      "count": 11,
+      "token": "NE"
+    },
+    {
+      "count": 11,
+      "token": "Ra"
+    },
+    {
+      "count": 11,
+      "token": "Ul"
+    },
+    {
+      "count": 11,
+      "token": "tn"
+    },
+    {
+      "count": 10,
+      "token": "Cr"
+    },
+    {
+      "count": 10,
+      "token": "Ir"
+    },
+    {
+      "count": 10,
+      "token": "Ka"
+    },
+    {
+      "count": 10,
+      "token": "dw"
+    },
+    {
+      "count": 10,
+      "token": "hb"
+    },
+    {
+      "count": 10,
+      "token": "hm"
+    },
+    {
+      "count": 10,
+      "token": "lr"
+    },
+    {
+      "count": 10,
+      "token": "mf"
+    },
+    {
+      "count": 10,
+      "token": "nr"
+    },
+    {
+      "count": 9,
+      "token": "DE"
+    },
+    {
+      "count": 9,
+      "token": "ED"
+    },
+    {
+      "count": 9,
+      "token": "Gl"
+    },
+    {
+      "count": 9,
+      "token": "IT"
+    },
+    {
+      "count": 9,
+      "token": "KE"
+    },
+    {
+      "count": 9,
+      "token": "MA"
+    },
+    {
+      "count": 9,
+      "token": "NN"
+    },
+    {
+      "count": 9,
+      "token": "NT"
+    },
+    {
+      "count": 9,
+      "token": "RA"
+    },
+    {
+      "count": 9,
+      "token": "Wo"
+    },
+    {
+      "count": 9,
+      "token": "dj"
+    },
+    {
+      "count": 9,
+      "token": "mn"
+    },
+    {
+      "count": 9,
+      "token": "py"
+    },
+    {
+      "count": 9,
+      "token": "sg"
+    },
+    {
+      "count": 8,
+      "token": "Ac"
+    },
+    {
+      "count": 8,
+      "token": "IN"
+    },
+    {
+      "count": 8,
+      "token": "Mu"
+    },
+    {
+      "count": 8,
+      "token": "Nk"
+    },
+    {
+      "count": 8,
+      "token": "Oc"
+    },
+    {
+      "count": 8,
+      "token": "SI"
+    },
+    {
+      "count": 8,
+      "token": "Sp"
+    },
+    {
+      "count": 8,
+      "token": "Ye"
+    },
+    {
+      "count": 8,
+      "token": "db"
+    },
+    {
+      "count": 8,
+      "token": "dn"
+    },
+    {
+      "count": 8,
+      "token": "fs"
+    },
+    {
+      "count": 8,
+      "token": "hw"
+    },
+    {
+      "count": 8,
+      "token": "nq"
+    },
+    {
+      "count": 8,
+      "token": "oj"
+    },
+    {
+      "count": 8,
+      "token": "pm"
+    },
+    {
+      "count": 8,
+      "token": "sb"
+    },
+    {
+      "count": 8,
+      "token": "sn"
+    },
+    {
+      "count": 8,
+      "token": "wd"
+    },
+    {
+      "count": 7,
+      "token": "AI"
+    },
+    {
+      "count": 7,
+      "token": "EL"
+    },
+    {
+      "count": 7,
+      "token": "IC"
+    },
+    {
+      "count": 7,
+      "token": "ID"
+    },
+    {
+      "count": 7,
+      "token": "Ia"
+    },
+    {
+      "count": 7,
+      "token": "Je"
+    },
+    {
+      "count": 7,
+      "token": "Ki"
+    },
+    {
+      "count": 7,
+      "token": "OD"
+    },
+    {
+      "count": 7,
+      "token": "OU"
+    },
+    {
+      "count": 7,
+      "token": "PR"
+    },
+    {
+      "count": 7,
+      "token": "Pu"
+    },
+    {
+      "count": 7,
+      "token": "RI"
+    },
+    {
+      "count": 7,
+      "token": "TO"
+    },
+    {
+      "count": 7,
+      "token": "TU"
+    },
+    {
+      "count": 7,
+      "token": "bv"
+    },
+    {
+      "count": 7,
+      "token": "fy"
+    },
+    {
+      "count": 7,
+      "token": "gm"
+    },
+    {
+      "count": 7,
+      "token": "iq"
+    },
+    {
+      "count": 7,
+      "token": "kr"
+    },
+    {
+      "count": 7,
+      "token": "tk"
+    },
+    {
+      "count": 7,
+      "token": "uo"
+    },
+    {
+      "count": 7,
+      "token": "yn"
+    },
+    {
+      "count": 7,
+      "token": "za"
+    },
+    {
+      "count": 6,
+      "token": "AR"
+    },
+    {
+      "count": 6,
+      "token": "Bl"
+    },
+    {
+      "count": 6,
+      "token": "DY"
+    },
+    {
+      "count": 6,
+      "token": "ET"
+    },
+    {
+      "count": 6,
+      "token": "GE"
+    },
+    {
+      "count": 6,
+      "token": "HO"
+    },
+    {
+      "count": 6,
+      "token": "Is"
+    },
+    {
+      "count": 6,
+      "token": "LE"
+    },
+    {
+      "count": 6,
+      "token": "LL"
+    },
+    {
+      "count": 6,
+      "token": "NI"
+    },
+    {
+      "count": 6,
+      "token": "NO"
+    },
+    {
+      "count": 6,
+      "token": "Ni"
+    },
+    {
+      "count": 6,
+      "token": "OR"
+    },
+    {
+      "count": 6,
+      "token": "Ou"
+    },
+    {
+      "count": 6,
+      "token": "SE"
+    },
+    {
+      "count": 6,
+      "token": "ST"
+    },
+    {
+      "count": 6,
+      "token": "Sq"
+    },
+    {
+      "count": 6,
+      "token": "TA"
+    },
+    {
+      "count": 6,
+      "token": "TE"
+    },
+    {
+      "count": 6,
+      "token": "ae"
+    },
+    {
+      "count": 6,
+      "token": "ej"
+    },
+    {
+      "count": 6,
+      "token": "fc"
+    },
+    {
+      "count": 6,
+      "token": "hc"
+    },
+    {
+      "count": 6,
+      "token": "kg"
+    },
+    {
+      "count": 6,
+      "token": "ml"
+    },
+    {
+      "count": 6,
+      "token": "uy"
+    },
+    {
+      "count": 6,
+      "token": "xw"
+    },
+    {
+      "count": 6,
+      "token": "yd"
+    },
+    {
+      "count": 6,
+      "token": "yl"
+    },
+    {
+      "count": 6,
+      "token": "zz"
+    },
+    {
+      "count": 5,
+      "token": "AL"
+    },
+    {
+      "count": 5,
+      "token": "Ab"
+    },
+    {
+      "count": 5,
+      "token": "Av"
+    },
+    {
+      "count": 5,
+      "token": "CH"
+    },
+    {
+      "count": 5,
+      "token": "CO"
+    },
+    {
+      "count": 5,
+      "token": "DI"
+    },
+    {
+      "count": 5,
+      "token": "Ei"
+    },
+    {
+      "count": 5,
+      "token": "Er"
+    },
+    {
+      "count": 5,
+      "token": "Ex"
+    },
+    {
+      "count": 5,
+      "token": "IR"
+    },
+    {
+      "count": 5,
+      "token": "Kr"
+    },
+    {
+      "count": 5,
+      "token": "OT"
+    },
+    {
+      "count": 5,
+      "token": "PO"
+    },
+    {
+      "count": 5,
+      "token": "Qu"
+    },
+    {
+      "count": 5,
+      "token": "Tu"
+    },
+    {
+      "count": 5,
+      "token": "Tw"
+    },
+    {
+      "count": 5,
+      "token": "US"
+    },
+    {
+      "count": 5,
+      "token": "WE"
+    },
+    {
+      "count": 5,
+      "token": "aa"
+    },
+    {
+      "count": 5,
+      "token": "ko"
+    },
+    {
+      "count": 5,
+      "token": "np"
+    },
+    {
+      "count": 5,
+      "token": "wm"
+    },
+    {
+      "count": 5,
+      "token": "wy"
+    },
+    {
+      "count": 5,
+      "token": "xu"
+    },
+    {
+      "count": 5,
+      "token": "yb"
+    },
+    {
+      "count": 5,
+      "token": "zl"
+    },
+    {
+      "count": 5,
+      "token": "zo"
+    },
+    {
+      "count": 4,
+      "token": "AC"
+    },
+    {
+      "count": 4,
+      "token": "Ai"
+    },
+    {
+      "count": 4,
+      "token": "CE"
+    },
+    {
+      "count": 4,
+      "token": "DO"
+    },
+    {
+      "count": 4,
+      "token": "Gh"
+    },
+    {
+      "count": 4,
+      "token": "Hu"
+    },
+    {
+      "count": 4,
+      "token": "IL"
+    },
+    {
+      "count": 4,
+      "token": "IP"
+    },
+    {
+      "count": 4,
+      "token": "Im"
+    },
+    {
+      "count": 4,
+      "token": "Kh"
+    },
+    {
+      "count": 4,
+      "token": "LD"
+    },
+    {
+      "count": 4,
+      "token": "LI"
+    },
+    {
+      "count": 4,
+      "token": "Ll"
+    },
+    {
+      "count": 4,
+      "token": "MO"
+    },
+    {
+      "count": 4,
+      "token": "NA"
+    },
+    {
+      "count": 4,
+      "token": "ND"
+    },
+    {
+      "count": 4,
+      "token": "Ol"
+    },
+    {
+      "count": 4,
+      "token": "Or"
+    },
+    {
+      "count": 4,
+      "token": "RO"
+    },
+    {
+      "count": 4,
+      "token": "SS"
+    },
+    {
+      "count": 4,
+      "token": "Ti"
+    },
+    {
+      "count": 4,
+      "token": "UC"
+    },
+    {
+      "count": 4,
+      "token": "Us"
+    },
+    {
+      "count": 4,
+      "token": "VE"
+    },
+    {
+      "count": 4,
+      "token": "bm"
+    },
+    {
+      "count": 4,
+      "token": "gd"
+    },
+    {
+      "count": 4,
+      "token": "ln"
+    },
+    {
+      "count": 4,
+      "token": "nz"
+    },
+    {
+      "count": 4,
+      "token": "oz"
+    },
+    {
+      "count": 4,
+      "token": "pb"
+    },
+    {
+      "count": 4,
+      "token": "sr"
+    },
+    {
+      "count": 4,
+      "token": "tb"
+    },
+    {
+      "count": 4,
+      "token": "wf"
+    },
+    {
+      "count": 3,
+      "token": "AM"
+    },
+    {
+      "count": 3,
+      "token": "Ag"
+    },
+    {
+      "count": 3,
+      "token": "BE"
+    },
+    {
+      "count": 3,
+      "token": "CT"
+    },
+    {
+      "count": 3,
+      "token": "Cu"
+    },
+    {
+      "count": 3,
+      "token": "DU"
+    },
+    {
+      "count": 3,
+      "token": "EC"
+    },
+    {
+      "count": 3,
+      "token": "EF"
+    },
+    {
+      "count": 3,
+      "token": "EW"
+    },
+    {
+      "count": 3,
+      "token": "Ec"
+    },
+    {
+      "count": 3,
+      "token": "FO"
+    },
+    {
+      "count": 3,
+      "token": "Fl"
+    },
+    {
+      "count": 3,
+      "token": "GR"
+    },
+    {
+      "count": 3,
+      "token": "HA"
+    },
+    {
+      "count": 3,
+      "token": "HN"
+    },
+    {
+      "count": 3,
+      "token": "IA"
+    },
+    {
+      "count": 3,
+      "token": "IS"
+    },
+    {
+      "count": 3,
+      "token": "Ku"
+    },
+    {
+      "count": 3,
+      "token": "ME"
+    },
+    {
+      "count": 3,
+      "token": "NC"
+    },
+    {
+      "count": 3,
+      "token": "NG"
+    },
+    {
+      "count": 3,
+      "token": "NY"
+    },
+    {
+      "count": 3,
+      "token": "OL"
+    },
+    {
+      "count": 3,
+      "token": "OO"
+    },
+    {
+      "count": 3,
+      "token": "OP"
+    },
+    {
+      "count": 3,
+      "token": "OW"
+    },
+    {
+      "count": 3,
+      "token": "Ot"
+    },
+    {
+      "count": 3,
+      "token": "Ov"
+    },
+    {
+      "count": 3,
+      "token": "RM"
+    },
+    {
+      "count": 3,
+      "token": "RU"
+    },
+    {
+      "count": 3,
+      "token": "SO"
+    },
+    {
+      "count": 3,
+      "token": "TR"
+    },
+    {
+      "count": 3,
+      "token": "TT"
+    },
+    {
+      "count": 3,
+      "token": "UR"
+    },
+    {
+      "count": 3,
+      "token": "UT"
+    },
+    {
+      "count": 3,
+      "token": "Ug"
+    },
+    {
+      "count": 3,
+      "token": "WH"
+    },
+    {
+      "count": 3,
+      "token": "WO"
+    },
+    {
+      "count": 3,
+      "token": "Yu"
+    },
+    {
+      "count": 3,
+      "token": "dc"
+    },
+    {
+      "count": 3,
+      "token": "dk"
+    },
+    {
+      "count": 3,
+      "token": "ez"
+    },
+    {
+      "count": 3,
+      "token": "kj"
+    },
+    {
+      "count": 3,
+      "token": "ku"
+    },
+    {
+      "count": 3,
+      "token": "lb"
+    },
+    {
+      "count": 3,
+      "token": "pn"
+    },
+    {
+      "count": 3,
+      "token": "vr"
+    },
+    {
+      "count": 3,
+      "token": "vu"
+    },
+    {
+      "count": 3,
+      "token": "wt"
+    },
+    {
+      "count": 2,
+      "token": "AF"
+    },
+    {
+      "count": 2,
+      "token": "AH"
+    },
+    {
+      "count": 2,
+      "token": "AT"
+    },
+    {
+      "count": 2,
+      "token": "AY"
+    },
+    {
+      "count": 2,
+      "token": "BR"
+    },
+    {
+      "count": 2,
+      "token": "BU"
+    },
+    {
+      "count": 2,
+      "token": "CL"
+    },
+    {
+      "count": 2,
+      "token": "CR"
+    },
+    {
+      "count": 2,
+      "token": "Cy"
+    },
+    {
+      "count": 2,
+      "token": "DA"
+    },
+    {
+      "count": 2,
+      "token": "EO"
+    },
+    {
+      "count": 2,
+      "token": "Eg"
+    },
+    {
+      "count": 2,
+      "token": "Em"
+    },
+    {
+      "count": 2,
+      "token": "FR"
+    },
+    {
+      "count": 2,
+      "token": "FU"
+    },
+    {
+      "count": 2,
+      "token": "GH"
+    },
+    {
+      "count": 2,
+      "token": "GO"
+    },
+    {
+      "count": 2,
+      "token": "HI"
+    },
+    {
+      "count": 2,
+      "token": "HT"
+    },
+    {
+      "count": 2,
+      "token": "IE"
+    },
+    {
+      "count": 2,
+      "token": "IG"
+    },
+    {
+      "count": 2,
+      "token": "IO"
+    },
+    {
+      "count": 2,
+      "token": "JO"
+    },
+    {
+      "count": 2,
+      "token": "LA"
+    },
+    {
+      "count": 2,
+      "token": "Ly"
+    },
+    {
+      "count": 2,
+      "token": "NS"
+    },
+    {
+      "count": 2,
+      "token": "OH"
+    },
+    {
+      "count": 2,
+      "token": "OM"
+    },
+    {
+      "count": 2,
+      "token": "OV"
+    },
+    {
+      "count": 2,
+      "token": "OY"
+    },
+    {
+      "count": 2,
+      "token": "Ob"
+    },
+    {
+      "count": 2,
+      "token": "Op"
+    },
+    {
+      "count": 2,
+      "token": "Ox"
+    },
+    {
+      "count": 2,
+      "token": "RC"
+    },
+    {
+      "count": 2,
+      "token": "RD"
+    },
+    {
+      "count": 2,
+      "token": "RS"
+    },
+    {
+      "count": 2,
+      "token": "RY"
+    },
+    {
+      "count": 2,
+      "token": "SP"
+    },
+    {
+      "count": 2,
+      "token": "Sm"
+    },
+    {
+      "count": 2,
+      "token": "TI"
+    },
+    {
+      "count": 2,
+      "token": "TV"
+    },
+    {
+      "count": 2,
+      "token": "UL"
+    },
+    {
+      "count": 2,
+      "token": "Xi"
+    },
+    {
+      "count": 2,
+      "token": "Ya"
+    },
+    {
+      "count": 2,
+      "token": "cq"
+    },
+    {
+      "count": 2,
+      "token": "df"
+    },
+    {
+      "count": 2,
+      "token": "dh"
+    },
+    {
+      "count": 2,
+      "token": "dq"
+    },
+    {
+      "count": 2,
+      "token": "ih"
+    },
+    {
+      "count": 2,
+      "token": "kb"
+    },
+    {
+      "count": 2,
+      "token": "tg"
+    },
+    {
+      "count": 2,
+      "token": "tp"
+    },
+    {
+      "count": 2,
+      "token": "tz"
+    },
+    {
+      "count": 2,
+      "token": "uz"
+    },
+    {
+      "count": 2,
+      "token": "wu"
+    },
+    {
+      "count": 2,
+      "token": "xf"
+    },
+    {
+      "count": 2,
+      "token": "xh"
+    },
+    {
+      "count": 2,
+      "token": "yr"
+    },
+    {
+      "count": 2,
+      "token": "zy"
+    },
+    {
+      "count": 1,
+      "token": "AD"
+    },
+    {
+      "count": 1,
+      "token": "AK"
+    },
+    {
+      "count": 1,
+      "token": "AP"
+    },
+    {
+      "count": 1,
+      "token": "AS"
+    },
+    {
+      "count": 1,
+      "token": "AX"
+    },
+    {
+      "count": 1,
+      "token": "AZ"
+    },
+    {
+      "count": 1,
+      "token": "Az"
+    },
+    {
+      "count": 1,
+      "token": "BA"
+    },
+    {
+      "count": 1,
+      "token": "BI"
+    },
+    {
+      "count": 1,
+      "token": "CA"
+    },
+    {
+      "count": 1,
+      "token": "CC"
+    },
+    {
+      "count": 1,
+      "token": "CI"
+    },
+    {
+      "count": 1,
+      "token": "CK"
+    },
+    {
+      "count": 1,
+      "token": "CM"
+    },
+    {
+      "count": 1,
+      "token": "CU"
+    },
+    {
+      "count": 1,
+      "token": "CY"
+    },
+    {
+      "count": 1,
+      "token": "Cz"
+    },
+    {
+      "count": 1,
+      "token": "DD"
+    },
+    {
+      "count": 1,
+      "token": "DG"
+    },
+    {
+      "count": 1,
+      "token": "DR"
+    },
+    {
+      "count": 1,
+      "token": "DT"
+    },
+    {
+      "count": 1,
+      "token": "DV"
+    },
+    {
+      "count": 1,
+      "token": "DW"
+    },
+    {
+      "count": 1,
+      "token": "EA"
+    },
+    {
+      "count": 1,
+      "token": "EE"
+    },
+    {
+      "count": 1,
+      "token": "EI"
+    },
+    {
+      "count": 1,
+      "token": "EV"
+    },
+    {
+      "count": 1,
+      "token": "EX"
+    },
+    {
+      "count": 1,
+      "token": "EY"
+    },
+    {
+      "count": 1,
+      "token": "Eo"
+    },
+    {
+      "count": 1,
+      "token": "Es"
+    },
+    {
+      "count": 1,
+      "token": "FA"
+    },
+    {
+      "count": 1,
+      "token": "FE"
+    },
+    {
+      "count": 1,
+      "token": "FF"
+    },
+    {
+      "count": 1,
+      "token": "FL"
+    },
+    {
+      "count": 1,
+      "token": "FT"
+    },
+    {
+      "count": 1,
+      "token": "Fu"
+    },
+    {
+      "count": 1,
+      "token": "GA"
+    },
+    {
+      "count": 1,
+      "token": "GL"
+    },
+    {
+      "count": 1,
+      "token": "GS"
+    },
+    {
+      "count": 1,
+      "token": "HB"
+    },
+    {
+      "count": 1,
+      "token": "HM"
+    },
+    {
+      "count": 1,
+      "token": "Hy"
+    },
+    {
+      "count": 1,
+      "token": "IF"
+    },
+    {
+      "count": 1,
+      "token": "KA"
+    },
+    {
+      "count": 1,
+      "token": "KI"
+    },
+    {
+      "count": 1,
+      "token": "KR"
+    },
+    {
+      "count": 1,
+      "token": "Kn"
+    },
+    {
+      "count": 1,
+      "token": "LK"
+    },
+    {
+      "count": 1,
+      "token": "LO"
+    },
+    {
+      "count": 1,
+      "token": "LW"
+    },
+    {
+      "count": 1,
+      "token": "LY"
+    },
+    {
+      "count": 1,
+      "token": "Lt"
+    },
+    {
+      "count": 1,
+      "token": "MI"
+    },
+    {
+      "count": 1,
+      "token": "MP"
+    },
+    {
+      "count": 1,
+      "token": "Mc"
+    },
+    {
+      "count": 1,
+      "token": "NK"
+    },
+    {
+      "count": 1,
+      "token": "NL"
+    },
+    {
+      "count": 1,
+      "token": "NR"
+    },
+    {
+      "count": 1,
+      "token": "NZ"
+    },
+    {
+      "count": 1,
+      "token": "Nu"
+    },
+    {
+      "count": 1,
+      "token": "OF"
+    },
+    {
+      "count": 1,
+      "token": "OS"
+    },
+    {
+      "count": 1,
+      "token": "Og"
+    },
+    {
+      "count": 1,
+      "token": "Ow"
+    },
+    {
+      "count": 1,
+      "token": "PA"
+    },
+    {
+      "count": 1,
+      "token": "PI"
+    },
+    {
+      "count": 1,
+      "token": "PP"
+    },
+    {
+      "count": 1,
+      "token": "PY"
+    },
+    {
+      "count": 1,
+      "token": "RF"
+    },
+    {
+      "count": 1,
+      "token": "RK"
+    },
+    {
+      "count": 1,
+      "token": "RL"
+    },
+    {
+      "count": 1,
+      "token": "RR"
+    },
+    {
+      "count": 1,
+      "token": "RT"
+    },
+    {
+      "count": 1,
+      "token": "SC"
+    },
+    {
+      "count": 1,
+      "token": "SH"
+    },
+    {
+      "count": 1,
+      "token": "SK"
+    },
+    {
+      "count": 1,
+      "token": "SU"
+    },
+    {
+      "count": 1,
+      "token": "Sl"
+    },
+    {
+      "count": 1,
+      "token": "TF"
+    },
+    {
+      "count": 1,
+      "token": "TL"
+    },
+    {
+      "count": 1,
+      "token": "TS"
+    },
+    {
+      "count": 1,
+      "token": "TW"
+    },
+    {
+      "count": 1,
+      "token": "Te"
+    },
+    {
+      "count": 1,
+      "token": "UD"
+    },
+    {
+      "count": 1,
+      "token": "UE"
+    },
+    {
+      "count": 1,
+      "token": "UG"
+    },
+    {
+      "count": 1,
+      "token": "Um"
+    },
+    {
+      "count": 1,
+      "token": "VA"
+    },
+    {
+      "count": 1,
+      "token": "VI"
+    },
+    {
+      "count": 1,
+      "token": "WI"
+    },
+    {
+      "count": 1,
+      "token": "WT"
+    },
+    {
+      "count": 1,
+      "token": "WY"
+    },
+    {
+      "count": 1,
+      "token": "Wu"
+    },
+    {
+      "count": 1,
+      "token": "XE"
+    },
+    {
+      "count": 1,
+      "token": "XT"
+    },
+    {
+      "count": 1,
+      "token": "YA"
+    },
+    {
+      "count": 1,
+      "token": "YD"
+    },
+    {
+      "count": 1,
+      "token": "YN"
+    },
+    {
+      "count": 1,
+      "token": "YO"
+    },
+    {
+      "count": 1,
+      "token": "Yv"
+    },
+    {
+      "count": 1,
+      "token": "ZE"
+    },
+    {
+      "count": 1,
+      "token": "ZY"
+    },
+    {
+      "count": 1,
+      "token": "Za"
+    },
+    {
+      "count": 1,
+      "token": "Ze"
+    },
+    {
+      "count": 1,
+      "token": "bh"
+    },
+    {
+      "count": 1,
+      "token": "bk"
+    },
+    {
+      "count": 1,
+      "token": "bn"
+    },
+    {
+      "count": 1,
+      "token": "cG"
+    },
+    {
+      "count": 1,
+      "token": "cd"
+    },
+    {
+      "count": 1,
+      "token": "cz"
+    },
+    {
+      "count": 1,
+      "token": "dt"
+    },
+    {
+      "count": 1,
+      "token": "fw"
+    },
+    {
+      "count": 1,
+      "token": "gb"
+    },
+    {
+      "count": 1,
+      "token": "hf"
+    },
+    {
+      "count": 1,
+      "token": "hk"
+    },
+    {
+      "count": 1,
+      "token": "iw"
+    },
+    {
+      "count": 1,
+      "token": "kt"
+    },
+    {
+      "count": 1,
+      "token": "kw"
+    },
+    {
+      "count": 1,
+      "token": "mr"
+    },
+    {
+      "count": 1,
+      "token": "mt"
+    },
+    {
+      "count": 1,
+      "token": "pg"
+    },
+    {
+      "count": 1,
+      "token": "pw"
+    },
+    {
+      "count": 1,
+      "token": "rj"
+    },
+    {
+      "count": 1,
+      "token": "sv"
+    },
+    {
+      "count": 1,
+      "token": "td"
+    },
+    {
+      "count": 1,
+      "token": "tj"
+    },
+    {
+      "count": 1,
+      "token": "uu"
+    },
+    {
+      "count": 1,
+      "token": "uw"
+    },
+    {
+      "count": 1,
+      "token": "vd"
+    },
+    {
+      "count": 1,
+      "token": "vv"
+    },
+    {
+      "count": 1,
+      "token": "xo"
+    },
+    {
+      "count": 1,
+      "token": "xq"
+    },
+    {
+      "count": 1,
+      "token": "xy"
+    },
+    {
+      "count": 1,
+      "token": "yg"
+    },
+    {
+      "count": 1,
+      "token": "yh"
+    },
+    {
+      "count": 1,
+      "token": "zh"
+    },
+    {
+      "count": 1,
+      "token": "zn"
+    },
+    {
+      "count": 1,
+      "token": "zt"
+    },
+    {
+      "count": 1,
+      "token": "zu"
+    }
+  ],
+  "dataset": "IAM",
+  "line_count": 5694,
+  "note": "Frequency evidence uses IAM training transcripts only. No FAU labels or recognition results were read.",
+  "pair_policy": "case-sensitive-ascii-letters-only",
+  "ranking": "descending-count-then-lexical-token",
+  "schema_version": "tva.iam-letter-bigram-counts.v1",
+  "sources": {
+    "labels_sha256": "5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab",
+    "selection_rule": "lowest-sha256-of-seed-colon-line-id-v1",
+    "selection_seed": "iam-train-complete-v3-20260823",
+    "selection_sha256": "7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2"
+  },
+  "split": "train",
+  "status": "frozen-training-text-evidence",
+  "text_normalization": "NFC",
+  "total_candidate_occurrences": 153350
+}

@@ -1,6 +1,6 @@
 # Thesis Project Handoff — RTX Machine
 
-**Last updated:** 2026-09-15
+**Last updated:** 2026-09-21
 
 **Repository:** [muhammadalised/TVA](https://github.com/muhammadalised/TVA)
 
@@ -94,6 +94,50 @@ construction. Preserve explicit IAM/READ evidence splits and provenance. A
 frequency-based comparator learned from OnHW text must use only that fold's
 training labels; then freeze each tokenizer before training and evaluation.
 
+### New supervisor-supplied FAU English evaluation
+
+An additional English sentence-level IMU dataset is available at
+`/mnt/c/Users/Ali/Downloads/fau-english-dataset/` as `gold_wd.zip` and
+`gold_wi.zip`. It contains 2,550 seven-channel, 100 Hz recordings from 102
+writers and supplies five WD and five WI folds. It is independent of IAM;
+IAM is only the external offline-handwriting evidence source for the English
+handwriting tokenizer.
+
+Keep the repository boundary strict: DTLR freezes a generic IAM-only English
+handwriting vocabulary from IAM training evidence and must not read FAU
+annotations. TVA owns the FAU-specific character projection, runtime
+segmentation, post-freeze compatibility audit, and recognition training. Only
+the dataset's declared `categories` schema—not FAU label frequencies or
+validation outcomes—may influence singleton coverage.
+
+Supervisor direction is to evaluate English handwriting tokenizers first and
+not use the combined IAM+READ tokenizer for this initial FAU study. DTLR commit
+`d2f4631` froze the generic 145-bigram IAM source artifact at
+`/home/artellisys/DTLR/poc/frozen/iam-english-handwriting-bigram-v1.json`;
+its SHA-256 is
+`2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`.
+Its count-20/rate-0.5 selection thresholds are reproducible but remain
+provisional rather than statistically optimal. TVA pinned the exact source and
+froze the FAU adapter on 2026-09-21. The adapter has 224 outputs including blank
+(78 FAU singletons plus all 145 frozen IAM bigrams), uses greedy left-to-right
+segmentation, and has SHA-256
+`4c06828ac3b0ae03e98d569b0f3fea1cdfbc0a125f6eeffcc7ffb2a4935f3f52`.
+It removes unused IAM `*` and adds `%`, `(`, and `=` as fallback singletons.
+The post-freeze audit encoded all 2,550 labels from each archive with zero
+blank emissions and zero round-trip failures. The matched 224-class IAM-text
+linguistic comparator is also frozen, under tokenizer key
+`linguistic_bigram_greedy`, with SHA-256
+`0a7e173afdd2a911780c14517e651b9787c3b8b3c0fdedb74f915920b4d4f392`.
+It uses 145 frequency-ranked IAM-train bigrams and the identical singleton and
+greedy policies. Do not train until the seven-channel preprocessing policy and
+data path are fixed and smoke-tested.
+
+This is an additional external-transfer experiment, not permission to replace
+or reinterpret the completed OnHW fold-0 results. It also needs a dedicated
+seven-channel data configuration; OnHW recognition checkpoints are not
+compatible with its input shape. Full audit details and archive hashes are in
+`docs/EXPERIMENTS.md` under “FAU English dataset compatibility audit.”
+
 ## 4. Completed, verified work
 
 ### Environment and data preparation
@@ -166,6 +210,47 @@ Tkinter/Matplotlib GUI-backend cleanup failure. Its complete epoch-232 state
 was resumed at epoch 233 with `MPLBACKEND=Agg` and finished normally. Preserve
 both run logs and configuration snapshots. Full metrics, checkpoint hashes,
 and recovery details are recorded in `docs/EXPERIMENTS.md`.
+
+### Matched linguistic Bigram completed (WI/RH fold 0)
+
+The 419-class matched linguistic condition completed 300 epochs. Its best CER
+and WER occur at epoch 262: **15.97% CER** and **24.91% WER**. Compared with
+handwriting Bigram, linguistic has a negligible 0.014-percentage-point CER
+advantage, while handwriting has a 0.28-point WER advantage. At their
+respective best-WER checkpoints, handwriting recognizes 15 more of the 5,292
+validation words exactly. An exploratory paired exact test gives `p = 0.497`,
+so the fold-0 gap is not reliable evidence of superiority. Treat the current
+WI result as both Bigram conditions improving WER relative to the character
+baseline, with no established difference between their evidence sources.
+Complete the remaining folds before making the thesis claim.
+
+### Handwriting-aware Bigram completed (WD/RH fold 0)
+
+The frozen handwriting-aware condition completed 300 epochs with **20.24% CER
+at epoch 276** and **39.87% WER at epoch 281**. Relative to the fold-0 WD
+character baseline, this is 7.49 CER points and 3.89 WER points worse. At their
+respective best-WER checkpoints, handwriting recognizes 196 fewer of the 5,036
+validation words exactly; an exploratory paired exact test gives `p =
+6.02e-13`. This is a substantial negative WD fold-0 result. It contrasts with
+the positive WI WER change and is directionally compatible with the proposed
+larger WI benefit, but the matched linguistic WD run is required before
+interpreting the tokenizer-evidence source. Full checkpoint hashes are in
+`docs/EXPERIMENTS.md`.
+
+### Matched linguistic Bigram completed (WD/RH fold 0)
+
+The 419-class matched linguistic condition completed 300 epochs with **20.02%
+CER at epoch 282** and **40.07% WER at epoch 278**. Linguistic is 7.26 CER
+points and 4.09 WER points worse than the fold-0 WD character baseline.
+Against handwriting Bigram, linguistic has a 0.22-point CER advantage and
+handwriting has a 0.20-point WER advantage—only ten additional exactly correct
+words among 5,036. An exploratory paired exact test gives `p = 0.716`.
+
+The completed fold-0 pattern is therefore: both Bigram conditions improve WER
+over character in WI, both degrade WD, and handwriting versus linguistic is a
+near-tie in both settings. Fold 0 does not support a handwriting-specific
+advantage. Run the remaining folds before making the final thesis claim. Full
+metrics and hashes are in `docs/EXPERIMENTS.md`.
 
 ### CTC forced alignment implementation
 
@@ -363,6 +448,48 @@ python score_continuity.py \
 The scorer writes an auditable `pair_continuity_scores.csv` and a method JSON report beside the export. Do not use a validation export: the program rejects non-training splits by design.
 
 ## 8. Recommended next steps
+
+### FAU English external-transfer experiment
+
+The IAM handwriting adapter, matched IAM-text comparator, and both greedy
+runtimes are now complete. The authenticated seven-channel ZIP loader and all
+four bounded WD/WI smoke runs are also complete. Next:
+
+1. Freeze the full-training architecture, augmentation, batch size, and epoch
+   schedule for both tokenizers and both distributions.
+2. Add four full fold-0 configurations using fresh seven-channel models; do
+   not reuse OnHW's 13-channel checkpoints.
+3. Run one bounded full-architecture CUDA timing check, then launch fresh
+   matched recognition runs.
+
+Canonical files:
+
+- `artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json`
+- `artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json`
+- `artifacts/tokenizers/source/iam-train-letter-bigram-counts-v1.json`
+- `artifacts/tokenizers/fau_english_iam_linguistic_bigram_greedy_v1.json`
+- `build_fau_handwriting_bigram_adapter.py`
+- `build_fau_linguistic_bigram_adapter.py`
+- `audit_fau_handwriting_bigram.py`
+- `tva/fau_handwriting_bigram.py`
+- `tva/fau_linguistic_bigram.py`
+- `tests/test_fau_handwriting_bigram.py`
+- `tests/test_fau_linguistic_bigram.py`
+- `tva/dataset/fau.py`
+- `tests/test_fau_dataset_pipeline.py`
+- `configs/thesis/fau/smoke_bigram_{handwriting,linguistic}_{wd,wi}.yaml`
+
+To run a smoke test from the current dataset location:
+
+```bash
+export TVA_FAU_DATASET_DIR=/mnt/c/Users/Ali/Downloads/fau-english-dataset
+MPLBACKEND=Agg python main.py \
+  --config configs/thesis/fau/smoke_bigram_handwriting_wd.yaml
+```
+
+The smoke configurations deliberately use BLConv-S + BiLSTM-S and tiny sample
+limits. They are pipeline diagnostics and must not be reused as thesis-result
+configurations.
 
 ### First: integrate the completed combined tokenizer
 

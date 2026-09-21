@@ -9,7 +9,7 @@ from torch.amp import GradScaler
 from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 from torch.utils.data import DataLoader
 
-from tva.dataset import HRDataset, fn_collate
+from tva.dataset import FauZipDataset, HRDataset, fn_collate, resolve_fau_archive
 from tva.decoder_ctc import BestPath
 from tva.evaluate import evaluate
 from tva.loss import CTCLoss
@@ -25,6 +25,45 @@ from tva.utils import (
 from tva.visualize import visualize
 
 warnings.filterwarnings('ignore', category=UserWarning)
+
+
+def build_dataset(
+    cfgs: argparse.Namespace,
+    split: str,
+    tokenizer: object,
+    ratio_ds: int,
+) -> HRDataset:
+    """Build either the legacy extracted dataset or authenticated FAU ZIP."""
+    is_train = split == 'train'
+    common = {
+        'tokenizer': tokenizer,
+        'ratio_ds': ratio_ds,
+        'idx_fold': cfgs.idx_fold,
+        'len_seq': cfgs.len_seq,
+        'aug': cfgs.aug if is_train else False,
+        'cache': cfgs.cache,
+        'num_concat': cfgs.num_concat if is_train else 0,
+        'max_samples': getattr(
+            cfgs,
+            'max_train_samples' if is_train else 'max_val_samples',
+            0,
+        ),
+    }
+    dataset_format = getattr(cfgs, 'dataset_format', 'json-directory')
+    if dataset_format == 'fau-zip':
+        distribution = cfgs.fau_distribution
+        return FauZipDataset(
+            resolve_fau_archive(cfgs.dir_dataset, distribution),
+            split,
+            distribution,
+            **common,
+        )
+    if dataset_format != 'json-directory':
+        raise ValueError(f'unsupported dataset format: {dataset_format!r}')
+    return HRDataset(
+        os.path.join(cfgs.dir_dataset, f'{split}.json'),
+        **common,
+    )
 
 
 def train_one_epoch(
@@ -158,15 +197,7 @@ def main(cfgs: argparse.Namespace) -> None:
         tokenizer.size,
         cfgs.len_seq,
     ).to(cfgs.device)
-    dataset_test = HRDataset(
-        os.path.join(cfgs.dir_dataset, 'val.json'),
-        tokenizer,
-        model.ratio_ds,
-        cfgs.idx_fold,
-        cfgs.len_seq,
-        cache=cfgs.cache,
-        max_samples=getattr(cfgs, 'max_val_samples', 0),
-    )
+    dataset_test = build_dataset(cfgs, 'val', tokenizer, model.ratio_ds)
     dataloader_test = DataLoader(
         dataset_test,
         cfgs.size_batch,
@@ -177,17 +208,7 @@ def main(cfgs: argparse.Namespace) -> None:
     epoch_start = 0
 
     if not cfgs.test:
-        dataset_train = HRDataset(
-            os.path.join(cfgs.dir_dataset, 'train.json'),
-            tokenizer,
-            model.ratio_ds,
-            cfgs.idx_fold,
-            cfgs.len_seq,
-            cfgs.aug,
-            cfgs.cache,
-            cfgs.num_concat,
-            getattr(cfgs, 'max_train_samples', 0),
-        )
+        dataset_train = build_dataset(cfgs, 'train', tokenizer, model.ratio_ds)
         generator_train = torch.Generator().manual_seed(cfgs.seed)
         dataloader_train = DataLoader(
             dataset_train,

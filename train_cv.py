@@ -5,6 +5,8 @@ from copy import deepcopy
 
 import yaml
 
+from tva.dataset import get_fau_num_folds
+
 
 def train_cv(cfgs: dict, path_main: str) -> None:
     '''Orchestrates cross-validation training.
@@ -19,8 +21,13 @@ def train_cv(cfgs: dict, path_main: str) -> None:
         path_main: File path to the main Python training script (e.g.,
             'main.py').
     '''
-    with open(os.path.join(cfgs['dir_dataset'], 'train.json'), 'r') as f:
-        num_fd = json.load(f)['info']['num_fold']
+    if cfgs.get('dataset_format', 'json-directory') == 'fau-zip':
+        num_fd = get_fau_num_folds(
+            cfgs['dir_dataset'], cfgs['fau_distribution']
+        )
+    else:
+        with open(os.path.join(cfgs['dir_dataset'], 'train.json'), 'r') as f:
+            num_fd = json.load(f)['info']['num_fold']
 
     dir_temp = f'temp_{os.path.basename(cfgs["dir_work"])}'
     os.makedirs(dir_temp, exist_ok=True)

@@ -1,0 +1,31 @@
+# Bounded FAU WD handwriting Bigram pipeline smoke test.
+# Set TVA_FAU_DATASET_DIR to the directory containing gold_wd.zip/gold_wi.zip.
+arch_de: bilstm_s
+arch_en: blconv_s
+aug: false
+cache: true
+checkpoint: null
+dataset_format: fau-zip
+device: cpu
+dir_dataset: data/tva/fau_english
+dir_tokenizer: artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json
+dir_work: results/thesis/development/smoke_fau_handwriting_wd
+epoch: 1
+epoch_warmup: 1
+fau_distribution: wd
+freq_eval: 1
+freq_log: 1
+freq_save: 0
+idx_fold: 0
+len_seq: 0
+lr: 0.001
+max_train_samples: 8
+max_val_samples: 4
+num_channel: 7
+num_concat: 0
+num_worker: 0
+seed: 42
+size_batch: 2
+test: false
+tokenizer: handwriting_bigram_greedy
+categories: ["", " ", "!", "\"", "%", "'", "(", ")", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "=", "?", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]

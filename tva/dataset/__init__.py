@@ -13,7 +13,13 @@ from tqdm import tqdm
 
 from .transforms import AddNoise, Drift, Dropout, TimeWarp
 
-__all__ = ['fn_collate', 'HRDataset']
+__all__ = [
+    'fn_collate',
+    'HRDataset',
+    'FauZipDataset',
+    'get_fau_num_folds',
+    'resolve_fau_archive',
+]
 
 
 def fn_collate(
@@ -245,3 +251,10 @@ class HRDataset(Dataset):
             seq = pad(seq.T, (0, len_min - len(seq))).T
 
         return seq
+
+
+from .fau import (  # noqa: E402
+    FauZipDataset,
+    get_fau_num_folds,
+    resolve_fau_archive,
+)

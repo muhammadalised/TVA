@@ -227,3 +227,77 @@ the reason no longer valid.
   vocabularies as a separately named secondary ablation. It cannot replace or
   suppress the predeclared primary DP result based on observed performance.
 - Specification: `docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
+
+## D017 — Freeze a separate greedy IAM-handwriting adapter for FAU English
+
+- Status: accepted and implemented on 2026-09-21 before FAU recognition
+  training
+- Decision: Keep the DTLR IAM-only 145-bigram vocabulary frozen, project only
+  its singleton layer to FAU's declared 78-character alphabet, and use greedy
+  left-to-right segmentation under the separate TVA key
+  `handwriting_bigram_greedy`. The result has 224 classes including blank ID 0.
+- Reason: The supervisor requested an English-only handwriting tokenizer for
+  the independent FAU dataset. Greedy matches TVA's established Bigram
+  behavior, while a separate key prevents any retrospective change to the DP
+  OnHW condition.
+- Leakage rule: The adapter builder may use only the already-frozen IAM source
+  and the declared FAU character schema. FAU label values, frequencies,
+  validation results, and recognition scores must not influence handwriting
+  bigram membership, ranking, or thresholds. Full labels are read only after
+  freezing for compatibility audit and later recognizer training/evaluation.
+- Fairness rule: The matched FAU linguistic comparator must use the same
+  224-class structure and greedy segmentation. Any DP comparison must be a
+  separately declared symmetric ablation for both vocabularies.
+- Frozen artifact SHA-256:
+  `4c06828ac3b0ae03e98d569b0f3fea1cdfbc0a125f6eeffcc7ffb2a4935f3f52`.
+- Validation: all 2,550 canonical labels in both WD and WI packages round-trip
+  exactly; 5,100 encodings emit zero blank IDs and have zero failures.
+
+## D018 — Match the FAU comparator with IAM training-text frequency
+
+- Status: accepted and implemented on 2026-09-21 before recognition training
+- Decision: Select 145 linguistic bigrams from the complete 5,694-line IAM
+  training transcript split. Count case-sensitive adjacent ASCII-letter pair
+  occurrences after NFC normalization, rank by descending count with lexical
+  tie-breaking, and use the same ordered FAU singletons and greedy segmentation
+  as the handwriting condition.
+- Reason: Both vocabularies then use the same English corpus and downstream
+  alphabet while differing in the intended evidence source: linguistic
+  occurrence frequency versus DTLR-derived handwriting connectivity.
+- Leakage rule: IAM train is the sole selection source. IAM validation/test
+  text, FAU labels, and all recognition results are excluded. FAU labels are
+  used only in the post-freeze compatibility audit and subsequent recognition
+  task.
+- Matching invariants: both conditions have blank ID 0, 78 identical singleton
+  IDs, 145 bigrams, 224 total outputs, NFC normalization, and greedy
+  left-to-right segmentation. The vocabularies share 72 pairs.
+- Limitation: equal vocabulary size does not imply equal target length. Across
+  one canonical 2,550-label FAU set, the linguistic vocabulary emits 79,078
+  tokens and the handwriting vocabulary emits 85,153. This 7.13% compression
+  difference is part of the vocabulary effect and must be reported.
+- Frozen evidence SHA-256:
+  `3a2d90f7233dd550f399e3296f92390291201482ca690c9cd85eb30d8b8079ca`.
+- Frozen adapter SHA-256:
+  `0a7e173afdd2a911780c14517e651b9787c3b8b3c0fdedb74f915920b4d4f392`.
+
+## D019 — Consume FAU as authenticated seven-channel ZIP data
+
+- Status: implemented and smoke-tested on 2026-09-21
+- Decision: Stream the supplied WD/WI CSV members directly from their ZIP
+  archives after authenticating the recorded archive SHA-256. Treat the seven
+  columns and 100 Hz rate as already prepared dataset inputs; do not apply an
+  OnHW 13-channel selection or a second resampling step.
+- Reason: The supplied archives already contain the supervisor-defined folds
+  and processed signals. Direct ZIP loading preserves their identity, avoids a
+  redundant roughly 500 MB extracted copy, and prevents accidental mixing
+  with OnHW preprocessing.
+- Preprocessing: verify finite float32 seven-channel arrays, apply TVA's
+  existing per-sample/per-channel standardization, and use the same subsequent
+  model pipeline for both tokenizers. Dataset augmentation is disabled in
+  smoke tests; the production augmentation policy must be frozen before full
+  training.
+- Portability: configs use `data/tva/fau_english`; local machines may override
+  it with `TVA_FAU_DATASET_DIR`. Absolute local paths must not be committed.
+- Validation: all four tokenizer × distribution smoke conditions completed
+  one bounded CPU epoch and saved 224-output checkpoints. These runs validate
+  plumbing only and are not recognition results.

@@ -1,0 +1,1527 @@
+{
+  "adapter": {
+    "annotation_label_values_read_by_builder": false,
+    "frozen_date": "2026-09-21",
+    "policy_id": "fau-english-iam-handwriting-bigram-greedy-v1",
+    "projection": "declared-task-alphabet-v1",
+    "retained_source_bigram_count": 145,
+    "source_model": {
+      "eligible_bigram_count": 145,
+      "model_version": "iam-english-handwriting-bigram-v1",
+      "schema_version": "dtlr.handwriting-bigram-tokenizer.v1",
+      "sha256": "2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92",
+      "size": 222,
+      "source_manifest_sha256": "82cb95a14e71ab5b70c868ca1676b3f628552fabac395fbd30039fc7798bf190",
+      "source_scores_sha256": "45c86a9f703ebc3684563ec2a840e7c34241aa76e84d692be46cf11bfec27055"
+    },
+    "source_singletons_excluded": [
+      "*"
+    ],
+    "task": "FAU English sentence recognition, WD and WI",
+    "task_alphabet": [
+      " ",
+      "!",
+      "\"",
+      "%",
+      "'",
+      "(",
+      ")",
+      "+",
+      ",",
+      "-",
+      ".",
+      "/",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      ":",
+      ";",
+      "=",
+      "?",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z"
+    ],
+    "task_alphabet_source": "identical categories fields in gold_wd/annotations.json and gold_wi/annotations.json",
+    "task_singletons_added": [
+      "%",
+      "(",
+      "="
+    ]
+  },
+  "blank_id": 0,
+  "blank_token": "",
+  "dataset": "FAU English",
+  "eligible_bigram_count": 145,
+  "idx_token": {
+    "0": "",
+    "1": " ",
+    "10": "-",
+    "100": "Lo",
+    "101": "Mr",
+    "102": "Re",
+    "103": "Ro",
+    "104": "Ru",
+    "105": "Se",
+    "106": "Un",
+    "107": "ab",
+    "108": "af",
+    "109": "ai",
+    "11": ".",
+    "110": "al",
+    "111": "am",
+    "112": "an",
+    "113": "ar",
+    "114": "as",
+    "115": "at",
+    "116": "au",
+    "117": "aw",
+    "118": "ax",
+    "119": "ay",
+    "12": "/",
+    "120": "bb",
+    "121": "be",
+    "122": "bo",
+    "123": "ca",
+    "124": "ce",
+    "125": "ch",
+    "126": "ci",
+    "127": "ck",
+    "128": "cl",
+    "129": "co",
+    "13": "0",
+    "130": "cr",
+    "131": "ct",
+    "132": "cu",
+    "133": "de",
+    "134": "do",
+    "135": "dr",
+    "136": "ds",
+    "137": "du",
+    "138": "ea",
+    "139": "ed",
+    "14": "1",
+    "140": "ee",
+    "141": "ei",
+    "142": "el",
+    "143": "em",
+    "144": "en",
+    "145": "eo",
+    "146": "er",
+    "147": "es",
+    "148": "et",
+    "149": "eu",
+    "15": "2",
+    "150": "ev",
+    "151": "ew",
+    "152": "ex",
+    "153": "ey",
+    "154": "fa",
+    "155": "fe",
+    "156": "ff",
+    "157": "fl",
+    "158": "fo",
+    "159": "fr",
+    "16": "3",
+    "160": "ft",
+    "161": "fu",
+    "162": "ge",
+    "163": "gn",
+    "164": "gr",
+    "165": "ha",
+    "166": "he",
+    "167": "hi",
+    "168": "ho",
+    "169": "hs",
+    "17": "4",
+    "170": "ht",
+    "171": "hu",
+    "172": "hy",
+    "173": "ke",
+    "174": "ki",
+    "175": "kn",
+    "176": "le",
+    "177": "li",
+    "178": "ll",
+    "179": "lu",
+    "18": "5",
+    "180": "ly",
+    "181": "me",
+    "182": "mu",
+    "183": "my",
+    "184": "ne",
+    "185": "nu",
+    "186": "ny",
+    "187": "oe",
+    "188": "of",
+    "189": "oh",
+    "19": "6",
+    "190": "om",
+    "191": "on",
+    "192": "oo",
+    "193": "or",
+    "194": "os",
+    "195": "ou",
+    "196": "pe",
+    "197": "re",
+    "198": "rh",
+    "199": "ro",
+    "2": "!",
+    "20": "7",
+    "200": "rr",
+    "201": "ru",
+    "202": "ry",
+    "203": "se",
+    "204": "ss",
+    "205": "ta",
+    "206": "tc",
+    "207": "te",
+    "208": "th",
+    "209": "to",
+    "21": "8",
+    "210": "tr",
+    "211": "ts",
+    "212": "tt",
+    "213": "tu",
+    "214": "tw",
+    "215": "ty",
+    "216": "ue",
+    "217": "un",
+    "218": "ur",
+    "219": "us",
+    "22": "9",
+    "220": "ut",
+    "221": "we",
+    "222": "ys",
+    "223": "ze",
+    "23": ":",
+    "24": ";",
+    "25": "=",
+    "26": "?",
+    "27": "A",
+    "28": "B",
+    "29": "C",
+    "3": "\"",
+    "30": "D",
+    "31": "E",
+    "32": "F",
+    "33": "G",
+    "34": "H",
+    "35": "I",
+    "36": "J",
+    "37": "K",
+    "38": "L",
+    "39": "M",
+    "4": "%",
+    "40": "N",
+    "41": "O",
+    "42": "P",
+    "43": "Q",
+    "44": "R",
+    "45": "S",
+    "46": "T",
+    "47": "U",
+    "48": "V",
+    "49": "W",
+    "5": "'",
+    "50": "X",
+    "51": "Y",
+    "52": "Z",
+    "53": "a",
+    "54": "b",
+    "55": "c",
+    "56": "d",
+    "57": "e",
+    "58": "f",
+    "59": "g",
+    "6": "(",
+    "60": "h",
+    "61": "i",
+    "62": "j",
+    "63": "k",
+    "64": "l",
+    "65": "m",
+    "66": "n",
+    "67": "o",
+    "68": "p",
+    "69": "q",
+    "7": ")",
+    "70": "r",
+    "71": "s",
+    "72": "t",
+    "73": "u",
+    "74": "v",
+    "75": "w",
+    "76": "x",
+    "77": "y",
+    "78": "z",
+    "79": "Af",
+    "8": "+",
+    "80": "Al",
+    "81": "Am",
+    "82": "An",
+    "83": "Ar",
+    "84": "As",
+    "85": "At",
+    "86": "Be",
+    "87": "Ca",
+    "88": "Ce",
+    "89": "Ch",
+    "9": ",",
+    "90": "Co",
+    "91": "De",
+    "92": "En",
+    "93": "Fe",
+    "94": "Ga",
+    "95": "Ge",
+    "96": "He",
+    "97": "Ke",
+    "98": "La",
+    "99": "Le"
+  },
+  "model_version": "fau-english-iam-handwriting-bigram-greedy-v1",
+  "note": "FAU adapter of the frozen IAM-only handwriting bigram vocabulary. The 145 bigrams and their scores are unchanged. FAU labels and recognition results did not select or rank tokens.",
+  "policy": {
+    "overlap_resolution": "greedy-left-to-right-v1",
+    "required_characters": [
+      " ",
+      "!",
+      "\"",
+      "%",
+      "'",
+      "(",
+      ")",
+      "+",
+      ",",
+      "-",
+      ".",
+      "/",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      ":",
+      ";",
+      "=",
+      "?",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z"
+    ],
+    "single_character_utility": 0.0,
+    "vocabulary_selection": "frozen-iam-train-handwriting-evidence-only"
+  },
+  "schema_version": "tva.fau-handwriting-bigram-adapter.v1",
+  "size": 224,
+  "status": "frozen-downstream-adapter",
+  "text_normalization": "NFC",
+  "vocab": {
+    "": 0,
+    " ": 1,
+    "!": 2,
+    "\"": 3,
+    "%": 4,
+    "'": 5,
+    "(": 6,
+    ")": 7,
+    "+": 8,
+    ",": 9,
+    "-": 10,
+    ".": 11,
+    "/": 12,
+    "0": 13,
+    "1": 14,
+    "2": 15,
+    "3": 16,
+    "4": 17,
+    "5": 18,
+    "6": 19,
+    "7": 20,
+    "8": 21,
+    "9": 22,
+    ":": 23,
+    ";": 24,
+    "=": 25,
+    "?": 26,
+    "A": 27,
+    "Af": 79,
+    "Al": 80,
+    "Am": 81,
+    "An": 82,
+    "Ar": 83,
+    "As": 84,
+    "At": 85,
+    "B": 28,
+    "Be": 86,
+    "C": 29,
+    "Ca": 87,
+    "Ce": 88,
+    "Ch": 89,
+    "Co": 90,
+    "D": 30,
+    "De": 91,
+    "E": 31,
+    "En": 92,
+    "F": 32,
+    "Fe": 93,
+    "G": 33,
+    "Ga": 94,
+    "Ge": 95,
+    "H": 34,
+    "He": 96,
+    "I": 35,
+    "J": 36,
+    "K": 37,
+    "Ke": 97,
+    "L": 38,
+    "La": 98,
+    "Le": 99,
+    "Lo": 100,
+    "M": 39,
+    "Mr": 101,
+    "N": 40,
+    "O": 41,
+    "P": 42,
+    "Q": 43,
+    "R": 44,
+    "Re": 102,
+    "Ro": 103,
+    "Ru": 104,
+    "S": 45,
+    "Se": 105,
+    "T": 46,
+    "U": 47,
+    "Un": 106,
+    "V": 48,
+    "W": 49,
+    "X": 50,
+    "Y": 51,
+    "Z": 52,
+    "a": 53,
+    "ab": 107,
+    "af": 108,
+    "ai": 109,
+    "al": 110,
+    "am": 111,
+    "an": 112,
+    "ar": 113,
+    "as": 114,
+    "at": 115,
+    "au": 116,
+    "aw": 117,
+    "ax": 118,
+    "ay": 119,
+    "b": 54,
+    "bb": 120,
+    "be": 121,
+    "bo": 122,
+    "c": 55,
+    "ca": 123,
+    "ce": 124,
+    "ch": 125,
+    "ci": 126,
+    "ck": 127,
+    "cl": 128,
+    "co": 129,
+    "cr": 130,
+    "ct": 131,
+    "cu": 132,
+    "d": 56,
+    "de": 133,
+    "do": 134,
+    "dr": 135,
+    "ds": 136,
+    "du": 137,
+    "e": 57,
+    "ea": 138,
+    "ed": 139,
+    "ee": 140,
+    "ei": 141,
+    "el": 142,
+    "em": 143,
+    "en": 144,
+    "eo": 145,
+    "er": 146,
+    "es": 147,
+    "et": 148,
+    "eu": 149,
+    "ev": 150,
+    "ew": 151,
+    "ex": 152,
+    "ey": 153,
+    "f": 58,
+    "fa": 154,
+    "fe": 155,
+    "ff": 156,
+    "fl": 157,
+    "fo": 158,
+    "fr": 159,
+    "ft": 160,
+    "fu": 161,
+    "g": 59,
+    "ge": 162,
+    "gn": 163,
+    "gr": 164,
+    "h": 60,
+    "ha": 165,
+    "he": 166,
+    "hi": 167,
+    "ho": 168,
+    "hs": 169,
+    "ht": 170,
+    "hu": 171,
+    "hy": 172,
+    "i": 61,
+    "j": 62,
+    "k": 63,
+    "ke": 173,
+    "ki": 174,
+    "kn": 175,
+    "l": 64,
+    "le": 176,
+    "li": 177,
+    "ll": 178,
+    "lu": 179,
+    "ly": 180,
+    "m": 65,
+    "me": 181,
+    "mu": 182,
+    "my": 183,
+    "n": 66,
+    "ne": 184,
+    "nu": 185,
+    "ny": 186,
+    "o": 67,
+    "oe": 187,
+    "of": 188,
+    "oh": 189,
+    "om": 190,
+    "on": 191,
+    "oo": 192,
+    "or": 193,
+    "os": 194,
+    "ou": 195,
+    "p": 68,
+    "pe": 196,
+    "q": 69,
+    "r": 70,
+    "re": 197,
+    "rh": 198,
+    "ro": 199,
+    "rr": 200,
+    "ru": 201,
+    "ry": 202,
+    "s": 71,
+    "se": 203,
+    "ss": 204,
+    "t": 72,
+    "ta": 205,
+    "tc": 206,
+    "te": 207,
+    "th": 208,
+    "to": 209,
+    "tr": 210,
+    "ts": 211,
+    "tt": 212,
+    "tu": 213,
+    "tw": 214,
+    "ty": 215,
+    "u": 73,
+    "ue": 216,
+    "un": 217,
+    "ur": 218,
+    "us": 219,
+    "ut": 220,
+    "v": 74,
+    "w": 75,
+    "we": 221,
+    "x": 76,
+    "y": 77,
+    "ys": 222,
+    "z": 78,
+    "ze": 223
+  },
+  "vocabulary": [
+    {
+      "exact_alignment_connected_rate": 0.5,
+      "n_exact_alignment": 52,
+      "token": "Af",
+      "utility": 0.5
+    },
+    {
+      "exact_alignment_connected_rate": 0.5862068965517241,
+      "n_exact_alignment": 29,
+      "token": "Al",
+      "utility": 0.5862068965517241
+    },
+    {
+      "exact_alignment_connected_rate": 0.7391304347826086,
+      "n_exact_alignment": 46,
+      "token": "Am",
+      "utility": 0.7391304347826086
+    },
+    {
+      "exact_alignment_connected_rate": 0.7021276595744681,
+      "n_exact_alignment": 141,
+      "token": "An",
+      "utility": 0.7021276595744681
+    },
+    {
+      "exact_alignment_connected_rate": 0.7272727272727273,
+      "n_exact_alignment": 33,
+      "token": "Ar",
+      "utility": 0.7272727272727273
+    },
+    {
+      "exact_alignment_connected_rate": 0.5588235294117647,
+      "n_exact_alignment": 34,
+      "token": "As",
+      "utility": 0.5588235294117647
+    },
+    {
+      "exact_alignment_connected_rate": 0.5217391304347826,
+      "n_exact_alignment": 23,
+      "token": "At",
+      "utility": 0.5217391304347826
+    },
+    {
+      "exact_alignment_connected_rate": 0.6521739130434783,
+      "n_exact_alignment": 46,
+      "token": "Be",
+      "utility": 0.6521739130434783
+    },
+    {
+      "exact_alignment_connected_rate": 0.6818181818181818,
+      "n_exact_alignment": 44,
+      "token": "Ca",
+      "utility": 0.6818181818181818
+    },
+    {
+      "exact_alignment_connected_rate": 0.6818181818181818,
+      "n_exact_alignment": 22,
+      "token": "Ce",
+      "utility": 0.6818181818181818
+    },
+    {
+      "exact_alignment_connected_rate": 0.6379310344827587,
+      "n_exact_alignment": 58,
+      "token": "Ch",
+      "utility": 0.6379310344827587
+    },
+    {
+      "exact_alignment_connected_rate": 0.588957055214724,
+      "n_exact_alignment": 163,
+      "token": "Co",
+      "utility": 0.588957055214724
+    },
+    {
+      "exact_alignment_connected_rate": 0.5161290322580645,
+      "n_exact_alignment": 31,
+      "token": "De",
+      "utility": 0.5161290322580645
+    },
+    {
+      "exact_alignment_connected_rate": 0.6829268292682927,
+      "n_exact_alignment": 41,
+      "token": "En",
+      "utility": 0.6829268292682927
+    },
+    {
+      "exact_alignment_connected_rate": 0.525,
+      "n_exact_alignment": 40,
+      "token": "Fe",
+      "utility": 0.525
+    },
+    {
+      "exact_alignment_connected_rate": 0.5454545454545454,
+      "n_exact_alignment": 22,
+      "token": "Ga",
+      "utility": 0.5454545454545454
+    },
+    {
+      "exact_alignment_connected_rate": 0.5495495495495496,
+      "n_exact_alignment": 111,
+      "token": "Ge",
+      "utility": 0.5495495495495496
+    },
+    {
+      "exact_alignment_connected_rate": 0.5202312138728323,
+      "n_exact_alignment": 173,
+      "token": "He",
+      "utility": 0.5202312138728323
+    },
+    {
+      "exact_alignment_connected_rate": 0.5454545454545454,
+      "n_exact_alignment": 33,
+      "token": "Ke",
+      "utility": 0.5454545454545454
+    },
+    {
+      "exact_alignment_connected_rate": 0.5212765957446809,
+      "n_exact_alignment": 94,
+      "token": "La",
+      "utility": 0.5212765957446809
+    },
+    {
+      "exact_alignment_connected_rate": 0.65625,
+      "n_exact_alignment": 32,
+      "token": "Le",
+      "utility": 0.65625
+    },
+    {
+      "exact_alignment_connected_rate": 0.5942028985507246,
+      "n_exact_alignment": 69,
+      "token": "Lo",
+      "utility": 0.5942028985507246
+    },
+    {
+      "exact_alignment_connected_rate": 0.5350553505535055,
+      "n_exact_alignment": 271,
+      "token": "Mr",
+      "utility": 0.5350553505535055
+    },
+    {
+      "exact_alignment_connected_rate": 0.696969696969697,
+      "n_exact_alignment": 33,
+      "token": "Re",
+      "utility": 0.696969696969697
+    },
+    {
+      "exact_alignment_connected_rate": 0.6282051282051282,
+      "n_exact_alignment": 78,
+      "token": "Ro",
+      "utility": 0.6282051282051282
+    },
+    {
+      "exact_alignment_connected_rate": 0.6206896551724138,
+      "n_exact_alignment": 29,
+      "token": "Ru",
+      "utility": 0.6206896551724138
+    },
+    {
+      "exact_alignment_connected_rate": 0.5294117647058824,
+      "n_exact_alignment": 68,
+      "token": "Se",
+      "utility": 0.5294117647058824
+    },
+    {
+      "exact_alignment_connected_rate": 0.5813953488372093,
+      "n_exact_alignment": 43,
+      "token": "Un",
+      "utility": 0.5813953488372093
+    },
+    {
+      "exact_alignment_connected_rate": 0.556135770234987,
+      "n_exact_alignment": 383,
+      "token": "ab",
+      "utility": 0.556135770234987
+    },
+    {
+      "exact_alignment_connected_rate": 0.5,
+      "n_exact_alignment": 72,
+      "token": "af",
+      "utility": 0.5
+    },
+    {
+      "exact_alignment_connected_rate": 0.6401326699834162,
+      "n_exact_alignment": 603,
+      "token": "ai",
+      "utility": 0.6401326699834162
+    },
+    {
+      "exact_alignment_connected_rate": 0.5548197203826343,
+      "n_exact_alignment": 1359,
+      "token": "al",
+      "utility": 0.5548197203826343
+    },
+    {
+      "exact_alignment_connected_rate": 0.581039755351682,
+      "n_exact_alignment": 327,
+      "token": "am",
+      "utility": 0.581039755351682
+    },
+    {
+      "exact_alignment_connected_rate": 0.6755491537630537,
+      "n_exact_alignment": 2777,
+      "token": "an",
+      "utility": 0.6755491537630537
+    },
+    {
+      "exact_alignment_connected_rate": 0.6737588652482269,
+      "n_exact_alignment": 1692,
+      "token": "ar",
+      "utility": 0.6737588652482269
+    },
+    {
+      "exact_alignment_connected_rate": 0.598941098610192,
+      "n_exact_alignment": 1511,
+      "token": "as",
+      "utility": 0.598941098610192
+    },
+    {
+      "exact_alignment_connected_rate": 0.5500954198473282,
+      "n_exact_alignment": 2096,
+      "token": "at",
+      "utility": 0.5500954198473282
+    },
+    {
+      "exact_alignment_connected_rate": 0.8148148148148148,
+      "n_exact_alignment": 189,
+      "token": "au",
+      "utility": 0.8148148148148148
+    },
+    {
+      "exact_alignment_connected_rate": 0.5308641975308642,
+      "n_exact_alignment": 81,
+      "token": "aw",
+      "utility": 0.5308641975308642
+    },
+    {
+      "exact_alignment_connected_rate": 0.6086956521739131,
+      "n_exact_alignment": 23,
+      "token": "ax",
+      "utility": 0.6086956521739131
+    },
+    {
+      "exact_alignment_connected_rate": 0.6391752577319587,
+      "n_exact_alignment": 485,
+      "token": "ay",
+      "utility": 0.6391752577319587
+    },
+    {
+      "exact_alignment_connected_rate": 0.5185185185185185,
+      "n_exact_alignment": 27,
+      "token": "bb",
+      "utility": 0.5185185185185185
+    },
+    {
+      "exact_alignment_connected_rate": 0.6784420289855072,
+      "n_exact_alignment": 1104,
+      "token": "be",
+      "utility": 0.6784420289855072
+    },
+    {
+      "exact_alignment_connected_rate": 0.5627118644067797,
+      "n_exact_alignment": 295,
+      "token": "bo",
+      "utility": 0.5627118644067797
+    },
+    {
+      "exact_alignment_connected_rate": 0.5454545454545454,
+      "n_exact_alignment": 583,
+      "token": "ca",
+      "utility": 0.5454545454545454
+    },
+    {
+      "exact_alignment_connected_rate": 0.7568455640744798,
+      "n_exact_alignment": 913,
+      "token": "ce",
+      "utility": 0.7568455640744798
+    },
+    {
+      "exact_alignment_connected_rate": 0.7251131221719457,
+      "n_exact_alignment": 884,
+      "token": "ch",
+      "utility": 0.7251131221719457
+    },
+    {
+      "exact_alignment_connected_rate": 0.6012461059190031,
+      "n_exact_alignment": 321,
+      "token": "ci",
+      "utility": 0.6012461059190031
+    },
+    {
+      "exact_alignment_connected_rate": 0.5714285714285714,
+      "n_exact_alignment": 203,
+      "token": "ck",
+      "utility": 0.5714285714285714
+    },
+    {
+      "exact_alignment_connected_rate": 0.5268817204301075,
+      "n_exact_alignment": 186,
+      "token": "cl",
+      "utility": 0.5268817204301075
+    },
+    {
+      "exact_alignment_connected_rate": 0.5796019900497512,
+      "n_exact_alignment": 804,
+      "token": "co",
+      "utility": 0.5796019900497512
+    },
+    {
+      "exact_alignment_connected_rate": 0.5378151260504201,
+      "n_exact_alignment": 238,
+      "token": "cr",
+      "utility": 0.5378151260504201
+    },
+    {
+      "exact_alignment_connected_rate": 0.5287128712871287,
+      "n_exact_alignment": 505,
+      "token": "ct",
+      "utility": 0.5287128712871287
+    },
+    {
+      "exact_alignment_connected_rate": 0.5818181818181818,
+      "n_exact_alignment": 220,
+      "token": "cu",
+      "utility": 0.5818181818181818
+    },
+    {
+      "exact_alignment_connected_rate": 0.7004484304932735,
+      "n_exact_alignment": 1115,
+      "token": "de",
+      "utility": 0.7004484304932735
+    },
+    {
+      "exact_alignment_connected_rate": 0.5384615384615384,
+      "n_exact_alignment": 286,
+      "token": "do",
+      "utility": 0.5384615384615384
+    },
+    {
+      "exact_alignment_connected_rate": 0.6170212765957447,
+      "n_exact_alignment": 94,
+      "token": "dr",
+      "utility": 0.6170212765957447
+    },
+    {
+      "exact_alignment_connected_rate": 0.5245901639344263,
+      "n_exact_alignment": 183,
+      "token": "ds",
+      "utility": 0.5245901639344263
+    },
+    {
+      "exact_alignment_connected_rate": 0.65,
+      "n_exact_alignment": 120,
+      "token": "du",
+      "utility": 0.65
+    },
+    {
+      "exact_alignment_connected_rate": 0.6045777426992897,
+      "n_exact_alignment": 1267,
+      "token": "ea",
+      "utility": 0.6045777426992897
+    },
+    {
+      "exact_alignment_connected_rate": 0.5485232067510548,
+      "n_exact_alignment": 1896,
+      "token": "ed",
+      "utility": 0.5485232067510548
+    },
+    {
+      "exact_alignment_connected_rate": 0.7842857142857143,
+      "n_exact_alignment": 700,
+      "token": "ee",
+      "utility": 0.7842857142857143
+    },
+    {
+      "exact_alignment_connected_rate": 0.6011904761904762,
+      "n_exact_alignment": 336,
+      "token": "ei",
+      "utility": 0.6011904761904762
+    },
+    {
+      "exact_alignment_connected_rate": 0.6083009079118028,
+      "n_exact_alignment": 771,
+      "token": "el",
+      "utility": 0.6083009079118028
+    },
+    {
+      "exact_alignment_connected_rate": 0.6726384364820847,
+      "n_exact_alignment": 614,
+      "token": "em",
+      "utility": 0.6726384364820847
+    },
+    {
+      "exact_alignment_connected_rate": 0.7871308946672543,
+      "n_exact_alignment": 2269,
+      "token": "en",
+      "utility": 0.7871308946672543
+    },
+    {
+      "exact_alignment_connected_rate": 0.6030534351145038,
+      "n_exact_alignment": 131,
+      "token": "eo",
+      "utility": 0.6030534351145038
+    },
+    {
+      "exact_alignment_connected_rate": 0.8046224961479199,
+      "n_exact_alignment": 3245,
+      "token": "er",
+      "utility": 0.8046224961479199
+    },
+    {
+      "exact_alignment_connected_rate": 0.6578512396694215,
+      "n_exact_alignment": 1815,
+      "token": "es",
+      "utility": 0.6578512396694215
+    },
+    {
+      "exact_alignment_connected_rate": 0.5295902883156297,
+      "n_exact_alignment": 659,
+      "token": "et",
+      "utility": 0.5295902883156297
+    },
+    {
+      "exact_alignment_connected_rate": 0.78125,
+      "n_exact_alignment": 32,
+      "token": "eu",
+      "utility": 0.78125
+    },
+    {
+      "exact_alignment_connected_rate": 0.5369127516778524,
+      "n_exact_alignment": 447,
+      "token": "ev",
+      "utility": 0.5369127516778524
+    },
+    {
+      "exact_alignment_connected_rate": 0.65625,
+      "n_exact_alignment": 192,
+      "token": "ew",
+      "utility": 0.65625
+    },
+    {
+      "exact_alignment_connected_rate": 0.6106194690265486,
+      "n_exact_alignment": 226,
+      "token": "ex",
+      "utility": 0.6106194690265486
+    },
+    {
+      "exact_alignment_connected_rate": 0.6444444444444445,
+      "n_exact_alignment": 315,
+      "token": "ey",
+      "utility": 0.6444444444444445
+    },
+    {
+      "exact_alignment_connected_rate": 0.6412213740458015,
+      "n_exact_alignment": 262,
+      "token": "fa",
+      "utility": 0.6412213740458015
+    },
+    {
+      "exact_alignment_connected_rate": 0.75,
+      "n_exact_alignment": 356,
+      "token": "fe",
+      "utility": 0.75
+    },
+    {
+      "exact_alignment_connected_rate": 0.6926406926406926,
+      "n_exact_alignment": 231,
+      "token": "ff",
+      "utility": 0.6926406926406926
+    },
+    {
+      "exact_alignment_connected_rate": 0.5396825396825397,
+      "n_exact_alignment": 63,
+      "token": "fl",
+      "utility": 0.5396825396825397
+    },
+    {
+      "exact_alignment_connected_rate": 0.6721311475409836,
+      "n_exact_alignment": 671,
+      "token": "fo",
+      "utility": 0.6721311475409836
+    },
+    {
+      "exact_alignment_connected_rate": 0.6689419795221843,
+      "n_exact_alignment": 293,
+      "token": "fr",
+      "utility": 0.6689419795221843
+    },
+    {
+      "exact_alignment_connected_rate": 0.6194690265486725,
+      "n_exact_alignment": 113,
+      "token": "ft",
+      "utility": 0.6194690265486725
+    },
+    {
+      "exact_alignment_connected_rate": 0.7116564417177914,
+      "n_exact_alignment": 163,
+      "token": "fu",
+      "utility": 0.7116564417177914
+    },
+    {
+      "exact_alignment_connected_rate": 0.7274678111587983,
+      "n_exact_alignment": 466,
+      "token": "ge",
+      "utility": 0.7274678111587983
+    },
+    {
+      "exact_alignment_connected_rate": 0.5211267605633803,
+      "n_exact_alignment": 71,
+      "token": "gn",
+      "utility": 0.5211267605633803
+    },
+    {
+      "exact_alignment_connected_rate": 0.5421686746987951,
+      "n_exact_alignment": 249,
+      "token": "gr",
+      "utility": 0.5421686746987951
+    },
+    {
+      "exact_alignment_connected_rate": 0.5394304490690033,
+      "n_exact_alignment": 1826,
+      "token": "ha",
+      "utility": 0.5394304490690033
+    },
+    {
+      "exact_alignment_connected_rate": 0.7519932857742342,
+      "n_exact_alignment": 4766,
+      "token": "he",
+      "utility": 0.7519932857742342
+    },
+    {
+      "exact_alignment_connected_rate": 0.5501242750621376,
+      "n_exact_alignment": 1207,
+      "token": "hi",
+      "utility": 0.5501242750621376
+    },
+    {
+      "exact_alignment_connected_rate": 0.5164705882352941,
+      "n_exact_alignment": 850,
+      "token": "ho",
+      "utility": 0.5164705882352941
+    },
+    {
+      "exact_alignment_connected_rate": 0.5,
+      "n_exact_alignment": 22,
+      "token": "hs",
+      "utility": 0.5
+    },
+    {
+      "exact_alignment_connected_rate": 0.5155038759689923,
+      "n_exact_alignment": 258,
+      "token": "ht",
+      "utility": 0.5155038759689923
+    },
+    {
+      "exact_alignment_connected_rate": 0.5789473684210527,
+      "n_exact_alignment": 95,
+      "token": "hu",
+      "utility": 0.5789473684210527
+    },
+    {
+      "exact_alignment_connected_rate": 0.509090909090909,
+      "n_exact_alignment": 55,
+      "token": "hy",
+      "utility": 0.509090909090909
+    },
+    {
+      "exact_alignment_connected_rate": 0.6666666666666666,
+      "n_exact_alignment": 399,
+      "token": "ke",
+      "utility": 0.6666666666666666
+    },
+    {
+      "exact_alignment_connected_rate": 0.547945205479452,
+      "n_exact_alignment": 146,
+      "token": "ki",
+      "utility": 0.547945205479452
+    },
+    {
+      "exact_alignment_connected_rate": 0.5692307692307692,
+      "n_exact_alignment": 65,
+      "token": "kn",
+      "utility": 0.5692307692307692
+    },
+    {
+      "exact_alignment_connected_rate": 0.6784313725490196,
+      "n_exact_alignment": 1275,
+      "token": "le",
+      "utility": 0.6784313725490196
+    },
+    {
+      "exact_alignment_connected_rate": 0.5086767895878525,
+      "n_exact_alignment": 922,
+      "token": "li",
+      "utility": 0.5086767895878525
+    },
+    {
+      "exact_alignment_connected_rate": 0.5964546402502607,
+      "n_exact_alignment": 959,
+      "token": "ll",
+      "utility": 0.5964546402502607
+    },
+    {
+      "exact_alignment_connected_rate": 0.6481481481481481,
+      "n_exact_alignment": 108,
+      "token": "lu",
+      "utility": 0.6481481481481481
+    },
+    {
+      "exact_alignment_connected_rate": 0.5863874345549738,
+      "n_exact_alignment": 573,
+      "token": "ly",
+      "utility": 0.5863874345549738
+    },
+    {
+      "exact_alignment_connected_rate": 0.6485319516407599,
+      "n_exact_alignment": 1158,
+      "token": "me",
+      "utility": 0.6485319516407599
+    },
+    {
+      "exact_alignment_connected_rate": 0.5159235668789809,
+      "n_exact_alignment": 157,
+      "token": "mu",
+      "utility": 0.5159235668789809
+    },
+    {
+      "exact_alignment_connected_rate": 0.5892857142857143,
+      "n_exact_alignment": 56,
+      "token": "my",
+      "utility": 0.5892857142857143
+    },
+    {
+      "exact_alignment_connected_rate": 0.6501403180542563,
+      "n_exact_alignment": 1069,
+      "token": "ne",
+      "utility": 0.6501403180542563
+    },
+    {
+      "exact_alignment_connected_rate": 0.5585585585585585,
+      "n_exact_alignment": 111,
+      "token": "nu",
+      "utility": 0.5585585585585585
+    },
+    {
+      "exact_alignment_connected_rate": 0.532258064516129,
+      "n_exact_alignment": 186,
+      "token": "ny",
+      "utility": 0.532258064516129
+    },
+    {
+      "exact_alignment_connected_rate": 0.5490196078431373,
+      "n_exact_alignment": 51,
+      "token": "oe",
+      "utility": 0.5490196078431373
+    },
+    {
+      "exact_alignment_connected_rate": 0.5585143658023827,
+      "n_exact_alignment": 1427,
+      "token": "of",
+      "utility": 0.5585143658023827
+    },
+    {
+      "exact_alignment_connected_rate": 0.6666666666666666,
+      "n_exact_alignment": 21,
+      "token": "oh",
+      "utility": 0.6666666666666666
+    },
+    {
+      "exact_alignment_connected_rate": 0.501779359430605,
+      "n_exact_alignment": 843,
+      "token": "om",
+      "utility": 0.501779359430605
+    },
+    {
+      "exact_alignment_connected_rate": 0.5971926839642705,
+      "n_exact_alignment": 2351,
+      "token": "on",
+      "utility": 0.5971926839642705
+    },
+    {
+      "exact_alignment_connected_rate": 0.6521739130434783,
+      "n_exact_alignment": 345,
+      "token": "oo",
+      "utility": 0.6521739130434783
+    },
+    {
+      "exact_alignment_connected_rate": 0.6038506417736289,
+      "n_exact_alignment": 1714,
+      "token": "or",
+      "utility": 0.6038506417736289
+    },
+    {
+      "exact_alignment_connected_rate": 0.5653333333333334,
+      "n_exact_alignment": 375,
+      "token": "os",
+      "utility": 0.5653333333333334
+    },
+    {
+      "exact_alignment_connected_rate": 0.6120027913468249,
+      "n_exact_alignment": 1433,
+      "token": "ou",
+      "utility": 0.6120027913468249
+    },
+    {
+      "exact_alignment_connected_rate": 0.5660130718954248,
+      "n_exact_alignment": 765,
+      "token": "pe",
+      "utility": 0.5660130718954248
+    },
+    {
+      "exact_alignment_connected_rate": 0.6501145912910619,
+      "n_exact_alignment": 2618,
+      "token": "re",
+      "utility": 0.6501145912910619
+    },
+    {
+      "exact_alignment_connected_rate": 0.5,
+      "n_exact_alignment": 32,
+      "token": "rh",
+      "utility": 0.5
+    },
+    {
+      "exact_alignment_connected_rate": 0.5432835820895522,
+      "n_exact_alignment": 1005,
+      "token": "ro",
+      "utility": 0.5432835820895522
+    },
+    {
+      "exact_alignment_connected_rate": 0.5099009900990099,
+      "n_exact_alignment": 202,
+      "token": "rr",
+      "utility": 0.5099009900990099
+    },
+    {
+      "exact_alignment_connected_rate": 0.5428571428571428,
+      "n_exact_alignment": 140,
+      "token": "ru",
+      "utility": 0.5428571428571428
+    },
+    {
+      "exact_alignment_connected_rate": 0.5277777777777778,
+      "n_exact_alignment": 360,
+      "token": "ry",
+      "utility": 0.5277777777777778
+    },
+    {
+      "exact_alignment_connected_rate": 0.6264775413711584,
+      "n_exact_alignment": 1269,
+      "token": "se",
+      "utility": 0.6264775413711584
+    },
+    {
+      "exact_alignment_connected_rate": 0.6257796257796258,
+      "n_exact_alignment": 481,
+      "token": "ss",
+      "utility": 0.6257796257796258
+    },
+    {
+      "exact_alignment_connected_rate": 0.5448634590377113,
+      "n_exact_alignment": 769,
+      "token": "ta",
+      "utility": 0.5448634590377113
+    },
+    {
+      "exact_alignment_connected_rate": 0.5227272727272727,
+      "n_exact_alignment": 44,
+      "token": "tc",
+      "utility": 0.5227272727272727
+    },
+    {
+      "exact_alignment_connected_rate": 0.7245145631067961,
+      "n_exact_alignment": 1648,
+      "token": "te",
+      "utility": 0.7245145631067961
+    },
+    {
+      "exact_alignment_connected_rate": 0.6938694267515924,
+      "n_exact_alignment": 5024,
+      "token": "th",
+      "utility": 0.6938694267515924
+    },
+    {
+      "exact_alignment_connected_rate": 0.70874861572536,
+      "n_exact_alignment": 1806,
+      "token": "to",
+      "utility": 0.70874861572536
+    },
+    {
+      "exact_alignment_connected_rate": 0.6873977086743044,
+      "n_exact_alignment": 611,
+      "token": "tr",
+      "utility": 0.6873977086743044
+    },
+    {
+      "exact_alignment_connected_rate": 0.6,
+      "n_exact_alignment": 395,
+      "token": "ts",
+      "utility": 0.6
+    },
+    {
+      "exact_alignment_connected_rate": 0.7737003058103975,
+      "n_exact_alignment": 327,
+      "token": "tt",
+      "utility": 0.7737003058103975
+    },
+    {
+      "exact_alignment_connected_rate": 0.7666666666666667,
+      "n_exact_alignment": 270,
+      "token": "tu",
+      "utility": 0.7666666666666667
+    },
+    {
+      "exact_alignment_connected_rate": 0.6138613861386139,
+      "n_exact_alignment": 101,
+      "token": "tw",
+      "utility": 0.6138613861386139
+    },
+    {
+      "exact_alignment_connected_rate": 0.6118721461187214,
+      "n_exact_alignment": 219,
+      "token": "ty",
+      "utility": 0.6118721461187214
+    },
+    {
+      "exact_alignment_connected_rate": 0.7232704402515723,
+      "n_exact_alignment": 159,
+      "token": "ue",
+      "utility": 0.7232704402515723
+    },
+    {
+      "exact_alignment_connected_rate": 0.5897858319604613,
+      "n_exact_alignment": 607,
+      "token": "un",
+      "utility": 0.5897858319604613
+    },
+    {
+      "exact_alignment_connected_rate": 0.6020671834625323,
+      "n_exact_alignment": 774,
+      "token": "ur",
+      "utility": 0.6020671834625323
+    },
+    {
+      "exact_alignment_connected_rate": 0.5190476190476191,
+      "n_exact_alignment": 630,
+      "token": "us",
+      "utility": 0.5190476190476191
+    },
+    {
+      "exact_alignment_connected_rate": 0.5370919881305638,
+      "n_exact_alignment": 674,
+      "token": "ut",
+      "utility": 0.5370919881305638
+    },
+    {
+      "exact_alignment_connected_rate": 0.5209790209790209,
+      "n_exact_alignment": 572,
+      "token": "we",
+      "utility": 0.5209790209790209
+    },
+    {
+      "exact_alignment_connected_rate": 0.5204081632653061,
+      "n_exact_alignment": 98,
+      "token": "ys",
+      "utility": 0.5204081632653061
+    },
+    {
+      "exact_alignment_connected_rate": 0.7142857142857143,
+      "n_exact_alignment": 28,
+      "token": "ze",
+      "utility": 0.7142857142857143
+    }
+  ]
+}
