@@ -17,11 +17,17 @@ from tva.tokenizers import get_tokenizer
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_ROOT = REPO_ROOT / 'configs/thesis/fau'
 FAU_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/fau-english-dataset')
-CONFIGS = {
+SMOKE_CONFIGS = {
     f'{kind}_{distribution}': CONFIG_ROOT / f'smoke_bigram_{kind}_{distribution}.yaml'
     for kind in ('handwriting', 'linguistic')
     for distribution in ('wd', 'wi')
 }
+PRODUCTION_CONFIGS = {
+    f'{kind}_{distribution}': CONFIG_ROOT / f'bigram_{kind}_{distribution}.yaml'
+    for kind in ('handwriting', 'linguistic')
+    for distribution in ('wd', 'wi')
+}
+TIMING_CONFIG = CONFIG_ROOT / 'timing_bigram_handwriting_wd.yaml'
 MATCHED_KEYS = (
     'arch_de',
     'arch_en',
@@ -56,7 +62,7 @@ class FauSmokeConfigTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.configs = {
             name: yaml.safe_load(path.read_text(encoding='utf-8'))
-            for name, path in CONFIGS.items()
+            for name, path in SMOKE_CONFIGS.items()
         }
 
     def test_all_four_smoke_conditions_are_strictly_matched(self):
@@ -99,6 +105,97 @@ class FauSmokeConfigTests(unittest.TestCase):
             )
             self.assertEqual(config['tokenizer'], expected)
             self.assertIn(name.split('_')[0], config['dir_tokenizer'])
+
+
+class FauProductionConfigTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.configs = {
+            name: yaml.safe_load(path.read_text(encoding='utf-8'))
+            for name, path in PRODUCTION_CONFIGS.items()
+        }
+
+    def test_all_four_production_conditions_are_strictly_matched(self):
+        excluded = {
+            'dir_tokenizer',
+            'dir_work',
+            'fau_distribution',
+            'tokenizer',
+        }
+        reference = {
+            key: value
+            for key, value in self.configs['handwriting_wd'].items()
+            if key not in excluded
+        }
+        for name, config in self.configs.items():
+            with self.subTest(config=name):
+                self.assertEqual(
+                    {
+                        key: value
+                        for key, value in config.items()
+                        if key not in excluded
+                    },
+                    reference,
+                )
+                self.assertEqual(
+                    config['fau_distribution'],
+                    'wd' if name.endswith('_wd') else 'wi',
+                )
+
+    def test_production_settings_and_tokenizers_are_frozen(self):
+        for name, config in self.configs.items():
+            with self.subTest(config=name):
+                expected_tokenizer = (
+                    'handwriting_bigram_greedy'
+                    if name.startswith('handwriting')
+                    else 'linguistic_bigram_greedy'
+                )
+                tokenizer = get_tokenizer(config['tokenizer'])
+                tokenizer.load(REPO_ROOT / config['dir_tokenizer'])
+                model = BaseModel(
+                    config['arch_en'],
+                    config['arch_de'],
+                    config['num_channel'],
+                    tokenizer.size,
+                    config['len_seq'],
+                )
+                self.assertEqual(config['arch_en'], 'blconv_b')
+                self.assertEqual(config['arch_de'], 'bilstm_b')
+                self.assertEqual(config['num_channel'], 7)
+                self.assertEqual(config['categories'], ['', *FAU_ALPHABET])
+                self.assertEqual(config['tokenizer'], expected_tokenizer)
+                self.assertEqual(tokenizer.size, 224)
+                self.assertEqual(model.decoder.fc.out_features, 224)
+                self.assertEqual(config['epoch'], 300)
+                self.assertEqual(config['epoch_warmup'], 30)
+                self.assertEqual(config['size_batch'], 8)
+                self.assertTrue(config['aug'])
+                self.assertIsNone(config['checkpoint'])
+
+    def test_timing_config_matches_production_where_it_matters(self):
+        timing = yaml.safe_load(TIMING_CONFIG.read_text(encoding='utf-8'))
+        production = self.configs['handwriting_wd']
+        intentional_differences = {
+            'dir_work',
+            'epoch',
+            'epoch_warmup',
+            'freq_save',
+        }
+        self.assertEqual(
+            {
+                key: value
+                for key, value in timing.items()
+                if key not in intentional_differences
+            },
+            {
+                key: value
+                for key, value in production.items()
+                if key not in intentional_differences
+            },
+        )
+        self.assertEqual(timing['epoch'], 1)
+        self.assertEqual(timing['epoch_warmup'], 1)
+        self.assertEqual(timing['freq_save'], 0)
 
 
 class FauZipDatasetTests(unittest.TestCase):
@@ -147,7 +244,9 @@ class FauZipDatasetTests(unittest.TestCase):
         self.assertEqual(dataset.split, 'val')
 
     def _load_config(self, name: str) -> argparse.Namespace:
-        return argparse.Namespace(**yaml.safe_load(CONFIGS[name].read_text()))
+        return argparse.Namespace(
+            **yaml.safe_load(SMOKE_CONFIGS[name].read_text())
+        )
 
 
 if __name__ == '__main__':

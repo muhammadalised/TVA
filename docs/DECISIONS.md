@@ -301,3 +301,32 @@ the reason no longer valid.
 - Validation: all four tokenizer × distribution smoke conditions completed
   one bounded CPU epoch and saved 224-output checkpoints. These runs validate
   plumbing only and are not recognition results.
+
+## D020 — Freeze matched FAU fold-0 production settings
+
+- Status: accepted and CUDA timing-validated on 2026-09-23 before full
+  recognition training
+- Decision: Use BLConv-B + BiLSTM-B + CTC, 300 epochs, a 30-epoch linear
+  warmup followed by cosine decay, AdamW at learning rate 0.001, seed 42,
+  TVA's existing training augmentation, and batch size 8 for all four
+  handwriting/linguistic × WD/WI fold-0 conditions. Every model starts from
+  scratch and has seven input channels and 224 outputs including blank ID 0.
+- Reason: The architecture and optimization schedule match the established
+  TVA recognition experiment, while the smaller batch is appropriate for FAU
+  sentence sequences (mean 2,138 and maximum 7,314 input samples) rather than
+  OnHW word sequences. The fold-0 train sets contain 2,047 WD and 2,025 WI
+  recordings, so batch 8 still provides a comparable number of optimizer
+  updates to the earlier OnHW runs.
+- Timing gate: Before starting a 300-epoch job, run one complete WD fold-0
+  epoch with the production architecture and batch size. This checks peak CUDA
+  memory and gives a wall-clock estimate; its metrics are diagnostics only and
+  the checkpoint must not initialize a production run.
+- Fairness rule: the four production configurations may differ only in the
+  frozen tokenizer, its artifact path, WD/WI distribution, and output
+  directory. If batch size must change because the timing run exhausts GPU
+  memory, change it identically in all four configs and document the change
+  before any full run begins.
+- Timing outcome: batch size 8 completed a full WD fold-0 epoch on the RTX
+  4060 with CUDA mixed precision: 82 seconds training and 4 seconds
+  validation. No out-of-memory failure occurred, so the frozen production
+  batch does not require revision. Peak VRAM was not captured.

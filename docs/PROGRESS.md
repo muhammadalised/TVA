@@ -880,3 +880,39 @@ and run bounded matched smoke tests before full training.
 Next step: freeze production FAU training settings, add the four full fold-0
 configs using BLConv-B + BiLSTM-B, and run one bounded CUDA timing check before
 launching any 300-epoch experiment.
+
+## 2026-09-23 — FAU fold-0 production settings frozen
+
+- Added four matched production configurations for handwriting/linguistic
+  Bigram × WD/WI under `configs/thesis/fau/`.
+- Froze BLConv-B + BiLSTM-B, seven input channels, 224 outputs, 300 epochs,
+  30 warmup epochs, AdamW at 0.001, augmentation enabled, seed 42, and batch
+  size 8. All conditions start from scratch.
+- The batch choice accounts for sentence-level sequence lengths: mean 2,138,
+  median 2,055, and maximum 7,314 samples. Fold 0 contains 2,047 WD or 2,025
+  WI training recordings.
+- Added a one-complete-epoch handwriting-WD timing configuration using the
+  same production architecture and batch. It writes only to the development
+  result tree and its checkpoint is excluded from production initialization.
+- Added regression checks that require strict matching across all four
+  production configs, validate the frozen tokenizer/output invariants, and
+  ensure the timing config differs only in its declared diagnostic settings.
+- Complete TVA regression suite: 49 tests run, 47 passed and two unrelated
+  optional external-reference checks skipped.
+- Ran the complete one-epoch WD timing configuration on the RTX 4060 with CUDA
+  mixed precision. Batch size 8 completed without an out-of-memory error: 256
+  training batches took 82 seconds and 63 validation batches took 4 seconds.
+  One-time dataset caching took approximately 16 seconds. Peak VRAM was not
+  captured.
+- The diagnostic latest checkpoint SHA-256 is
+  `c12625f50404673ccce98c514e782a841a37463894c18fcf293e521aeef47a53`.
+  Its CER/WER of 1.0 is not recognition evidence and it must not initialize a
+  production run.
+- Runtime projection on the same RTX 4060 is about 7 hours 10 minutes per
+  300-epoch condition or 28 hours 40 minutes for all four fold-0 conditions,
+  excluding startup and backup overhead.
+- No full 300-epoch FAU training has started.
+
+Next step: commit this frozen configuration/timing milestone, then launch the
+four fold-0 production jobs from scratch, one at a time. Record actual runtime,
+best CER/WER epochs, checkpoint hashes, and the code commit for every run.

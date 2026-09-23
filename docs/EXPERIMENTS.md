@@ -223,6 +223,62 @@ machine-specific source path is stored in configuration files.
 After loader integration, the complete TVA suite ran 46 tests: 44 passed and
 two unrelated optional external-reference checks were skipped.
 
+### FAU fold-0 production configuration freeze
+
+- Date frozen: 2026-09-23
+- Conditions: handwriting/linguistic Bigram × WD/WI
+- Architecture: BLConv-B + BiLSTM-B + CTC
+- Input/output: seven 100 Hz channels; 224 classes including blank ID 0
+- Training: 300 epochs, 30-epoch warmup, AdamW, learning rate 0.001,
+  augmentation enabled, seed 42, batch size 8
+- Evaluation/checkpoints: validation every epoch; resumable latest and
+  best-CER/best-WER checkpoints; numbered checkpoint every 25 epochs
+
+The four production configurations are under `configs/thesis/fau/` and are
+matched in every non-condition field. All runs must start from scratch. The
+FAU signals are substantially longer than OnHW word signals: the archive
+reports a mean of 2,137.65 samples, median 2,055, minimum 393, and maximum
+7,314. Fold 0 contains 2,047 WD or 2,025 WI training recordings and 503 WD or
+525 WI validation recordings. Batch size 8 is therefore frozen as the
+conservative initial setting for the RTX 4060 and remains identical across
+conditions.
+
+Before a production run, execute
+`configs/thesis/fau/timing_bigram_handwriting_wd.yaml`. It differs from the
+handwriting-WD production configuration only in running one epoch, using a
+development result directory, a one-epoch warmup, and disabling numbered
+milestone saves. It consumes the complete fold, so its training and validation
+times can estimate the production budget. Its CER/WER and checkpoint are not
+thesis recognition evidence and must not be reused for initialization.
+
+The post-freeze regression suite ran 49 tests: 47 passed and the same two
+optional external-reference checks were skipped.
+
+### FAU full-architecture CUDA timing result
+
+- Date: 2026-09-23
+- Config: `configs/thesis/fau/timing_bigram_handwriting_wd.yaml`
+- Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
+- Scope: complete WD fold 0; 2,047 train and 503 validation recordings
+- Effective batches: 256 train and 63 validation at batch size 8
+- Runtime: 82 seconds training and 4 seconds validation
+- Startup caching: approximately 16 seconds total for validation and training
+- CUDA mode: automatic mixed precision enabled
+- Outcome: completed without a CUDA out-of-memory error
+- Peak VRAM: not recorded
+- Diagnostic checkpoint SHA-256:
+  `c12625f50404673ccce98c514e782a841a37463894c18fcf293e521aeef47a53`
+
+The one-epoch CER and WER were both 1.0, as expected for an untrained
+sentence-level recognizer. They are not recognition evidence. The timing
+checkpoint must not initialize any production model.
+
+At the observed 86 seconds per train-plus-validation epoch, one 300-epoch run
+is approximately 7 hours 10 minutes, excluding one-time caching and backup
+overhead. The four fold-0 conditions would take roughly 28 hours 40 minutes if
+run sequentially on the same RTX 4060. This is a planning estimate, not an
+A6000 benchmark.
+
 ## Bigram pipeline smoke validation — WD/RH and WI/RH fold 0
 
 ### Setup and result

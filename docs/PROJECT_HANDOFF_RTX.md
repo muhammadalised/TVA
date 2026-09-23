@@ -1,6 +1,6 @@
 # Thesis Project Handoff — RTX Machine
 
-**Last updated:** 2026-09-21
+**Last updated:** 2026-09-23
 
 **Repository:** [muhammadalised/TVA](https://github.com/muhammadalised/TVA)
 
@@ -137,6 +137,30 @@ or reinterpret the completed OnHW fold-0 results. It also needs a dedicated
 seven-channel data configuration; OnHW recognition checkpoints are not
 compatible with its input shape. Full audit details and archive hashes are in
 `docs/EXPERIMENTS.md` under “FAU English dataset compatibility audit.”
+
+The four FAU fold-0 production configurations are now frozen under
+`configs/thesis/fau/`. They use fresh BLConv-B + BiLSTM-B models, seven input
+channels, 224 outputs, 300 epochs, augmentation, seed 42, and batch size 8.
+Before starting them, run the complete one-epoch systems check:
+
+```bash
+conda activate tva
+export TVA_FAU_DATASET_DIR=/mnt/c/Users/Ali/Downloads/fau-english-dataset
+MPLBACKEND=Agg python main.py \
+  --config configs/thesis/fau/timing_bigram_handwriting_wd.yaml
+```
+
+Record the reported training and validation time and use `nvidia-smi` in a
+second terminal to observe peak memory. The timing checkpoint is diagnostic
+and must not initialize a production model. If batch 8 exhausts memory, lower
+the batch identically in all four production configs before any full run.
+
+This timing gate passed on 2026-09-23. The RTX 4060 completed the full WD fold
+at batch size 8 with CUDA mixed precision in 82 seconds training plus 4 seconds
+validation, without an out-of-memory error. Peak VRAM was not captured. The
+projected budget is about 7 hours 10 minutes per 300-epoch condition, or 28
+hours 40 minutes for the four fold-0 conditions when run sequentially on that
+GPU. The timing checkpoint is excluded from production initialization.
 
 ## 4. Completed, verified work
 
