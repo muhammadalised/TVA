@@ -140,7 +140,7 @@ compatible with its input shape. Full audit details and archive hashes are in
 
 The four FAU fold-0 production configurations are now frozen under
 `configs/thesis/fau/`. They use fresh BLConv-B + BiLSTM-B models, seven input
-channels, 224 outputs, 300 epochs, augmentation, seed 42, and batch size 8.
+channels, 224 outputs, 300 epochs, augmentation, seed 42, and batch size 64.
 Before starting them, run the complete one-epoch systems check:
 
 ```bash
@@ -152,8 +152,7 @@ MPLBACKEND=Agg python main.py \
 
 Record the reported training and validation time and use `nvidia-smi` in a
 second terminal to observe peak memory. The timing checkpoint is diagnostic
-and must not initialize a production model. If batch 8 exhausts memory, lower
-the batch identically in all four production configs before any full run.
+and must not initialize a production model.
 
 This timing gate passed on 2026-09-23. The RTX 4060 completed the full WD fold
 at batch size 8 with CUDA mixed precision in 82 seconds training plus 4 seconds
@@ -161,6 +160,21 @@ validation, without an out-of-memory error. Peak VRAM was not captured. The
 projected budget is about 7 hours 10 minutes per 300-epoch condition, or 28
 hours 40 minutes for the four fold-0 conditions when run sequentially on that
 GPU. The timing checkpoint is excluded from production initialization.
+
+The same batch-8 condition was then measured on the 48 GB RTX A6000: 100
+seconds training, 2 seconds validation, and only 2,234 MiB maximum observed
+memory, with sampled utilization between 0% and 43%. It was slower than the
+4060 run and did not use the A6000 efficiently. No production run has started.
+Benchmark larger physical batches before deployment, ignore their diagnostic
+CER/WER, account for the reduced optimizer-step count, and freeze one setting
+for all 20 five-fold runs.
+
+That benchmark is now complete. Batch 64 took 16 seconds training plus 1
+second validation, peaked at 7,248 MiB, and completed without an out-of-memory
+error. It is frozen for all 20 runs. This gives 32 updates per fold-0 epoch and
+9,600 over 300 epochs; all other training settings remain unchanged. Estimated
+sequential A6000 time is about 1 hour 25 minutes per run or 28 hours 20 minutes
+for the complete matrix, excluding caching and backup overhead.
 
 ## 4. Completed, verified work
 

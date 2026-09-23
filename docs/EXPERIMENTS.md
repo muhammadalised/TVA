@@ -230,7 +230,7 @@ two unrelated optional external-reference checks were skipped.
 - Architecture: BLConv-B + BiLSTM-B + CTC
 - Input/output: seven 100 Hz channels; 224 classes including blank ID 0
 - Training: 300 epochs, 30-epoch warmup, AdamW, learning rate 0.001,
-  augmentation enabled, seed 42, batch size 8
+  augmentation enabled, seed 42, batch size 64
 - Evaluation/checkpoints: validation every epoch; resumable latest and
   best-CER/best-WER checkpoints; numbered checkpoint every 25 epochs
 
@@ -239,9 +239,9 @@ matched in every non-condition field. All runs must start from scratch. The
 FAU signals are substantially longer than OnHW word signals: the archive
 reports a mean of 2,137.65 samples, median 2,055, minimum 393, and maximum
 7,314. Fold 0 contains 2,047 WD or 2,025 WI training recordings and 503 WD or
-525 WI validation recordings. Batch size 8 is therefore frozen as the
-conservative initial setting for the RTX 4060 and remains identical across
-conditions.
+525 WI validation recordings. Batch size 8 was the conservative RTX 4060
+timing setting; before production it was superseded by batch size 64 after the
+A6000 systems benchmark below. Batch 64 remains identical across conditions.
 
 Before a production run, execute
 `configs/thesis/fau/timing_bigram_handwriting_wd.yaml`. It differs from the
@@ -278,6 +278,46 @@ is approximately 7 hours 10 minutes, excluding one-time caching and backup
 overhead. The four fold-0 conditions would take roughly 28 hours 40 minutes if
 run sequentially on the same RTX 4060. This is a planning estimate, not an
 A6000 benchmark.
+
+### A6000 batch-8 deployment timing
+
+- Date: 2026-09-23
+- Hardware: NVIDIA RTX A6000, 48 GB
+- Config and data: the same complete WD fold-0 batch-8 timing condition
+- Runtime: 100 seconds training and 2 seconds validation
+- Startup caching: approximately 3 seconds validation and 10 seconds training
+- Observed GPU memory: maximum 2,234 MiB
+- Sampled utilization: 0–43% at one-second intervals
+- Outcome: completed without an out-of-memory error
+
+This run was slower in training than the RTX 4060 measurement despite much
+more available memory. The observation suggests that batch 8 does not keep the
+A6000 busy, although the utilization samples alone cannot distinguish data
+loading, augmentation, padding, kernel-launch, or recurrent-model limitations.
+No recognition conclusion may be drawn from the one-epoch metrics.
+
+### A6000 batch-64 deployment timing and final choice
+
+- Date: 2026-09-23
+- Scope: complete WD fold 0; 2,047 train and 503 validation recordings
+- Effective batches: 32 train and 8 validation
+- Runtime: 16 seconds training and 1 second validation
+- Observed GPU memory: maximum 7,248 MiB of 48 GB
+- Sampled utilization: maximum 47% at one-second resolution
+- Outcome: completed without an out-of-memory error
+
+Batch 64 reduced A6000 training time by 84 seconds per epoch, a 5.9× speedup
+over batch 8. It also matches TVA's established production batch size. The
+tradeoff is fewer optimizer updates: 32 per epoch and 9,600 across 300 epochs
+for WD fold 0, compared with 76,800 under batch 8. Each epoch still covers the
+complete fold. The 300-epoch schedule, 30-epoch warmup, learning rate, and all
+other settings remain unchanged, and batch 64 is frozen identically across all
+20 runs. Diagnostic CER/WER was not used for this decision.
+
+At 17 seconds per train-plus-validation epoch, one 300-epoch run is estimated
+at 1 hour 25 minutes. Four fold-0 conditions are approximately 5 hours 40
+minutes, and the complete 20-run five-fold matrix is approximately 28 hours 20
+minutes when executed sequentially, excluding caching and backup overhead.
 
 ## Bigram pipeline smoke validation — WD/RH and WI/RH fold 0
 

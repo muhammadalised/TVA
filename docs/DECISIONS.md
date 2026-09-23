@@ -302,10 +302,10 @@ the reason no longer valid.
   one bounded CPU epoch and saved 224-output checkpoints. These runs validate
   plumbing only and are not recognition results.
 
-## D020 — Freeze matched FAU fold-0 production settings
+## D020 — Initial matched FAU fold-0 production settings
 
-- Status: accepted and CUDA timing-validated on 2026-09-23 before full
-  recognition training
+- Status: superseded by D021's A6000 batch-64 deployment setting before any
+  production training began
 - Decision: Use BLConv-B + BiLSTM-B + CTC, 300 epochs, a 30-epoch linear
   warmup followed by cosine decay, AdamW at learning rate 0.001, seed 42,
   TVA's existing training augmentation, and batch size 8 for all four
@@ -328,5 +328,34 @@ the reason no longer valid.
   before any full run begins.
 - Timing outcome: batch size 8 completed a full WD fold-0 epoch on the RTX
   4060 with CUDA mixed precision: 82 seconds training and 4 seconds
-  validation. No out-of-memory failure occurred, so the frozen production
-  batch does not require revision. Peak VRAM was not captured.
+  validation. No out-of-memory failure occurred. Peak VRAM was not captured.
+
+## D021 — Use physical batch size 64 on the A6000
+
+- Status: accepted and frozen on 2026-09-23; production training has not
+  started
+- Trigger: The same complete WD fold-0 batch-8 timing run took 100 seconds for
+  training and 2 seconds for validation on the RTX A6000. Observed memory
+  peaked at only 2,234 MiB of 48 GB, while one-second GPU-utilization samples
+  ranged from 0% to 43%. The stronger GPU was therefore not used efficiently
+  by this configuration.
+- Decision: use physical batch size 64 for every A6000 production run. Apply
+  it identically to every tokenizer, distribution, and fold. The choice was
+  made from systems measurements and the predeclared TVA batch convention;
+  diagnostic CER/WER was ignored.
+- Scientific constraint: changing batch size changes the number of optimizer
+  updates per epoch. Throughput alone is not sufficient justification for an
+  arbitrarily large batch; the final choice must state the resulting updates
+  per epoch and whether epochs, learning rate, or schedule remain unchanged.
+- Interpretation: low sampled utilization suggests an input/launch or
+  small-batch bottleneck, but the one-second samples do not identify its exact
+  cause. This benchmark is a systems result, not recognition evidence.
+- Batch-64 outcome: the complete WD fold ran in 16 seconds training plus 1
+  second validation, with maximum observed memory 7,248 MiB and sampled GPU
+  utilization up to 47%. It completed without an out-of-memory error and is
+  5.9 times faster in training than batch 8 on the same workstation.
+- Update budget: WD fold 0 has 32 training updates per epoch, or 9,600 over
+  300 epochs; WI fold 0 also has 32 updates per epoch. This is fewer updates
+  than the provisional batch-8 setting, but batch 64 restores TVA's established
+  production batch size, every epoch still covers the full training fold, and
+  the comparison remains controlled because all 20 runs use the same setting.

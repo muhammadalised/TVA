@@ -916,3 +916,40 @@ launching any 300-epoch experiment.
 Next step: commit this frozen configuration/timing milestone, then launch the
 four fold-0 production jobs from scratch, one at a time. Record actual runtime,
 best CER/WER epochs, checkpoint hashes, and the code commit for every run.
+
+## 2026-09-23 — A6000 batch-8 timing shows low utilization
+
+- Repeated the complete WD fold-0 timing condition on the 48 GB RTX A6000.
+- Training took 100 seconds and validation took 2 seconds. Dataset caching
+  took approximately 13 seconds in total.
+- Observed GPU memory peaked at 2,234 MiB; one-second utilization samples were
+  between 0% and 43%. The run completed without an out-of-memory error.
+- Batch 8 was slower on this workstation than in the RTX 4060 timing run and
+  left most A6000 memory unused. This is a systems observation, not a tokenizer
+  or recognition result.
+- No production fold has started. Batch selection is reopened before training
+  so larger physical batches can be compared using runtime, memory, and the
+  resulting optimizer-step budget only. Diagnostic CER/WER must be ignored.
+
+Next step: benchmark larger A6000 batches, freeze one setting identically for
+all 20 five-fold runs, then commit it before launching production training.
+
+## 2026-09-23 — A6000 batch 64 selected for production
+
+- The complete WD fold-0 batch-64 timing run finished without an out-of-memory
+  error in 16 seconds training plus 1 second validation.
+- Maximum observed GPU memory was 7,248 MiB of 48 GB; sampled utilization
+  reached 47%. Training was 5.9 times faster than batch 8 on the same A6000.
+- Froze batch size 64 in all four production configurations and the canonical
+  timing configuration. This matches TVA's established production batch size.
+- Recorded the optimization tradeoff: 32 updates per WD/WI fold-0 epoch and
+  9,600 updates over 300 epochs, versus 256 and 76,800 under the provisional
+  batch-8 setting. Epoch count, warmup, learning rate, and augmentation remain
+  unchanged. Diagnostic CER/WER played no role in the choice.
+- Projected sequential A6000 budget: about 1 hour 25 minutes per run, 5 hours
+  40 minutes for four fold-0 runs, and 28 hours 20 minutes for all 20 five-fold
+  runs, excluding caching and backup overhead.
+- No production training has started.
+
+Next step: run regression tests, commit and push the A6000 deployment setting,
+then use the committed configuration to launch the five-fold matrix.

@@ -168,7 +168,7 @@ class FauProductionConfigTests(unittest.TestCase):
                 self.assertEqual(model.decoder.fc.out_features, 224)
                 self.assertEqual(config['epoch'], 300)
                 self.assertEqual(config['epoch_warmup'], 30)
-                self.assertEqual(config['size_batch'], 8)
+                self.assertEqual(config['size_batch'], 64)
                 self.assertTrue(config['aug'])
                 self.assertIsNone(config['checkpoint'])
 
