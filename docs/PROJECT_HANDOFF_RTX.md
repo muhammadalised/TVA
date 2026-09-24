@@ -176,6 +176,41 @@ error. It is frozen for all 20 runs. This gives 32 updates per fold-0 epoch and
 sequential A6000 time is about 1 hour 25 minutes per run or 28 hours 20 minutes
 for the complete matrix, excluding caching and backup overhead.
 
+As a workstation-outage fallback, batch 32 was also timed on the RTX 4060
+laptop. The complete WD fold-0 epoch took 26 seconds training plus 2 seconds
+validation and peaked at 5,211 MiB without an out-of-memory error, projecting
+to roughly 2 hours 20 minutes for 300 epochs. This fallback changes the update
+budget to 64 steps per WD fold-0 epoch. Use it only for conditions compared at
+the same batch size; do not combine a laptop batch-32 fold 0 with A6000
+batch-64 folds 1--4. A final batch-64 five-fold matrix must rerun fold 0.
+
+The laptop handwriting-aware WD fold-0 fallback run subsequently completed all
+300 epochs under commit `9761142e491dc631c2411763fae3677edbfa861a` in about
+1 hour 9 minutes. Best validation CER was 0.2427056328 at epoch 206 and best
+validation WER was 0.6480386889 at epoch 245. The best-CER and best-WER
+checkpoint SHA-256 values are respectively
+`35a1f5ce12362bfbb9e2e50ccba249b5e09d517f974b667dcf5cfccf25c4db7b`
+and `83f583c05d13d8b1972b880e58311294df35eab332fc623e24a2ccd26e07f993`.
+This is only half of the controlled comparison; run the linguistic-Bigram WD
+fold-0 condition with the identical batch-32 protocol before interpretation.
+
+The matched linguistic-Bigram run is now complete. Its best CER was
+0.3219891586 at epoch 203 and best WER was 0.7117141322 at epoch 270. Against
+those values, handwriting-aware Bigram reduced CER by 7.93 percentage points
+(24.62% relative) and WER by 6.37 points (8.95% relative). The comparison is
+controlled for commit, architecture, WD fold, batch 32, seed, schedule,
+augmentation, and greedy segmentation. Treat it as promising one-fold evidence,
+not a five-fold or statistically significant conclusion. Do not combine these
+batch-32 results with batch-64 folds in the final aggregate.
+
+The matched WI fold-0 pair is also complete at batch 32. Handwriting-aware
+achieved CER/WER 0.1642117744/0.4483709273; linguistic achieved
+0.1859637922/0.4749373434. This is a 2.18-point CER reduction (11.70% relative)
+and 2.66-point WER reduction (5.59% relative). Together with WD fold 0, the
+handwriting-aware tokenizer leads on both split regimes, but the evidence is
+still limited to one fold and seed. The next scientific step is a complete
+five-fold study under one batch protocol, rerunning fold 0 if batch 64 is used.
+
 ## 4. Completed, verified work
 
 ### Environment and data preparation

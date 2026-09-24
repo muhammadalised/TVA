@@ -279,6 +279,132 @@ overhead. The four fold-0 conditions would take roughly 28 hours 40 minutes if
 run sequentially on the same RTX 4060. This is a planning estimate, not an
 A6000 benchmark.
 
+### RTX 4060 batch-32 fallback timing
+
+- Date: 2026-09-23
+- Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
+- Scope: complete WD fold 0; 2,047 train and 503 validation recordings
+- Effective batches: 64 train and 16 validation
+- Runtime: 26 seconds training and 2 seconds validation
+- Observed GPU memory: maximum 5,211 MiB
+- CUDA mode: automatic mixed precision enabled
+- Outcome: completed without an out-of-memory error
+
+Batch 32 is a practical laptop fallback and projects to about 2 hours 20
+minutes for 300 train-plus-validation epochs, excluding caching and checkpoint
+overhead. It produces 64 optimizer updates per WD fold-0 epoch, versus 32 for
+the frozen A6000 batch-64 protocol. Consequently, a laptop batch-32 result may
+be compared only with conditions trained using the same batch-32 protocol. It
+must not be combined as fold 0 with batch-64 folds 1--4 in a five-fold summary;
+such a final batch-64 matrix requires rerunning fold 0 at batch 64. The
+one-epoch diagnostic metrics are not recognition evidence.
+
+### FAU handwriting-aware Bigram — WD fold 0, batch 32
+
+- Completed: 2026-09-24
+- Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
+- Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
+- Tokenizer: frozen IAM handwriting-aware Bigram artifact, greedy left-to-right
+  segmentation
+- Data: FAU English WD fold 0; no FAU labels were used to select bigrams
+- Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
+- Wall-clock interval including initial caching: approximately 1 hour 9 minutes
+  25 seconds
+- Best validation CER: 0.2427056328 at epoch 206
+- Best validation WER: 0.6480386889 at epoch 245
+- Mean validation reference length: 42.176938 characters
+- Best-CER checkpoint SHA-256:
+  `35a1f5ce12362bfbb9e2e50ccba249b5e09d517f974b667dcf5cfccf25c4db7b`
+- Best-WER checkpoint SHA-256:
+  `83f583c05d13d8b1972b880e58311294df35eab332fc623e24a2ccd26e07f993`
+- Final resumable checkpoint SHA-256:
+  `8d93f9f463d1e8d6e044abfa6dc8f052b1a5b5cb1b1c043d043e48aa93c11bcd`
+
+The final epoch CER was 0.2484091 and WER was 0.6552929, both slightly worse
+than their respective best values. This shows why checkpoint selection must be
+metric-specific: `best_cer.pth` and `best_wer.pth` represent different epochs,
+and `latest.pth` is not the reported optimum. This is the first half of the
+controlled WD fold-0 comparison. No tokenizer conclusion is valid until the
+matched IAM linguistic-Bigram condition is trained with the same batch size,
+fold, seed, architecture, and schedule. Because this run used batch 32, it is
+not interchangeable with a batch-64 fold in the planned A6000 five-fold matrix.
+
+### FAU linguistic Bigram — WD fold 0, batch 32
+
+- Completed: 2026-09-24
+- Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
+- Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
+- Tokenizer: frozen IAM linguistic-frequency Bigram artifact, greedy
+  left-to-right segmentation
+- Data: FAU English WD fold 0; no FAU labels were used to select bigrams
+- Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
+- Wall-clock interval including initial caching: approximately 1 hour 9 minutes
+  36 seconds
+- Best validation CER: 0.3219891586 at epoch 203
+- Best validation WER: 0.7117141322 at epoch 270
+- Mean validation reference length: 42.176938 characters
+- Best-CER checkpoint SHA-256:
+  `6a3270ac9e7b3733a941a6e9177d51b90a7f266282123e2b3594ea8d0dd8bc53`
+- Best-WER checkpoint SHA-256:
+  `35d1f0dd9fef8677822407e83c62e1481c915b70bea63799612cdbde1ce99c7f`
+- Final resumable checkpoint SHA-256:
+  `c2cf32c732097546bca16406bcc79cd620189e056ea24462c845fb8419b49d3b`
+
+Under this matched WD fold-0 protocol, the handwriting-aware tokenizer reduced
+CER from 0.3219891586 to 0.2427056328: an absolute reduction of 0.0792835258,
+or 7.93 percentage points and 24.62% relative. It reduced WER from
+0.7117141322 to 0.6480386889: an absolute reduction of 0.0636754433, or 6.37
+percentage points and 8.95% relative. Mean Levenshtein distance decreased by
+3.343936 characters per validation sentence. The result supports the
+handwriting-aware hypothesis on this one WD fold, but does not establish
+five-fold generalization or statistical significance. Both conditions used a
+single seed and metric-specific best epochs. The batch-32 comparison also
+remains separate from the frozen batch-64 A6000 matrix.
+
+### FAU handwriting-aware Bigram — WI fold 0, batch 32
+
+- Completed: 2026-09-24
+- Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
+- Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
+- Tokenizer: frozen IAM handwriting-aware Bigram artifact, greedy left-to-right
+  segmentation
+- Data: FAU English WI fold 0; no FAU labels were used to select bigrams
+- Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
+- Runtime including initial caching: approximately 1 hour 11 minutes 7 seconds
+- Best validation CER: 0.1642117744 at epoch 264
+- Best validation WER: 0.4483709273 at epoch 265
+- Best-CER checkpoint SHA-256:
+  `bc22bedd7636193c661f55515cdd4d54dbd5b6824bfe2415f939449e9e12bdc5`
+- Best-WER checkpoint SHA-256:
+  `2cd1c3c0d05e13194c823de2587b9a64083794d001f0e407f95e8c196b22eeaf`
+
+### FAU linguistic Bigram — WI fold 0, batch 32
+
+- Completed: 2026-09-24
+- Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
+- Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
+- Tokenizer: frozen IAM linguistic-frequency Bigram artifact, greedy
+  left-to-right segmentation
+- Data: FAU English WI fold 0; no FAU labels were used to select bigrams
+- Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
+- Runtime including initial caching: approximately 1 hour 10 minutes 38 seconds
+- Best validation CER: 0.1859637922 at epoch 262
+- Best validation WER: 0.4749373434 at epoch 262
+- Best-CER and best-WER checkpoint SHA-256 (the same epoch and bytes):
+  `25ccf0c05377e0f2157c589874646716162ae72e7fb07c77b8ea69151e708365`
+- Final resumable checkpoint SHA-256:
+  `24819bd58fffa6c0dd7e067cd9fac5d18a6bba8bedb543835c8a4f3717276baa`
+
+Under the matched WI fold-0 protocol, handwriting-aware Bigram reduced CER by
+0.0217520179, or 2.18 percentage points and 11.70% relative, and reduced WER
+by 0.0265664160, or 2.66 points and 5.59% relative. Mean Levenshtein distance
+decreased by 0.908571 characters per validation sentence. Handwriting-aware
+Bigram therefore outperformed the linguistic control on both WD and WI fold 0,
+although effect size was larger on WD. This agreement across two distributions
+is promising, but a single fold and seed do not establish generalization or
+statistical significance. These batch-32 results must remain separate from a
+batch-64 five-fold aggregate.
+
 ### A6000 batch-8 deployment timing
 
 - Date: 2026-09-23

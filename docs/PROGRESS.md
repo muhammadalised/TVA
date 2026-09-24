@@ -953,3 +953,90 @@ all 20 five-fold runs, then commit it before launching production training.
 
 Next step: run regression tests, commit and push the A6000 deployment setting,
 then use the committed configuration to launch the five-fold matrix.
+
+## 2026-09-23 — RTX 4060 batch-32 fallback timing passed
+
+- Ran the complete WD fold-0 timing condition on the RTX 4060 laptop using a
+  temporary batch-32 configuration; the committed A6000 configs were unchanged.
+- Training took 26 seconds and validation took 2 seconds. Maximum observed GPU
+  memory was 5,211 MiB, and the run completed without an out-of-memory error.
+- The resulting projection is about 2 hours 20 minutes for 300 epochs,
+  excluding caching and checkpoint overhead.
+- Batch 32 gives 64 WD fold-0 optimizer updates per epoch. It can support a
+  controlled laptop fold-0 comparison only when every compared condition uses
+  batch 32. It cannot be mixed with batch-64 folds in a five-fold aggregate;
+  fold 0 must later be rerun at batch 64 for the frozen A6000 matrix.
+- The diagnostic CER/WER is not recognition evidence, and its checkpoints must
+  not initialize production training.
+
+Next step: if the workstation remains unavailable, launch handwriting-WD fold
+0 from scratch on the laptop with a temporary batch-32 config and use batch 32
+for every paired laptop fold-0 condition.
+
+## 2026-09-24 — FAU handwriting-aware WD fold 0 completed on laptop
+
+- Completed all 300 epochs using the frozen IAM handwriting-aware Bigram
+  tokenizer on FAU English WD fold 0, with greedy segmentation, batch 32,
+  seed 42, and CUDA mixed precision.
+- The run used code commit `9761142e491dc631c2411763fae3677edbfa861a`
+  and took approximately 1 hour 9 minutes 25 seconds including initial caching.
+- Best validation CER was 0.2427056328 at epoch 206; best validation WER was
+  0.6480386889 at epoch 245.
+- Best-CER checkpoint SHA-256:
+  `35a1f5ce12362bfbb9e2e50ccba249b5e09d517f974b667dcf5cfccf25c4db7b`.
+- Best-WER checkpoint SHA-256:
+  `83f583c05d13d8b1972b880e58311294df35eab332fc623e24a2ccd26e07f993`.
+- Final epoch CER/WER (0.2484091/0.6552929) were slightly worse than the
+  metric-specific best values, so final reporting must use the corresponding
+  best checkpoints rather than the latest checkpoint.
+- This result alone does not establish a handwriting-aware advantage and must
+  not be mixed with batch-64 folds in the planned five-fold aggregate.
+
+Next step: run the matched IAM linguistic-Bigram tokenizer on FAU English WD
+fold 0 with the identical laptop batch-32 protocol, then compare CER and WER.
+
+## 2026-09-24 — Matched FAU WD fold-0 comparison completed
+
+- Completed the matched IAM linguistic-Bigram run on FAU English WD fold 0
+  using the same code commit, architecture, split, batch 32, seed 42, 300-epoch
+  schedule, augmentation, greedy segmentation, and CUDA mixed precision as the
+  handwriting-aware condition.
+- Linguistic best validation CER was 0.3219891586 at epoch 203; best validation
+  WER was 0.7117141322 at epoch 270. Runtime was approximately 1 hour 9 minutes
+  36 seconds including startup.
+- Handwriting-aware versus linguistic: CER 0.2427056328 versus 0.3219891586,
+  an absolute 7.93-point and relative 24.62% reduction; WER 0.6480386889 versus
+  0.7117141322, an absolute 6.37-point and relative 8.95% reduction.
+- Linguistic best-CER checkpoint SHA-256:
+  `6a3270ac9e7b3733a941a6e9177d51b90a7f266282123e2b3594ea8d0dd8bc53`.
+- Linguistic best-WER checkpoint SHA-256:
+  `35d1f0dd9fef8677822407e83c62e1481c915b70bea63799612cdbde1ce99c7f`.
+- This is positive one-fold evidence only. It does not yet demonstrate
+  five-fold generalization or statistical significance, and the batch-32 fold
+  must not be mixed into a batch-64 five-fold aggregate.
+
+Next step: complete the matched WI fold-0 pair at batch 32 if continuing the
+laptop study, or restore the workstation and run the complete frozen batch-64
+five-fold matrix, including a new batch-64 fold 0.
+
+## 2026-09-24 — Matched FAU WI fold-0 comparison completed
+
+- Handwriting-aware best validation CER/WER was 0.1642117744/0.4483709273 at
+  epochs 264/265. Runtime was approximately 1 hour 11 minutes 7 seconds.
+- Linguistic best validation CER/WER was 0.1859637922/0.4749373434, both at
+  epoch 262. Runtime was approximately 1 hour 10 minutes 38 seconds.
+- Both used commit `9761142e491dc631c2411763fae3677edbfa861a`, FAU WI
+  fold 0, batch 32, seed 42, 300 epochs, the same architecture and augmentation,
+  and greedy segmentation. Only the frozen IAM bigram-selection strategy
+  differed.
+- Handwriting-aware reduced CER by 2.18 percentage points (11.70% relative)
+  and WER by 2.66 points (5.59% relative). It now leads the linguistic control
+  on both WD and WI fold 0, with a larger effect on WD.
+- Linguistic best-CER and best-WER checkpoint SHA-256:
+  `25ccf0c05377e0f2157c589874646716162ae72e7fb07c77b8ea69151e708365`.
+- This remains one-fold, one-seed evidence and is not yet a five-fold or
+  statistically significant conclusion.
+
+Next step: freeze one hardware/batch protocol for the complete five-fold study.
+If using the A6000 batch-64 protocol, rerun fold 0 and run folds 1--4 for all
+four conditions; do not mix these laptop batch-32 results into that aggregate.
