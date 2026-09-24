@@ -241,7 +241,9 @@ reports a mean of 2,137.65 samples, median 2,055, minimum 393, and maximum
 7,314. Fold 0 contains 2,047 WD or 2,025 WI training recordings and 503 WD or
 525 WI validation recordings. Batch size 8 was the conservative RTX 4060
 timing setting; before production it was superseded by batch size 64 after the
-A6000 systems benchmark below. Batch 64 remains identical across conditions.
+A6000 systems benchmark below. The base YAML files retain that batch-64 A6000
+setting. D022 later selected a separate batch-32 laptop protocol for the actual
+five-fold matrix after all four fold-0 runs completed consistently at batch 32.
 
 Before a production run, execute
 `configs/thesis/fau/timing_bigram_handwriting_wd.yaml`. It differs from the
@@ -405,6 +407,38 @@ is promising, but a single fold and seed do not establish generalization or
 statistical significance. These batch-32 results must remain separate from a
 batch-64 five-fold aggregate.
 
+### FAU five-fold laptop protocol and launcher
+
+The final FAU matrix is frozen at physical batch size 32 on the RTX 4060
+laptop. The four completed fold-0 conditions are retained; the remaining
+matrix comprises handwriting-aware and linguistic Bigram under WD and WI for
+folds 1--4, or 16 sequential runs. This choice avoids mixing batch protocols
+and supersedes the provisional A6000 batch-64 deployment plan for this matrix.
+The A6000 timings remain valid systems evidence but are not recognition runs.
+
+`run_fau_matrix.py` makes the effective protocol explicit without changing the
+four batch-64 base templates. It overrides only `idx_fold` and `size_batch`,
+defaults to batch 32 and folds 1--4, validates the frozen training invariants,
+checks all 16 target directories before launching anything, and refuses to
+overwrite any non-empty result directory. Each `main.py` run saves its actual
+effective YAML in its result directory. Preview the complete plan with:
+
+```bash
+python run_fau_matrix.py --dry-run
+```
+
+After setting `TVA_FAU_DATASET_DIR`, start the sequential matrix with:
+
+```bash
+MPLBACKEND=Agg python run_fau_matrix.py
+```
+
+The launcher stops on the first nonzero training exit and leaves all existing
+outputs intact. Continue only with explicitly selected untouched folds and
+conditions after diagnosing and documenting a failure. At the observed fold-0
+runtime of about 69--71 minutes, the 16 remaining runs require roughly 18--19
+hours sequentially, excluding interruption and backup overhead.
+
 ### A6000 batch-8 deployment timing
 
 - Date: 2026-09-23
@@ -422,7 +456,7 @@ A6000 busy, although the utilization samples alone cannot distinguish data
 loading, augmentation, padding, kernel-launch, or recurrent-model limitations.
 No recognition conclusion may be drawn from the one-epoch metrics.
 
-### A6000 batch-64 deployment timing and final choice
+### A6000 batch-64 deployment timing and provisional choice
 
 - Date: 2026-09-23
 - Scope: complete WD fold 0; 2,047 train and 503 validation recordings
@@ -437,8 +471,10 @@ over batch 8. It also matches TVA's established production batch size. The
 tradeoff is fewer optimizer updates: 32 per epoch and 9,600 across 300 epochs
 for WD fold 0, compared with 76,800 under batch 8. Each epoch still covers the
 complete fold. The 300-epoch schedule, 30-epoch warmup, learning rate, and all
-other settings remain unchanged, and batch 64 is frozen identically across all
-20 runs. Diagnostic CER/WER was not used for this decision.
+other settings remain unchanged. Batch 64 was provisionally frozen identically
+across all 20 runs, but no production run used it before D022 selected the
+complete laptop batch-32 protocol. Diagnostic CER/WER was not used for the
+A6000 decision.
 
 At 17 seconds per train-plus-validation epoch, one 300-epoch run is estimated
 at 1 hour 25 minutes. Four fold-0 conditions are approximately 5 hours 40

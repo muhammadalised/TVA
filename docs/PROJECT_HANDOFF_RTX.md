@@ -211,6 +211,28 @@ handwriting-aware tokenizer leads on both split regimes, but the evidence is
 still limited to one fold and seed. The next scientific step is a complete
 five-fold study under one batch protocol, rerunning fold 0 if batch 64 is used.
 
+The final protocol decision is now D022: complete the FAU five-fold matrix on
+the RTX 4060 laptop at batch 32. The four fold-0 results remain part of the
+matrix, and `run_fau_matrix.py` defaults to the 16 untouched fold 1--4 runs in
+paired order. The previous A6000 batch-64 decision is retained only as a
+systems benchmark and must not be mixed into this aggregate.
+
+Preview and launch from the repository root:
+
+```bash
+conda activate tva
+export TVA_FAU_DATASET_DIR=/mnt/c/Users/Ali/Downloads/fau-english-dataset
+python run_fau_matrix.py --dry-run
+MPLBACKEND=Agg python run_fau_matrix.py
+```
+
+The launcher validates all target paths before starting and refuses to
+overwrite non-empty results. It stops at the first failed subprocess. Do not
+delete a partial directory automatically; inspect and document the failure,
+then select only untouched folds/conditions or establish a reviewed resume
+procedure. Expected time for the 16 remaining runs is roughly 18--19 hours
+sequentially, based on fold 0.
+
 ## 4. Completed, verified work
 
 ### Environment and data preparation

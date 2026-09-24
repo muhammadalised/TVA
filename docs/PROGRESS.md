@@ -1040,3 +1040,26 @@ five-fold matrix, including a new batch-64 fold 0.
 Next step: freeze one hardware/batch protocol for the complete five-fold study.
 If using the A6000 batch-64 protocol, rerun fold 0 and run folds 1--4 for all
 four conditions; do not mix these laptop batch-32 results into that aggregate.
+
+## 2026-09-24 — Batch-32 laptop protocol frozen for five folds
+
+- Selected batch 32 on the RTX 4060 laptop for the complete FAU five-fold
+  matrix. This retains the four matched fold-0 results and requires 16
+  remaining runs across folds 1--4.
+- Recorded D022, which supersedes the A6000 batch-64 deployment choice for this
+  final matrix while retaining the A6000 measurements as systems evidence.
+- Added `run_fau_matrix.py`. Its defaults are all four tokenizer/distribution
+  conditions, folds 1--4, batch 32, seed 42, and sequential execution.
+- The launcher reads the frozen base configs and overrides only fold and batch,
+  validates critical invariants and the FAU archives, preflights every output
+  directory before launch, refuses overwrites, stops on the first failure, and
+  offers a no-training `--dry-run` preview.
+- Added five focused launcher tests. The complete suite ran 54 tests: 52 passed
+  and two optional external-reference checks were skipped. The dry run
+  previewed all 16 expected runs and started no training.
+- Estimated remaining sequential laptop time is approximately 18--19 hours
+  based on the four observed fold-0 runtimes.
+
+Next step: commit and push the launcher milestone, then run
+`python run_fau_matrix.py --dry-run` once on the training checkout and launch
+the matrix without `--dry-run` while the laptop is powered and sleep-disabled.

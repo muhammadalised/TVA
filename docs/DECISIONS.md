@@ -332,8 +332,8 @@ the reason no longer valid.
 
 ## D021 — Use physical batch size 64 on the A6000
 
-- Status: accepted and frozen on 2026-09-23; production training has not
-  started
+- Status: superseded for the final FAU matrix by D022 on 2026-09-24; retained
+  as the A6000 systems benchmark
 - Trigger: The same complete WD fold-0 batch-8 timing run took 100 seconds for
   training and 2 seconds for validation on the RTX A6000. Observed memory
   peaked at only 2,234 MiB of 48 GB, while one-second GPU-utilization samples
@@ -357,5 +357,37 @@ the reason no longer valid.
 - Update budget: WD fold 0 has 32 training updates per epoch, or 9,600 over
   300 epochs; WI fold 0 also has 32 updates per epoch. This is fewer updates
   than the provisional batch-8 setting, but batch 64 restores TVA's established
-  production batch size, every epoch still covers the full training fold, and
-  the comparison remains controlled because all 20 runs use the same setting.
+  production batch size and every epoch still covers the full training fold.
+  It would have kept the comparison controlled only if all 20 runs used that
+  setting; D022 instead freezes all 20 runs at batch 32.
+
+## D022 — Complete the FAU five-fold matrix on the laptop at batch 32
+
+- Status: accepted and frozen on 2026-09-24 after all four fold-0 conditions
+  completed
+- Trigger: The A6000 workstation became unavailable after its filesystem
+  returned a read-only error and remote SSH reset before key exchange. The RTX
+  4060 laptop completed every matched WD/WI fold-0 condition at batch 32 in
+  approximately 69--71 minutes per run, with a measured peak of 5,211 MiB in
+  the timing run. These four valid results already share one protocol.
+- Decision: use physical batch size 32 on the RTX 4060 laptop for the complete
+  FAU five-fold comparison. Retain the completed fold-0 runs and train folds
+  1--4 for handwriting-aware and linguistic Bigram under both WD and WI. Keep
+  architecture, 300 epochs, 30-epoch warmup, learning rate 0.001, augmentation,
+  seed 42, greedy segmentation, and all other non-condition fields unchanged.
+- Update budget: the fold-0 WD run has 64 optimizer updates per epoch, or
+  19,200 across 300 epochs. Fold sizes may cause the last batch and exact step
+  count to differ slightly, but every paired condition within a fold uses the
+  same batch size and split.
+- Scientific constraint: do not mix any batch-64 run into this five-fold
+  aggregate. A future A6000 batch-64 study would be a separate complete matrix
+  and would require rerunning fold 0.
+- Reproducibility: `run_fau_matrix.py` loads the four frozen production
+  templates, overrides only `idx_fold` and `size_batch`, defaults to folds
+  1--4 at batch 32, and executes the 16 remaining runs sequentially. It
+  validates frozen invariants and all output paths before starting, refuses to
+  overwrite non-empty result directories, and provides `--dry-run` preview.
+- Failure policy: if a run fails, stop the matrix and preserve its directory
+  for diagnosis. Do not delete or silently resume it. Restart only explicitly
+  selected untouched conditions after documenting the failure or define a
+  reviewed checkpoint-resume procedure.
