@@ -7,8 +7,8 @@ part of the research record.
 For thesis traceability, record every material compatibility finding,
 methodological decision, failed or negative result, data-quality issue,
 experimental caveat, frozen parameter, and reproducibility identifier as the
-work occurs. Put detailed evidence in a focused document when needed and link
-it from this log and `docs/DECISIONS.md`.
+work occurs. Put detailed evidence in a focused tracked document when needed
+and link it from this log.
 
 ## 2026-08-01 — Initial setup and dataset preparation
 
@@ -133,21 +133,19 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Added automatic `best_cer.pth` and `best_wer.pth` checkpoints.
 - Each file is replaced only for a strict improvement over all previous
   validation epochs. Restored metric history makes this rule resume-aware.
-- `latest.pth` remains the recovery checkpoint, while the best-CER checkpoint
-  is the preferred model for forced alignment.
+- `latest.pth` remains the recovery checkpoint.
 
-## 2026-08-02 — Tokenizer-family scope clarification (historical IMU-first plan)
+## 2026-08-02 — Tokenizer-family scope clarification
 
 - Clarified that the thesis plans handwriting-aware Bigram, BPE, and Unigram
-  tokenizers, not only one motion-selected pair vocabulary.
+  tokenizers, not only one pair vocabulary.
 - Each proposed variant will be compared with its linguistic counterpart at a
   matched vocabulary size; the character baseline remains the common reference.
-- At that stage, motion continuity was the primary token-selection evidence.
-  The approved September 2026 proposal supersedes this with image-derived ink
-  connectivity as the primary evidence. Frequency,
-  occurrence count, and writer coverage are retained as reliability conditions.
-- Implementation remains staged: establish forced alignment and motion-aware
-  Bigram first, then reuse the shared evidence for BPE and Unigram.
+- Image-derived ink connectivity is the primary handwriting evidence.
+  Frequency, occurrence count, and writer coverage are retained as reliability
+  conditions.
+- Implementation remains staged: establish the handwriting-aware Bigram first,
+  then extend the evidence to BPE and Unigram if the Bigram is promising.
 - Added method, decision, and proposal-planning documents so this clarification
   is carried into the formal thesis proposal.
 
@@ -157,7 +155,7 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Best validation CER was 0.127563 (12.76%) at epoch 286.
 - Best validation WER was 0.359809 (35.98%) at epoch 289.
 - The complete run was archived and backed up by the researcher. The final
-  `latest.pth` checkpoint was retained for initial forced-alignment work.
+  `latest.pth` checkpoint was retained for reproducibility and recovery.
 - This run preceded automatic best-model checkpointing, so the exact weights
   from epochs 286 and 289 are not available. This limitation is recorded in
   `docs/EXPERIMENTS.md`.
@@ -167,238 +165,11 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Completed 300 epochs of B0 character training on the RTX 4060 laptop.
 - Best validation CER was 0.156041 (15.60%) at epoch 244.
 - Best validation WER was 0.279478 (27.95%) at epoch 269.
-- The WI run used automatic best-model checkpointing. Use `best_cer.pth`
-  from epoch 244 for WI forced-alignment development; retain `best_wer.pth`
-  for recognition comparison and `latest.pth` for resumable recovery.
-- WD/RH and WI/RH fold-0 character baselines are now complete, so development
-  can move to target-constrained CTC forced alignment.
+- The WI run used automatic best-model checkpointing. Retain `best_cer.pth`
+  and `best_wer.pth` for recognition comparisons and `latest.pth` for
+  resumable recovery.
+- WD/RH and WI/RH fold-0 character baselines are complete.
 
-## 2026-08-08 — Core CTC Viterbi alignment
-
-- Created the `forced-alignment` development branch from the documented
-  baseline state.
-- Added a standalone target-constrained CTC Viterbi implementation in
-  `tva/ctc_alignment.py`.
-- The implementation returns the expanded CTC target, best state/token path,
-  total log score, and a half-open model-frame interval for each known target
-  token.
-- Added five focused unit tests covering an ordinary two-character alignment,
-  repeated characters, target-constrained advancement, insufficient frames,
-  and an invalid blank inside the target.
-- All five tests pass on the Mac `tva-thesis` environment.
-- The implementation currently stops at model-output frames. Loading real
-  checkpoints, mapping frames to raw IMU positions, visualization, and an
-  alignment-confidence definition are intentionally left for the next stage.
-
-## 2026-08-08 — Single-sample alignment runner
-
-- Added `align_sample.py` to connect a character configuration, checkpoint,
-  real dataset sample, model inference, greedy decoding, and constrained
-  Viterbi alignment in one readable command.
-- The runner prints sample metadata, the known label, greedy prediction,
-  timeline sizes, alignment scores, and one model-frame interval per target
-  character. An optional flag prints the complete frame-level token path.
-- Completed an end-to-end CPU check using the Mac WD smoke checkpoint and a
-  real processed validation sample. The run produced all six intervals for
-  `gerade`; its positions are only a software check because the smoke model was
-  trained for one epoch on 16 examples.
-- The next meaningful check uses the trained WI/RH fold-0 `best_cer.pth` on the
-  RTX machine.
-
-## 2026-08-08 — Alignment diagnostics and visualization
-
-- Verified real WI/RH fold-0 alignments for `gerade`, `Juni`, `immer`, and
-  `Ich`. The repeated `mm` in `immer` was correctly separated by CTC blanks.
-- The examples showed that a good whole-path score can hide an uncertain
-  forced character, so the runner now reports character-level probability,
-  preferred class, competing probability, margin, and local greedy agreement.
-- Added approximate output-frame-to-model-input mapping using BLConv's 8x
-  temporal reduction, including explicit reporting of trailing samples that
-  do not form a complete output frame.
-- Added candidate boundary regions from the CTC blank frames between adjacent
-  character emission anchors. These are search regions, not claimed physical
-  boundaries.
-- Added synchronized PNG plots of normalized AF/AR/G magnitude, raw F values,
-  and model probabilities. Green anchors agree locally, red anchors are forced,
-  and orange spans are blank-frame regions.
-- Added reusable JSON artifacts with sample metadata, paths, confidence
-  diagnostics, approximate positions, and boundary regions.
-- Eight focused tests now pass, including mapping, confidence, and PNG creation.
-  An end-to-end Mac smoke run also produced a valid JSON/PNG pair; scientific
-  inspection must use the trained RTX checkpoint.
-
-## 2026-08-08 — Midpoint boundary feature extractor
-
-- Manual plots showed why the complete CTC blank region is too broad: long
-  regions can contain pen lifts or internal strokes unrelated to the actual
-  adjacent-character boundary.
-- Adopted the midpoint between adjacent character emission anchors as the
-  initial boundary location and implemented 50, 100, and 150 ms local windows.
-- Added unweighted raw-force, relative-force, low-force-duration, AF/AR/G
-  magnitude, and motion-derivative features for every window.
-- The provisional low-force threshold is 10% of each recording's raw-force
-  90th percentile. It is saved with the features and remains subject to
-  training-fold validation.
-- Each boundary also stores both neighbouring character probabilities,
-  confidence margins, their minima, and local greedy agreement. No final
-  acceptance filter or continuity score has been hard-coded.
-- The runner prints a compact 100 ms summary and writes all window sizes into
-  the JSON artifact. Dashed black plot lines mark boundary midpoints.
-- Eleven focused tests pass, including safe handling of an alignment window
-  that reaches model padding. The complete runner/JSON/PNG path succeeds with
-  the local smoke checkpoint.
-
-## 2026-08-08 — Training-split boundary exporter
-
-- The inspected `gerade`, `immer`, and `Ich` examples confirmed that local
-  force features distinguish obvious contact losses while long CTC blank
-  regions alone do not. Unreliable forced anchors remain explicitly visible.
-- Added `export_boundaries.py` to run the established alignment and feature
-  pipeline across a selected fold and write one JSONL row per adjacent-character
-  occurrence. It defaults to the training split so tokenizer evidence does not
-  leak from validation data.
-- Every record contains checkpoint/sample provenance, CTC measurements,
-  alignment reliability, padding status, and nested 50/100/150 ms force and
-  motion features. No continuity score or acceptance threshold is imposed.
-- Added a progress sidecar and sample-safe `--resume` behavior. Existing output
-  requires an explicit `--resume` or `--overwrite`, preventing accidental loss
-  or duplication.
-- The scientific inference default is batch size one because padding unequal
-  words can affect bidirectional LSTM predictions. Larger batches remain an
-  explicit exploratory option.
-- All 15 focused tests pass. A real three-sample CPU smoke export produced 12
-  boundary rows, and a second run resumed without duplication. A separate
-  two-sample export was also extended to three samples using `--resume`.
-
-## 2026-08-08 — Pair-level descriptive analysis
-
-- The complete WI/RH fold-0 training export finished successfully: all 19,907
-  requested samples completed, producing 88,292 boundaries across 426 distinct
-  case-sensitive character pairs. Pair counts sum exactly to the boundary
-  total, and the implied average word length is 5.435 characters.
-- Added a streaming analysis tool that verifies provenance, window consistency,
-  boundary-ID uniqueness, and agreement with the exporter summary before
-  calculating statistics.
-- Added global and per-pair counts, sample/writer coverage, alignment-quality
-  rates, contact-preservation rates, and descriptive distributions for all
-  alignment, force, and motion measurements at 50, 100, and 150 ms.
-- Results are reported for all occurrences and for an explicitly named
-  agreement/non-padding/unclipped subset. The subset intentionally uses no
-  probability or confidence-margin threshold and is not presented as the final
-  reliability definition.
-- The analysis writes a JSON report, a compact pair overview CSV, and a full
-  statistics CSV. No continuity score, ranking, or tokenizer merge is created
-  yet.
-- All 18 focused tests pass. The tool also completed against the real local
-  smoke export, verified all 12 rows, and produced the three expected analysis
-  files.
-
-## 2026-08-09 — Boundary-position and case diagnostics
-
-- Inspection of the full WI pair overview found a possible position confound:
-  supported pairs beginning with uppercase characters preserved contact more
-  often than supported lowercase pairs. Because uppercase characters normally
-  occur at the start of words, pair identity alone cannot explain this result.
-- Extended the existing analyzer to assign every occurrence one unambiguous
-  position: `only` for the sole boundary of a two-character word, otherwise
-  `first`, `middle`, or `final`.
-- Added Unicode-aware left-character case groups and position-by-case groups.
-  These are descriptive diagnostics and do not change the quality subset or
-  create a continuity score.
-- The analyzer now writes compact and full position-statistics CSV files in
-  addition to the existing JSON and pair tables. Existing boundary exports can
-  be reused; model inference and data re-export are not required.
-- All 19 focused tests pass. The updated analyzer also completed on the real
-  local smoke export and produced all five expected output files.
-
-## 2026-08-09 — CTC boundary timing-bias diagnostic
-
-- The full WI position report showed very different behaviour at word-initial
-  boundaries: `only` and `first` boundaries had a median CTC blank duration of
-  zero and preserved contact in about 92% of reliable occurrences, whereas
-  `middle` and `final` boundaries had longer blank regions and lower contact
-  preservation. This suggests that temporal localization, rather than only
-  handwriting, may influence the boundary measurements.
-- Added normalized boundary-centre timing and a simple evenly spaced reference,
-  plus signed relative offset, absolute relative error, centre time, and signed
-  millisecond offset. Negative signed offsets mean the estimate occurs earlier
-  than the reference.
-- The equal-spacing reference is documented as a rough sanity check, not a true
-  physical character boundary. Existing JSONL exports contain all required
-  fields, so no model inference or boundary re-export is needed.
-- The compact pair and position overviews now include these timing diagnostics,
-  and the CLI prints them beside the 100 ms position summary.
-- All 20 focused alignment and boundary-analysis tests pass, and the analyzer
-  completed successfully on the real local smoke export.
-
-## 2026-08-09 — Unidirectional recurrent alignment experiment prepared
-
-- Full WI results confirmed a strong word-initial localization bias. Reliable
-  `only` and `first` boundaries both had a median centre time of 80 ms, median
-  blank duration of zero, and median offsets of about -315 and -300 ms from the
-  rough uniform references. The unfiltered and case-crossed summaries showed
-  the same pattern, so neither the reliability filter nor uppercase letters
-  explain it.
-- Added a simple UniLSTM decoder and `unilstm_b`/`unilstm_s` factory keys. A
-  focused test verifies that changing future decoder inputs cannot change its
-  earlier outputs.
-- Added `configs/thesis/a0_char_wi_rh_unidirectional.yaml`. It keeps all B0 WI
-  settings fixed except the recurrent direction and writes to a separate
-  alignment-model directory, so the completed B0 recognition baseline remains
-  untouched.
-- A0 removes whole-recording future recurrent context, but BLConv retains
-  centred convolutions and sequence-wide instance normalization. It is not
-  fully causal, so its timestamps require the same empirical position
-  diagnostic and are not assumed to be ground truth.
-- All 23 focused tests pass. A CPU smoke step also completed a forward pass,
-  CTC loss, backward pass, and optimizer update with the new decoder.
-
-## 2026-08-13 — A0 accepted and complete-region features implemented
-
-- Completed A0 WI/RH fold-0 training. Its best validation CER was 17.33% at
-  epoch 275 and its best WER was 32.77% at epoch 293. These are worse than B0,
-  so A0 remains alignment-only rather than replacing the recognition baseline.
-- Exported all 19,907 training samples: 88,292 boundaries across 426 pairs and
-  42 writers. The agreement/non-padding/unclipped subset retained 78,953
-  boundaries (89.4%).
-- Reliable median timing offsets changed from B0's approximately -315/-300 ms
-  for `only`/`first` boundaries to -65/-47 ms with A0. The severe word-initial
-  concentration was therefore materially reduced without losing broad data or
-  writer coverage.
-- Added sensor features over the complete CTC candidate interval while keeping
-  the existing 50/100/150 ms midpoint features. Each region stores original
-  and actual duration, force/contact measurements, AF/AR/G magnitudes, motion
-  derivative energy, edge clipping, and fallback usage.
-- Empty candidate intervals now use a clearly marked 100 ms midpoint fallback;
-  their original zero duration remains recorded.
-- Extended the exporter schema and descriptive analyzer. New compact and full
-  pair/position region tables are written separately so region measurements do
-  not get mixed with fixed-window results.
-
-## 2026-08-13 — Corrected provisional force-continuity ranking
-
-- Complete-region comparison found contact preservation in 28.1% of 78,953
-  reliable boundaries, versus 37.2% in the centred 100 ms view. The complete
-  interval therefore finds additional force losses, but its duration is a
-  serious confound: reliable first boundaries have a 480 ms median candidate
-  region, compared with 240 ms for middle and final boundaries.
-- Added `score_continuity.py` and `tva/continuity_scoring.py`. They create the
-  first pair ranking without rerunning the recognition model.
-- The scorer uses the established agreement/non-padding/unclipped evidence,
-  subtracts expected contact rates for matching boundary-position and broad
-  duration groups, and balances pair residuals equally across writers.
-- The explicit development score uses 75% corrected 100 ms local contact and
-  25% corrected complete-region contact. It reports raw and corrected
-  components so the effect of the correction remains visible.
-- The tentative support gate is 100 reliable occurrences and 30 writers.
-  Frequency decides whether a pair is reliable enough to rank but does not
-  increase its continuity score.
-- Output includes a JSON method report and an auditable CSV with eligibility,
-  writer variability, alignment confidence, duration, fallback use, case, and
-  word-position proportions. The score is rejected for non-training splits.
-- Four focused scorer tests cover correction/ranking, support gates, atomic
-  output writing, and training-only enforcement. All 29 repository tests pass
-  in the `tva-thesis` environment.
 
 ## 2026-09-15 — Approved proposal makes image connectivity primary
 
@@ -417,9 +188,6 @@ before starting the full WD/RH fold-0 B0 experiment.
   baselines, fresh training per tokenizer, and CER/WER on reconstructed text.
 - Added the proposal's explicit hypothesis that any benefit will be larger in
   WI than WD; this must be tested rather than assumed.
-- Reclassified the completed CTC alignment and force-continuity work as a
-  secondary/fallback comparison if the image method is unreliable and time
-  remains. Historical implementation and experiment records were preserved.
 - Optional image-domain recognition remains distinct from the primary use of
   image data to construct tokenizers.
 
@@ -462,8 +230,8 @@ before starting the full WD/RH fold-0 B0 experiment.
   classes. A 496-class full-artifact-plus-fallback form remains a possible
   sensitivity condition. The primary policy must be frozen before training.
 - Recorded the complete evidence, per-fold failure counts, methodological
-  implications, and required conformance tests in
-  `docs/TOKENIZER_COMPATIBILITY_AUDIT.md`.
+  implications, and required conformance tests in this progress log and
+  `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
 
 ### Immediate next steps
 
@@ -752,10 +520,10 @@ before starting the full WD/RH fold-0 B0 experiment.
 - The run completed uninterrupted with complete 419-output checkpoints. Exact
   hashes are in `docs/EXPERIMENTS.md`.
 
-## 2026-09-21 — FAU English external-evaluation intake audit
+## 2026-09-21 — ED external-evaluation intake audit
 
 - Located the supervisor-supplied dataset in
-  `/mnt/c/Users/Ali/Downloads/fau-english-dataset/`; it consists of separately
+  `/mnt/c/Users/Ali/Downloads/ed-dataset/`; it consists of separately
   packaged five-fold WD and WI splits over the same 2,550 recordings from 102
   writers.
 - Confirmed this is a sentence-level seven-channel, 100 Hz IMU dataset with a
@@ -767,25 +535,25 @@ before starting the full WD/RH fold-0 B0 experiment.
 - Recorded the two source-archive hashes, fold counts, and detailed
   compatibility results in `docs/EXPERIMENTS.md`.
 - Supervisor direction: use English handwriting tokenizers first; do not use
-  the combined IAM+READ tokenizer for this initial FAU evaluation.
+  the combined IAM+READ tokenizer for this initial ED evaluation.
 - The IAM-only demonstration tokenizer has 145 handwriting bigrams and 222
   total classes, but its singleton alphabet lacks `%`, `(`, and `=`. This
   affects 906/2,550 labels. Deleting symbols or dropping samples is not an
   acceptable workaround.
-- Proposed next step: formalize a frozen FAU adapter that retains the 145 IAM
-  bigrams and uses the declared FAU 78-character singleton alphabet, giving
+- Proposed next step: formalize a frozen ED adapter that retains the 145 IAM
+  bigrams and uses the declared ED 78-character singleton alphabet, giving
   224 CTC classes including blank. Freeze a matched English comparator and the
   evaluation protocol before changing the loader or starting training.
-- Audited DTLR DP against TVA greedy segmentation on all FAU labels using the
+- Audited DTLR DP against TVA greedy segmentation on all ED labels using the
   same IAM bigram vocabulary. Token identities differ for 1,778/2,550 samples
   (69.73%), although both yield 85,153 target tokens. Greedy is therefore a
   meaningful experimental policy, not an implementation-equivalent rewrite;
   whichever policy is selected must be used for both compared vocabularies.
 - Corrected the repository boundary before implementation: DTLR must construct
   the generic English handwriting vocabulary from IAM training evidence only
-  and must not consume FAU labels. TVA will own the FAU alphabet projection,
+  and must not consume ED labels. TVA will own the ED alphabet projection,
   greedy runtime segmentation, post-freeze label compatibility audit, and
-  recognition experiment. The declared FAU `categories` schema may define
+  recognition experiment. The declared ED `categories` schema may define
   singleton coverage, but label frequencies and validation results may not
   influence handwriting-token construction.
 - Verified the finalized generic DTLR source artifact from commit `d2f4631`:
@@ -795,23 +563,23 @@ before starting the full WD/RH fold-0 B0 experiment.
   reconstruction of the earlier model. The frozen count-20/rate-0.5 policy is
   reproducible but remains provisional rather than statistically optimal.
 
-## 2026-09-21 — FAU IAM-handwriting greedy adapter frozen and audited
+## 2026-09-21 — ED IAM-handwriting greedy adapter frozen and audited
 
 - Pinned the exact DTLR IAM-only source artifact inside TVA at
   `artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json`; its
   SHA-256 remains
   `2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`.
-- Built and froze the 224-class FAU adapter at
-  `artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json`.
+- Built and froze the 224-class ED adapter at
+  `artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json`.
   Its SHA-256 is
-  `4c06828ac3b0ae03e98d569b0f3fea1cdfbc0a125f6eeffcc7ffb2a4935f3f52`.
+  `d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7`.
 - Preserved all 145 IAM handwriting bigrams and their evidence rows. The only
   vocabulary projection is from 76 IAM singletons to the declared 78-character
-  FAU alphabet: remove unused `*`; add `%`, `(`, and `=`. Blank remains ID 0.
+  ED alphabet: remove unused `*`; add `%`, `(`, and `=`. Blank remains ID 0.
 - Added the separate `handwriting_bigram_greedy` runtime. It consumes the
   leftmost available pair and does not alter the existing DP
   `handwriting_bigram` runtime or any completed OnHW experiment.
-- Froze greedy left-to-right as the primary FAU segmentation policy. The
+- Froze greedy left-to-right as the primary ED segmentation policy. The
   matched comparator must use the same policy; DP is permitted only as a
   separately named, symmetric ablation.
 - Ran the post-freeze audit across the canonical 2,550 annotations in both WD
@@ -824,22 +592,22 @@ before starting the full WD/RH fold-0 B0 experiment.
 At this stage, the next step was to freeze the matched English linguistic
 comparator; that milestone is recorded immediately below.
 
-## 2026-09-21 — Matched FAU IAM-text linguistic comparator frozen
+## 2026-09-21 — Matched ED IAM-text linguistic comparator frozen
 
 - Authenticated the exact IAM training labels and complete 5,694-line selection
-  manifest used by DTLR. No IAM validation/test text or FAU labels contributed
+  manifest used by DTLR. No IAM validation/test text or ED labels contributed
   to vocabulary construction.
 - Froze case-sensitive ASCII-letter adjacent-pair counts from IAM train:
   861 candidates and 153,350 occurrences. Evidence SHA-256:
-  `3a2d90f7233dd550f399e3296f92390291201482ca690c9cd85eb30d8b8079ca`.
+  `7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb`.
 - Selected exactly 145 pairs by descending count and lexical tie-breaking. The
   boundary is unambiguous: selected `bu` has count 273 and excluded `tu` has
   count 270.
 - Froze the matched comparator at
-  `artifacts/tokenizers/fau_english_iam_linguistic_bigram_greedy_v1.json`,
+  `artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json`,
   SHA-256
-  `0a7e173afdd2a911780c14517e651b9787c3b8b3c0fdedb74f915920b4d4f392`.
-- Added tokenizer key `linguistic_bigram_greedy`. Both FAU conditions have the
+  `1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd`.
+- Added tokenizer key `linguistic_bigram_greedy`. Both ED conditions have the
   same blank and singleton IDs, 224 classes, 145 bigrams, NFC normalization,
   and greedy left-to-right segmentation. They share 72 bigrams and each has 73
   condition-specific pairs.
@@ -851,22 +619,22 @@ comparator; that milestone is recorded immediately below.
 - Complete TVA regression suite: 40 tests run, 38 passed and two unrelated
   optional external-reference tests skipped.
 
-Next step: implement the dedicated seven-channel FAU loader/configuration path
+Next step: implement the dedicated seven-channel ED loader/configuration path
 and run bounded matched smoke tests before full training.
 
-## 2026-09-21 — FAU seven-channel loader and matched smoke tests complete
+## 2026-09-21 — ED seven-channel loader and matched smoke tests complete
 
-- Added an authenticated ZIP-backed loader for the supervisor-supplied FAU
+- Added an authenticated ZIP-backed loader for the supervisor-supplied ED
   data. It validates archive hash, WD/WI identity, five-fold metadata, 100 Hz
   sample rate, seven-channel shape, declared alphabet, member availability,
   and finite signal values without extracting or modifying the archives.
-- Added portable environment override `TVA_FAU_DATASET_DIR`; committed configs
+- Added portable environment override `TVA_ED_DATASET_DIR`; committed configs
   contain no machine-specific dataset path.
 - Updated the main training path and cross-validation launcher to support
-  `dataset_format: fau-zip` and explicit `fau_distribution: wd|wi` while
+  `dataset_format: ed-zip` and explicit `ed_distribution: wd|wi` while
   retaining the legacy JSON-directory behavior.
 - Added four strictly matched fold-0 smoke configurations under
-  `configs/thesis/fau/`: handwriting/linguistic × WD/WI. Each uses eight train
+  `configs/thesis/ed/`: handwriting/linguistic × WD/WI. Each uses eight train
   samples, four validation samples, one CPU epoch, BLConv-S + BiLSTM-S, no
   augmentation, and the correct 224-class frozen tokenizer.
 - All four smoke runs completed end to end, including decoding, CER/WER,
@@ -877,14 +645,14 @@ and run bounded matched smoke tests before full training.
   optional external-reference tests skipped.
 - No full-data or research-result training was started.
 
-Next step: freeze production FAU training settings, add the four full fold-0
+Next step: freeze production ED training settings, add the four full fold-0
 configs using BLConv-B + BiLSTM-B, and run one bounded CUDA timing check before
 launching any 300-epoch experiment.
 
-## 2026-09-23 — FAU fold-0 production settings frozen
+## 2026-09-23 — ED fold-0 production settings frozen
 
 - Added four matched production configurations for handwriting/linguistic
-  Bigram × WD/WI under `configs/thesis/fau/`.
+  Bigram × WD/WI under `configs/thesis/ed/`.
 - Froze BLConv-B + BiLSTM-B, seven input channels, 224 outputs, 300 epochs,
   30 warmup epochs, AdamW at 0.001, augmentation enabled, seed 42, and batch
   size 8. All conditions start from scratch.
@@ -911,7 +679,7 @@ launching any 300-epoch experiment.
 - Runtime projection on the same RTX 4060 is about 7 hours 10 minutes per
   300-epoch condition or 28 hours 40 minutes for all four fold-0 conditions,
   excluding startup and backup overhead.
-- No full 300-epoch FAU training has started.
+- No full 300-epoch ED training has started.
 
 Next step: commit this frozen configuration/timing milestone, then launch the
 four fold-0 production jobs from scratch, one at a time. Record actual runtime,
@@ -973,10 +741,10 @@ Next step: if the workstation remains unavailable, launch handwriting-WD fold
 0 from scratch on the laptop with a temporary batch-32 config and use batch 32
 for every paired laptop fold-0 condition.
 
-## 2026-09-24 — FAU handwriting-aware WD fold 0 completed on laptop
+## 2026-09-24 — ED handwriting-aware WD fold 0 completed on laptop
 
 - Completed all 300 epochs using the frozen IAM handwriting-aware Bigram
-  tokenizer on FAU English WD fold 0, with greedy segmentation, batch 32,
+  tokenizer on ED WD fold 0, with greedy segmentation, batch 32,
   seed 42, and CUDA mixed precision.
 - The run used code commit `9761142e491dc631c2411763fae3677edbfa861a`
   and took approximately 1 hour 9 minutes 25 seconds including initial caching.
@@ -992,12 +760,12 @@ for every paired laptop fold-0 condition.
 - This result alone does not establish a handwriting-aware advantage and must
   not be mixed with batch-64 folds in the planned five-fold aggregate.
 
-Next step: run the matched IAM linguistic-Bigram tokenizer on FAU English WD
+Next step: run the matched IAM linguistic-Bigram tokenizer on ED WD
 fold 0 with the identical laptop batch-32 protocol, then compare CER and WER.
 
-## 2026-09-24 — Matched FAU WD fold-0 comparison completed
+## 2026-09-24 — Matched ED WD fold-0 comparison completed
 
-- Completed the matched IAM linguistic-Bigram run on FAU English WD fold 0
+- Completed the matched IAM linguistic-Bigram run on ED WD fold 0
   using the same code commit, architecture, split, batch 32, seed 42, 300-epoch
   schedule, augmentation, greedy segmentation, and CUDA mixed precision as the
   handwriting-aware condition.
@@ -1019,13 +787,13 @@ Next step: complete the matched WI fold-0 pair at batch 32 if continuing the
 laptop study, or restore the workstation and run the complete frozen batch-64
 five-fold matrix, including a new batch-64 fold 0.
 
-## 2026-09-24 — Matched FAU WI fold-0 comparison completed
+## 2026-09-24 — Matched ED WI fold-0 comparison completed
 
 - Handwriting-aware best validation CER/WER was 0.1642117744/0.4483709273 at
   epochs 264/265. Runtime was approximately 1 hour 11 minutes 7 seconds.
 - Linguistic best validation CER/WER was 0.1859637922/0.4749373434, both at
   epoch 262. Runtime was approximately 1 hour 10 minutes 38 seconds.
-- Both used commit `9761142e491dc631c2411763fae3677edbfa861a`, FAU WI
+- Both used commit `9761142e491dc631c2411763fae3677edbfa861a`, ED WI
   fold 0, batch 32, seed 42, 300 epochs, the same architecture and augmentation,
   and greedy segmentation. Only the frozen IAM bigram-selection strategy
   differed.
@@ -1043,15 +811,15 @@ four conditions; do not mix these laptop batch-32 results into that aggregate.
 
 ## 2026-09-24 — Batch-32 laptop protocol frozen for five folds
 
-- Selected batch 32 on the RTX 4060 laptop for the complete FAU five-fold
+- Selected batch 32 on the RTX 4060 laptop for the complete ED five-fold
   matrix. This retains the four matched fold-0 results and requires 16
   remaining runs across folds 1--4.
 - Recorded D022, which supersedes the A6000 batch-64 deployment choice for this
   final matrix while retaining the A6000 measurements as systems evidence.
-- Added `run_fau_matrix.py`. Its defaults are all four tokenizer/distribution
+- Added `run_ed_matrix.py`. Its defaults are all four tokenizer/distribution
   conditions, folds 1--4, batch 32, seed 42, and sequential execution.
 - The launcher reads the frozen base configs and overrides only fold and batch,
-  validates critical invariants and the FAU archives, preflights every output
+  validates critical invariants and the ED archives, preflights every output
   directory before launch, refuses overwrites, stops on the first failure, and
   offers a no-training `--dry-run` preview.
 - Added five focused launcher tests. The complete suite ran 54 tests: 52 passed
@@ -1061,5 +829,54 @@ four conditions; do not mix these laptop batch-32 results into that aggregate.
   based on the four observed fold-0 runtimes.
 
 Next step: commit and push the launcher milestone, then run
-`python run_fau_matrix.py --dry-run` once on the training checkout and launch
+`python run_ed_matrix.py --dry-run` once on the training checkout and launch
 the matrix without `--dry-run` while the laptop is powered and sleep-disabled.
+
+## 2026-09-25 — ED WD five-fold comparison completed
+
+- All handwriting-aware and matched linguistic WD runs for folds 0--4 reached
+  epoch 299 under the frozen batch-32, seed-42 protocol. Each run retained its
+  resumable latest and metric-specific best checkpoints.
+- Handwriting-aware five-fold mean ± sample SD: CER 24.13 ± 1.06% and WER
+  64.26 ± 2.10%.
+- Linguistic five-fold mean ± sample SD: CER 30.04 ± 2.39% and WER 68.56 ±
+  2.84%.
+- Handwriting-aware bigrams reduced the unweighted mean CER by 5.91 percentage
+  points (19.69% relative) and WER by 4.30 points (6.27% relative). They led
+  on both CER and WER in every fold.
+- Linguistic fold 2 was interrupted by host OOM after epoch 208 and resumed
+  from its saved `latest.pth`; it then completed normally through epoch 299.
+- The full per-fold metrics, best epochs, checkpoint hashes, recovery note,
+  and interpretation are recorded in `docs/EXPERIMENTS.md` under “ED WD
+  five-fold comparison completed.”
+- This is one-seed writer-dependent evidence. It supports a consistent ED WD
+  advantage for the IAM handwriting-aware bigram selection over its matched
+  linguistic control, but does not establish the WI result.
+
+Next step: preserve and back up the WD result directories, then run the matched
+ED WI folds 1--4 under the same frozen batch-32 protocol.
+
+## 2026-09-25 — ED terminology migration completed
+
+- Renamed the supervisor-supplied English Dataset identifier consistently to
+  `ED` across runtime code, loader APIs, tokenizer builders and auditors,
+  configs, tests, artifact metadata and filenames, experiment documentation,
+  launcher tooling, and the analysis notebook.
+- The runtime interface is now `dataset_format: ed-zip`,
+  `ed_distribution: wd|wi`, and `TVA_ED_DATASET_DIR`. Production configs live
+  under `configs/thesis/ed/`, and the matrix entry point is
+  `run_ed_matrix.py`.
+- Renamed local result directories without rewriting historical logs or
+  checkpoint payloads. This preserves the original execution evidence while
+  ensuring future runs resolve to the ED directory layout.
+- Recomputed the canonical hashes required by the metadata-only artifact
+  migration: IAM frequency evidence
+  `7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb`,
+  handwriting adapter
+  `d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7`,
+  and linguistic adapter
+  `1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd`.
+- Vocabulary contents, token IDs, folds, experimental settings, checkpoints,
+  and reported CER/WER values did not change.
+- Full suite: 54 tests ran successfully; seven optional tests were skipped
+  because their external local data was unavailable to the test process.

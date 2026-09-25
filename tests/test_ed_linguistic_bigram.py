@@ -3,9 +3,9 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from audit_fau_handwriting_bigram import audit
-from tva.fau_handwriting_bigram import ADAPTER_SHA256 as HANDWRITING_SHA256
-from tva.fau_linguistic_bigram import (
+from audit_ed_handwriting_bigram import audit
+from tva.ed_handwriting_bigram import ADAPTER_SHA256 as HANDWRITING_SHA256
+from tva.ed_linguistic_bigram import (
     ADAPTER_BIGRAM_COUNT,
     ADAPTER_POLICY_ID,
     ADAPTER_SHA256,
@@ -13,7 +13,7 @@ from tva.fau_linguistic_bigram import (
     EVIDENCE_SHA256,
     LABELS_SHA256,
     SELECTION_SHA256,
-    build_fau_linguistic_adapter,
+    build_ed_linguistic_adapter,
     build_iam_frequency_evidence,
 )
 from tva.handwriting_bigram_adapter import canonical_json_bytes, sha256_bytes
@@ -27,18 +27,18 @@ EVIDENCE_PATH = (
 )
 LINGUISTIC_PATH = (
     REPO_ROOT
-    / 'artifacts/tokenizers/fau_english_iam_linguistic_bigram_greedy_v1.json'
+    / 'artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json'
 )
 HANDWRITING_PATH = (
     REPO_ROOT
-    / 'artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json'
+    / 'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
 )
-FAU_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/fau-english-dataset')
+ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
 IAM_LABELS = Path('/home/artellisys/DTLR/data/IAM_new/labels.pkl')
 IAM_SELECTION = Path('/home/artellisys/dtlr-output/iam-train-full/selection.json')
 
 
-class FauLinguisticBuilderTests(unittest.TestCase):
+class EdLinguisticBuilderTests(unittest.TestCase):
     def test_frequency_evidence_is_frozen_and_reproducible(self):
         content = EVIDENCE_PATH.read_bytes()
         evidence = json.loads(content)
@@ -69,7 +69,7 @@ class FauLinguisticBuilderTests(unittest.TestCase):
         self.assertEqual(content, canonical_json_bytes(adapter))
         self.assertEqual(sha256_bytes(content), ADAPTER_SHA256)
         self.assertEqual(
-            canonical_json_bytes(build_fau_linguistic_adapter(EVIDENCE_PATH)),
+            canonical_json_bytes(build_ed_linguistic_adapter(EVIDENCE_PATH)),
             content,
         )
         self.assertEqual(adapter['model_version'], ADAPTER_POLICY_ID)
@@ -84,7 +84,7 @@ class FauLinguisticBuilderTests(unittest.TestCase):
         self.assertEqual(len(handwriting_pairs & linguistic_pairs), 72)
         self.assertTrue(adapter['adapter']['iam_training_transcripts_read'])
         self.assertFalse(
-            adapter['adapter']['fau_annotation_label_values_read_by_builder']
+            adapter['adapter']['annotation_label_values_read_by_builder']
         )
 
     def test_changed_evidence_is_rejected(self):
@@ -92,10 +92,10 @@ class FauLinguisticBuilderTests(unittest.TestCase):
             path = Path(directory) / 'evidence.json'
             path.write_bytes(EVIDENCE_PATH.read_bytes() + b'\n')
             with self.assertRaisesRegex(ValueError, 'SHA-256 mismatch'):
-                build_fau_linguistic_adapter(path)
+                build_ed_linguistic_adapter(path)
 
 
-class GreedyFauLinguisticTokenizerTests(unittest.TestCase):
+class GreedyEdLinguisticTokenizerTests(unittest.TestCase):
     def setUp(self):
         self.tokenizer = GreedyLinguisticBigramTokenizer()
         self.tokenizer.load(LINGUISTIC_PATH)
@@ -113,11 +113,11 @@ class GreedyFauLinguisticTokenizerTests(unittest.TestCase):
         self.assertEqual(result['segments'][0]['kind'], 'linguistic-bigram')
         self.assertEqual(self.tokenizer.decode(self.tokenizer.encode('short')), 'short')
 
-    def test_all_fau_labels_round_trip_when_archives_are_available(self):
+    def test_all_ed_labels_round_trip_when_archives_are_available(self):
         stems = ('gold_wd', 'gold_wi')
-        if not all((FAU_DIRECTORY / f'{stem}.zip').exists() for stem in stems):
-            self.skipTest('local FAU archives are not available')
-        result = audit(FAU_DIRECTORY, LINGUISTIC_PATH, 'linguistic')
+        if not all((ED_DIRECTORY / f'{stem}.zip').exists() for stem in stems):
+            self.skipTest('local ED archives are not available')
+        result = audit(ED_DIRECTORY, LINGUISTIC_PATH, 'linguistic')
         self.assertEqual(result['records_per_archive'], 2_550)
         self.assertEqual(result['label_encodings_checked'], 5_100)
         self.assertEqual(result['encoded_tokens_checked'], 158_156)

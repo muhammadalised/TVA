@@ -3,16 +3,16 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from audit_fau_handwriting_bigram import audit
-from tva.fau_handwriting_bigram import (
+from audit_ed_handwriting_bigram import audit
+from tva.ed_handwriting_bigram import (
     ADAPTER_BIGRAM_COUNT,
     ADAPTER_POLICY_ID,
     ADAPTER_SHA256,
     ADAPTER_SIZE,
-    FAU_ALPHABET,
+    ED_ALPHABET,
     SOURCE_BIGRAM_COUNT,
     SOURCE_SHA256,
-    build_fau_adapter,
+    build_ed_adapter,
 )
 from tva.handwriting_bigram_adapter import canonical_json_bytes, sha256_bytes
 from tva.handwriting_bigram_tokenizer import (
@@ -28,12 +28,12 @@ SOURCE_PATH = (
 )
 ADAPTER_PATH = (
     REPO_ROOT
-    / 'artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json'
+    / 'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
 )
-FAU_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/fau-english-dataset')
+ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
 
 
-class FauAdapterBuilderTests(unittest.TestCase):
+class EdAdapterBuilderTests(unittest.TestCase):
     def test_pinned_source_is_the_exact_dtlr_artifact(self):
         self.assertEqual(sha256_bytes(SOURCE_PATH.read_bytes()), SOURCE_SHA256)
 
@@ -42,7 +42,7 @@ class FauAdapterBuilderTests(unittest.TestCase):
         adapter = json.loads(content)
         self.assertEqual(content, canonical_json_bytes(adapter))
         self.assertEqual(sha256_bytes(content), ADAPTER_SHA256)
-        self.assertEqual(canonical_json_bytes(build_fau_adapter(SOURCE_PATH)), content)
+        self.assertEqual(canonical_json_bytes(build_ed_adapter(SOURCE_PATH)), content)
 
     def test_adapter_preserves_bigrams_and_projects_only_singletons(self):
         source = json.loads(SOURCE_PATH.read_bytes())
@@ -54,7 +54,7 @@ class FauAdapterBuilderTests(unittest.TestCase):
         self.assertEqual(adapter['vocabulary'], source['vocabulary'])
         self.assertEqual(
             [adapter['idx_token'][str(index)] for index in range(1, 79)],
-            list(FAU_ALPHABET),
+            list(ED_ALPHABET),
         )
         self.assertEqual(adapter['adapter']['source_singletons_excluded'], ['*'])
         self.assertEqual(adapter['adapter']['task_singletons_added'], ['%', '(', '='])
@@ -65,10 +65,10 @@ class FauAdapterBuilderTests(unittest.TestCase):
             path = Path(directory) / 'source.json'
             path.write_bytes(SOURCE_PATH.read_bytes() + b'\n')
             with self.assertRaisesRegex(ValueError, 'SHA-256 mismatch'):
-                build_fau_adapter(path)
+                build_ed_adapter(path)
 
 
-class GreedyFauTokenizerTests(unittest.TestCase):
+class GreedyEdTokenizerTests(unittest.TestCase):
     def setUp(self):
         self.tokenizer = GreedyHandwritingBigramTokenizer()
         self.tokenizer.load(ADAPTER_PATH)
@@ -101,13 +101,13 @@ class GreedyFauTokenizerTests(unittest.TestCase):
         self.assertNotIn(0, ids)
         self.assertEqual(self.tokenizer.decode(ids), label)
 
-    def test_all_fau_labels_round_trip_when_archives_are_available(self):
+    def test_all_ed_labels_round_trip_when_archives_are_available(self):
         archive_stems = ('gold_wd', 'gold_wi')
         if not all(
-            (FAU_DIRECTORY / f'{stem}.zip').exists() for stem in archive_stems
+            (ED_DIRECTORY / f'{stem}.zip').exists() for stem in archive_stems
         ):
-            self.skipTest('local FAU archives are not available')
-        result = audit(FAU_DIRECTORY, ADAPTER_PATH)
+            self.skipTest('local ED archives are not available')
+        result = audit(ED_DIRECTORY, ADAPTER_PATH)
         self.assertEqual(result['records_per_archive'], 2_550)
         self.assertEqual(result['label_encodings_checked'], 5_100)
         self.assertEqual(result['blank_ids_emitted'], 0)

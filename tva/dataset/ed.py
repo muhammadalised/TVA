@@ -1,4 +1,4 @@
-"""Authenticated ZIP-backed loader for the FAU English IMU dataset."""
+"""Authenticated ZIP-backed loader for the ED IMU dataset."""
 
 from __future__ import annotations
 
@@ -16,20 +16,20 @@ from loguru import logger
 import numpy as np
 from tqdm import tqdm
 
-from tva.fau_handwriting_bigram import FAU_ALPHABET
+from tva.ed_handwriting_bigram import ED_ALPHABET
 
 from . import HRDataset
 from .transforms import AddNoise, Drift, Dropout, TimeWarp
 
 
-FAU_ARCHIVE_SHA256 = {
+ED_ARCHIVE_SHA256 = {
     'wd': 'edaf78b0f422f719bbb13153249a5a6667a814d6f5a8d7d0d2ba02535ae55a3e',
     'wi': '0ba1b8e5d53c7208bbdc4a43cfb701ed6a1d27be382a23ba0aaade8cb3283304',
 }
-FAU_ARCHIVE_STEM = {'wd': 'gold_wd', 'wi': 'gold_wi'}
-FAU_NUM_CHANNELS = 7
-FAU_SAMPLE_RATE = 100
-FAU_NUM_FOLDS = 5
+ED_ARCHIVE_STEM = {'wd': 'gold_wd', 'wi': 'gold_wi'}
+ED_NUM_CHANNELS = 7
+ED_SAMPLE_RATE = 100
+ED_NUM_FOLDS = 5
 
 
 def _sha256(path: Path) -> str:
@@ -44,14 +44,14 @@ def _sha256(path: Path) -> str:
 def _inspect_archive(path_value: str, distribution: str) -> dict[str, Any]:
     """Authenticate one archive and cache its immutable metadata payloads."""
     path = Path(path_value)
-    expected_digest = FAU_ARCHIVE_SHA256[distribution]
+    expected_digest = ED_ARCHIVE_SHA256[distribution]
     digest = _sha256(path)
     if digest != expected_digest:
         raise ValueError(
-            f'FAU {distribution.upper()} archive SHA-256 mismatch: '
+            f'ED {distribution.upper()} archive SHA-256 mismatch: '
             f'expected {expected_digest}, got {digest}'
         )
-    stem = FAU_ARCHIVE_STEM[distribution]
+    stem = ED_ARCHIVE_STEM[distribution]
     with zipfile.ZipFile(path) as archive:
         names = frozenset(archive.namelist())
         payloads = {
@@ -65,24 +65,24 @@ def _inspect_archive(path_value: str, distribution: str) -> dict[str, Any]:
     }[distribution]
     for split, payload in payloads.items():
         info = payload.get('info', {})
-        if info.get('num_channel') != FAU_NUM_CHANNELS:
-            raise ValueError(f'FAU {distribution} {split} channel count mismatch')
-        if info.get('rate_sample_target') != FAU_SAMPLE_RATE:
-            raise ValueError(f'FAU {distribution} {split} sample rate mismatch')
-        if info.get('num_fold') != FAU_NUM_FOLDS:
-            raise ValueError(f'FAU {distribution} {split} fold count mismatch')
+        if info.get('num_channel') != ED_NUM_CHANNELS:
+            raise ValueError(f'ED {distribution} {split} channel count mismatch')
+        if info.get('rate_sample_target') != ED_SAMPLE_RATE:
+            raise ValueError(f'ED {distribution} {split} sample rate mismatch')
+        if info.get('num_fold') != ED_NUM_FOLDS:
+            raise ValueError(f'ED {distribution} {split} fold count mismatch')
         if info.get('split') != expected_split:
-            raise ValueError(f'FAU {distribution} {split} distribution mismatch')
-        if payload.get('categories') != list(FAU_ALPHABET):
-            raise ValueError(f'FAU {distribution} {split} alphabet mismatch')
+            raise ValueError(f'ED {distribution} {split} distribution mismatch')
+        if payload.get('categories') != list(ED_ALPHABET):
+            raise ValueError(f'ED {distribution} {split} alphabet mismatch')
         annotations = payload.get('annotations')
-        if set(annotations or {}) != {str(index) for index in range(FAU_NUM_FOLDS)}:
-            raise ValueError(f'FAU {distribution} {split} fold keys mismatch')
+        if set(annotations or {}) != {str(index) for index in range(ED_NUM_FOLDS)}:
+            raise ValueError(f'ED {distribution} {split} fold keys mismatch')
         for fold_annotations in annotations.values():
             for annotation in fold_annotations:
                 member = f'{stem}/{annotation["filename"]}'
                 if member not in names:
-                    raise ValueError(f'FAU archive member is missing: {member}')
+                    raise ValueError(f'ED archive member is missing: {member}')
     return {
         'digest': digest,
         'stem': stem,
@@ -91,33 +91,33 @@ def _inspect_archive(path_value: str, distribution: str) -> dict[str, Any]:
     }
 
 
-def resolve_fau_dataset_directory(configured_directory: str | Path) -> Path:
+def resolve_ed_dataset_directory(configured_directory: str | Path) -> Path:
     """Allow a local environment override without committing machine paths."""
-    override = os.environ.get('TVA_FAU_DATASET_DIR')
+    override = os.environ.get('TVA_ED_DATASET_DIR')
     return Path(override) if override else Path(configured_directory)
 
 
-def resolve_fau_archive(
+def resolve_ed_archive(
     configured_directory: str | Path,
     distribution: str,
 ) -> Path:
-    if distribution not in FAU_ARCHIVE_SHA256:
-        raise ValueError('FAU distribution must be "wd" or "wi"')
-    directory = resolve_fau_dataset_directory(configured_directory)
-    return directory / f'{FAU_ARCHIVE_STEM[distribution]}.zip'
+    if distribution not in ED_ARCHIVE_SHA256:
+        raise ValueError('ED distribution must be "wd" or "wi"')
+    directory = resolve_ed_dataset_directory(configured_directory)
+    return directory / f'{ED_ARCHIVE_STEM[distribution]}.zip'
 
 
-def get_fau_num_folds(
+def get_ed_num_folds(
     configured_directory: str | Path,
     distribution: str,
 ) -> int:
-    archive_path = resolve_fau_archive(configured_directory, distribution)
+    archive_path = resolve_ed_archive(configured_directory, distribution)
     _inspect_archive(str(archive_path.resolve()), distribution)
-    return FAU_NUM_FOLDS
+    return ED_NUM_FOLDS
 
 
-class FauZipDataset(HRDataset):
-    """Read one FAU WD/WI fold directly from its authenticated ZIP archive."""
+class EdZipDataset(HRDataset):
+    """Read one ED WD/WI fold directly from its authenticated ZIP archive."""
 
     def __init__(
         self,
@@ -134,12 +134,12 @@ class FauZipDataset(HRDataset):
         max_samples: int = 0,
     ) -> None:
         if split not in {'train', 'val'}:
-            raise ValueError('FAU dataset split must be "train" or "val"')
+            raise ValueError('ED dataset split must be "train" or "val"')
         fold = int(idx_fold)
-        if fold not in range(FAU_NUM_FOLDS):
-            raise ValueError('FAU fold index must be between 0 and 4')
-        if distribution not in FAU_ARCHIVE_SHA256:
-            raise ValueError('FAU distribution must be "wd" or "wi"')
+        if fold not in range(ED_NUM_FOLDS):
+            raise ValueError('ED fold index must be between 0 and 4')
+        if distribution not in ED_ARCHIVE_SHA256:
+            raise ValueError('ED distribution must be "wd" or "wi"')
 
         self.archive_path = Path(archive_path).resolve()
         inspected = _inspect_archive(str(self.archive_path), distribution)
@@ -186,7 +186,7 @@ class FauZipDataset(HRDataset):
             ]
             self.close()
             logger.info(
-                f'Cached FAU {distribution.upper()} {split} fold {fold} '
+                f'Cached ED {distribution.upper()} {split} fold {fold} '
                 f'from {self.archive_path}'
             )
 
@@ -220,13 +220,13 @@ class FauZipDataset(HRDataset):
         sequence = np.loadtxt(
             io.BytesIO(content), delimiter=';', dtype=np.float32
         )
-        if sequence.ndim != 2 or sequence.shape[1] != FAU_NUM_CHANNELS:
+        if sequence.ndim != 2 or sequence.shape[1] != ED_NUM_CHANNELS:
             raise ValueError(
-                f'FAU sample {annotation["id"]} does not have seven channels'
+                f'ED sample {annotation["id"]} does not have seven channels'
             )
         if not len(sequence) or not np.isfinite(sequence).all():
             raise ValueError(
-                f'FAU sample {annotation["id"]} contains invalid signal values'
+                f'ED sample {annotation["id"]} contains invalid signal values'
             )
         return sequence
 

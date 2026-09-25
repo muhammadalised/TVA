@@ -1,10 +1,10 @@
-"""Freeze IAM frequency evidence and the matched FAU linguistic comparator."""
+"""Freeze IAM frequency evidence and the matched ED linguistic comparator."""
 
 import argparse
 from pathlib import Path
 
-from tva.fau_linguistic_bigram import (
-    build_fau_linguistic_adapter,
+from tva.ed_linguistic_bigram import (
+    build_ed_linguistic_adapter,
     build_iam_frequency_evidence,
     write_json,
 )
@@ -14,7 +14,7 @@ DEFAULT_EVIDENCE = Path(
     'artifacts/tokenizers/source/iam-train-letter-bigram-counts-v1.json'
 )
 DEFAULT_OUTPUT = Path(
-    'artifacts/tokenizers/fau_english_iam_linguistic_bigram_greedy_v1.json'
+    'artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json'
 )
 
 
@@ -46,7 +46,7 @@ def main() -> None:
         print(f'Evidence SHA-256: {write_json(evidence, args.evidence)}')
     if args.output.exists() and not args.overwrite:
         raise FileExistsError(f'output already exists: {args.output}')
-    adapter = build_fau_linguistic_adapter(args.evidence)
+    adapter = build_ed_linguistic_adapter(args.evidence)
     print(f'Adapter SHA-256: {write_json(adapter, args.output)}')
     print(f'Wrote {args.output} ({adapter["size"]} classes)')
 

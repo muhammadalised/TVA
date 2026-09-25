@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from run_fau_matrix import (
+from run_ed_matrix import (
     DEFAULT_BATCH_SIZE,
     DEFAULT_CONDITIONS,
     DEFAULT_FOLDS,
@@ -12,7 +12,7 @@ from run_fau_matrix import (
 )
 
 
-class FauMatrixLauncherTests(unittest.TestCase):
+class EdMatrixLauncherTests(unittest.TestCase):
     def test_defaults_cover_remaining_four_by_four_matrix(self):
         runs = load_effective_configs(
             DEFAULT_FOLDS,

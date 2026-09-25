@@ -73,7 +73,7 @@ class BaseModel(nn.Module):
 
     This model functions as a wrapper connecting a feature extraction encoder
     and a sequence modeling decoder. It handles the downsampling calculations
-    required for CTC alignment and supports learnable blank embeddings for
+    required for CTC loss and supports learnable blank embeddings for
     regression-based CTC variants.
 
     Args:

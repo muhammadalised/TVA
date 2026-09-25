@@ -3449,7 +3449,7 @@
   ],
   "dataset": "IAM",
   "line_count": 5694,
-  "note": "Frequency evidence uses IAM training transcripts only. No FAU labels or recognition results were read.",
+  "note": "Frequency evidence uses IAM training transcripts only. No ED labels or recognition results were read.",
   "pair_policy": "case-sensitive-ascii-letters-only",
   "ranking": "descending-count-then-lexical-token",
   "schema_version": "tva.iam-letter-bigram-counts.v1",

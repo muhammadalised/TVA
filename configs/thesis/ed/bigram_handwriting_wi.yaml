@@ -1,18 +1,18 @@
-# Production FAU fold-0 WI run with the frozen IAM handwriting Bigram tokenizer.
-# Set TVA_FAU_DATASET_DIR to the directory containing gold_wd.zip/gold_wi.zip.
+# Production ED fold-0 WI run with the frozen IAM handwriting Bigram tokenizer.
+# Set TVA_ED_DATASET_DIR to the directory containing gold_wd.zip/gold_wi.zip.
 arch_de: bilstm_b
 arch_en: blconv_b
 aug: true
 cache: true
 checkpoint: null
-dataset_format: fau-zip
+dataset_format: ed-zip
 device: cuda
-dir_dataset: data/tva/fau_english
-dir_tokenizer: artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json
-dir_work: results/thesis/fau/handwriting_wi
+dir_dataset: data/tva/ed
+dir_tokenizer: artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json
+dir_work: results/thesis/ed/handwriting_wi
 epoch: 300
 epoch_warmup: 30
-fau_distribution: wi
+ed_distribution: wi
 freq_eval: 1
 freq_log: 100
 freq_save: 25

@@ -1,13 +1,13 @@
-"""Build the frozen 224-class FAU English handwriting-bigram adapter."""
+"""Build the frozen 224-class ED handwriting-bigram adapter."""
 
 import argparse
 from pathlib import Path
 
-from tva.fau_handwriting_bigram import (
+from tva.ed_handwriting_bigram import (
     ADAPTER_BIGRAM_COUNT,
     ADAPTER_POLICY_ID,
     ADAPTER_SIZE,
-    build_fau_adapter,
+    build_ed_adapter,
     write_adapter,
 )
 
@@ -16,7 +16,7 @@ DEFAULT_SOURCE = Path(
     'artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json'
 )
 DEFAULT_OUTPUT = Path(
-    'artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json'
+    'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
 )
 
 
@@ -34,7 +34,7 @@ def main() -> None:
         raise FileExistsError(
             f'output already exists: {args.output}; pass --overwrite to replace it'
         )
-    adapter = build_fau_adapter(args.source)
+    adapter = build_ed_adapter(args.source)
     digest = write_adapter(adapter, args.output)
     print(f'Wrote {args.output}')
     print(f'Policy: {ADAPTER_POLICY_ID}')

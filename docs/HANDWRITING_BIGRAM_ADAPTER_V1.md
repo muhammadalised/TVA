@@ -118,9 +118,8 @@ its segmentation policy must be explicitly predeclared and the thesis must
 either control this algorithmic factor or report it as a limitation. It must
 not be silently treated as a vocabulary-only comparison.
 
-Detailed compatibility evidence is in
-`docs/TOKENIZER_COMPATIBILITY_AUDIT.md`; the governing decision is D015 in
-`docs/DECISIONS.md`.
+The compatibility findings and frozen construction policy are recorded in
+this specification and in `docs/PROGRESS.md`.
 
 ## TVA runtime integration
 

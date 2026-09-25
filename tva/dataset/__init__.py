@@ -16,9 +16,9 @@ from .transforms import AddNoise, Drift, Dropout, TimeWarp
 __all__ = [
     'fn_collate',
     'HRDataset',
-    'FauZipDataset',
-    'get_fau_num_folds',
-    'resolve_fau_archive',
+    'EdZipDataset',
+    'get_ed_num_folds',
+    'resolve_ed_archive',
 ]
 
 
@@ -253,8 +253,8 @@ class HRDataset(Dataset):
         return seq
 
 
-from .fau import (  # noqa: E402
-    FauZipDataset,
-    get_fau_num_folds,
-    resolve_fau_archive,
+from .ed import (  # noqa: E402
+    EdZipDataset,
+    get_ed_num_folds,
+    resolve_ed_archive,
 )

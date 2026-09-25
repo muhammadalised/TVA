@@ -1,20 +1,20 @@
 {
   "adapter": {
-    "fau_annotation_label_values_read_by_builder": false,
+    "annotation_label_values_read_by_builder": false,
     "frequency_evidence": {
       "dataset": "IAM",
       "labels_sha256": "5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab",
       "line_count": 5694,
       "schema_version": "tva.iam-letter-bigram-counts.v1",
       "selection_sha256": "7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2",
-      "sha256": "3a2d90f7233dd550f399e3296f92390291201482ca690c9cd85eb30d8b8079ca",
+      "sha256": "7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb",
       "split": "train"
     },
     "frozen_date": "2026-09-21",
     "iam_training_transcripts_read": true,
-    "policy_id": "fau-english-iam-frequency-bigram-greedy-v1",
+    "policy_id": "ed-iam-frequency-bigram-greedy-v1",
     "projection": "declared-task-alphabet-v1",
-    "task": "FAU English sentence recognition, WD and WI",
+    "task": "ED sentence recognition, WD and WI",
     "task_alphabet": [
       " ",
       "!",
@@ -98,7 +98,7 @@
   },
   "blank_id": 0,
   "blank_token": "",
-  "dataset": "FAU English",
+  "dataset": "ED",
   "eligible_bigram_count": 145,
   "idx_token": {
     "0": "",
@@ -326,8 +326,8 @@
     "98": "ng",
     "99": "it"
   },
-  "model_version": "fau-english-iam-frequency-bigram-greedy-v1",
-  "note": "Matched linguistic comparator selected from IAM training-text frequency only. FAU labels and recognition results did not select or rank tokens.",
+  "model_version": "ed-iam-frequency-bigram-greedy-v1",
+  "note": "Matched linguistic comparator selected from IAM training-text frequency only. ED labels and recognition results did not select or rank tokens.",
   "policy": {
     "overlap_resolution": "greedy-left-to-right-v1",
     "required_characters": [
@@ -415,7 +415,7 @@
     "tie_breaking": "descending-count-then-lexical-token",
     "vocabulary_selection": "iam-train-adjacent-pair-frequency-v1"
   },
-  "schema_version": "tva.fau-frequency-bigram-adapter.v1",
+  "schema_version": "tva.ed-frequency-bigram-adapter.v1",
   "size": 224,
   "status": "frozen-matched-comparator",
   "text_normalization": "NFC",

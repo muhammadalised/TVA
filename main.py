@@ -9,7 +9,7 @@ from torch.amp import GradScaler
 from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 from torch.utils.data import DataLoader
 
-from tva.dataset import FauZipDataset, HRDataset, fn_collate, resolve_fau_archive
+from tva.dataset import EdZipDataset, HRDataset, fn_collate, resolve_ed_archive
 from tva.decoder_ctc import BestPath
 from tva.evaluate import evaluate
 from tva.loss import CTCLoss
@@ -33,7 +33,7 @@ def build_dataset(
     tokenizer: object,
     ratio_ds: int,
 ) -> HRDataset:
-    """Build either the legacy extracted dataset or authenticated FAU ZIP."""
+    """Build either the legacy extracted dataset or authenticated ED ZIP."""
     is_train = split == 'train'
     common = {
         'tokenizer': tokenizer,
@@ -50,10 +50,10 @@ def build_dataset(
         ),
     }
     dataset_format = getattr(cfgs, 'dataset_format', 'json-directory')
-    if dataset_format == 'fau-zip':
-        distribution = cfgs.fau_distribution
-        return FauZipDataset(
-            resolve_fau_archive(cfgs.dir_dataset, distribution),
+    if dataset_format == 'ed-zip':
+        distribution = cfgs.ed_distribution
+        return EdZipDataset(
+            resolve_ed_archive(cfgs.dir_dataset, distribution),
             split,
             distribution,
             **common,

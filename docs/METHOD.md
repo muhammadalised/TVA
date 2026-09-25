@@ -95,9 +95,9 @@ frozen handwriting model.
 Before training, project or extend the frozen vocabulary using a predeclared
 task-alphabet rule so every OnHW character remains representable. This rule may
 use the fixed 59-character OnHW alphabet but must not use label frequencies or
-validation-label presence. See `docs/TOKENIZER_COMPATIBILITY_AUDIT.md` for the
-2026-09-15 coverage and segmentation audit. The resulting 419-class primary
-policy was frozen on 2026-09-17; its exact deterministic construction is in
+validation-label presence. The 2026-09-15 coverage and segmentation audit is
+summarized in `docs/PROGRESS.md`. The resulting 419-class primary policy was
+frozen on 2026-09-17; its exact deterministic construction is in
 `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
 
 Create a frequency-based Bigram vocabulary of the same or nearly the same size
@@ -149,16 +149,3 @@ If time and resources permit, use a fixed offline handwriting recognizer to
 evaluate the same frozen tokenizers on image data. This is a secondary test of
 whether handwriting-aware labels help directly in the image domain. It must
 not alter the primary IMU-recognition comparison after observing its results.
-
-## 10. Secondary IMU forced-alignment comparison
-
-If the image method proves unreliable and time remains, the implemented OnHW
-pipeline may provide an additional IMU-derived comparison. It uses
-target-constrained CTC alignment, local and whole-region force/motion features,
-position-duration correction, and writer-balanced aggregation. See
-`docs/FORCED_ALIGNMENT.md` for its implementation and limitations.
-
-That pipeline is completed fold-0 development work, not the source of the
-primary proposed tokenizer. Its CTC timestamps are model alignments rather than
-ground-truth physical character boundaries, and its current 75/25 force-only
-score is a provisional development baseline.

@@ -4,13 +4,13 @@ This file records scientific runs and important development experiments. All
 reported values must be traceable to the saved configuration, log, metrics,
 predictions, code version, and experiment backup.
 
-## FAU English dataset compatibility audit — pre-training
+## ED dataset compatibility audit — pre-training
 
 ### Scope and dataset identity
 
 - Audit date: 2026-09-21
 - Source supplied by supervisor:
-  `/mnt/c/Users/Ali/Downloads/fau-english-dataset/`
+  `/mnt/c/Users/Ali/Downloads/ed-dataset/`
 - `gold_wd.zip` SHA-256:
   `edaf78b0f422f719bbb13153249a5a6667a814d6f5a8d7d0d2ba02535ae55a3e`
 - `gold_wi.zip` SHA-256:
@@ -37,10 +37,10 @@ results.
 
 ### Supervisor-directed tokenizer scope
 
-The supervisor requested that the initial FAU evaluation use English
+The supervisor requested that the initial ED evaluation use English
 handwriting tokenizers, not the combined IAM+READ tokenizer. Consequently, the
-frozen 419-class OnHW IAM+READ adapter is out of scope for this first FAU
-experiment. It also cannot encode any raw FAU label because it lacks spaces,
+frozen 419-class OnHW IAM+READ adapter is out of scope for this first ED
+experiment. It also cannot encode any raw ED label because it lacks spaces,
 digits, and punctuation.
 
 DTLR commit `d2f4631c5adbc0a721e01f3bb2e179b877934976` froze the
@@ -70,31 +70,31 @@ demonstration settings. They are frozen before downstream evaluation for
 reproducibility and leakage control, but are not claimed to be statistically
 optimal or held-out validated.
 
-The IAM-only model covers nearly all of the FAU alphabet but lacks `%`, `(`,
+The IAM-only model covers nearly all of the ED alphabet but lacks `%`, `(`,
 and `=`. Those characters occur 416, 414, and 429 times respectively and make
 906 of the 2,550 raw labels unencodable. IAM's `*` singleton does not occur in
-FAU. Silently deleting unsupported symbols or evaluating only the encodable
+ED. Silently deleting unsupported symbols or evaluating only the encodable
 subset would change the task and bias the result.
 
 The leakage-safe TVA adapter was frozen on 2026-09-21. It keeps all 145
 IAM-derived bigrams and their score rows byte-for-byte at the JSON-value level,
-then projects only the singleton layer to the declared 78-character FAU task
+then projects only the singleton layer to the declared 78-character ED task
 alphabet. It has 224 output classes: blank ID 0, 78 singletons, and 145
 bigrams. The pinned source is
 `artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json`; the
 canonical adapter is
-`artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json`, with
+`artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json`, with
 SHA-256
-`4c06828ac3b0ae03e98d569b0f3fea1cdfbc0a125f6eeffcc7ffb2a4935f3f52`.
-Construction excludes IAM-only `*` and adds FAU-only `%`, `(`, and `=` as
-single-character fallbacks. No FAU label value, label frequency, or recognition
+`d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7`.
+Construction excludes IAM-only `*` and adds ED-only `%`, `(`, and `=` as
+single-character fallbacks. No ED label value, label frequency, or recognition
 result selects, ranks, or removes a handwriting bigram.
 
 The repository boundary is explicit: DTLR constructs and freezes the generic
 IAM-only English handwriting vocabulary using IAM training evidence only. It
-must not read FAU annotations or create an FAU-specific vocabulary. TVA owns
-the downstream FAU task adapter, whose only task-specific construction input
-is the predeclared 78-character `categories` schema. Complete FAU labels may
+must not read ED annotations or create an ED-specific vocabulary. TVA owns
+the downstream ED task adapter, whose only task-specific construction input
+is the predeclared 78-character `categories` schema. Complete ED labels may
 be read only after the adapter is frozen, for encode/decode compatibility
 auditing and recognizer training/evaluation—not for handwriting-token
 selection, ranking, thresholds, or segmentation-policy tuning.
@@ -107,7 +107,7 @@ chooses the non-overlapping set with the greatest sum of IAM handwriting
 connectivity scores. TVA's legacy Bigram encoder instead scans left to right
 and immediately consumes any available pair, without considering its score.
 
-Applying both policies to all 2,550 FAU labels with the same 145 IAM bigrams
+Applying both policies to all 2,550 ED labels with the same 145 IAM bigrams
 produces different token identities for 1,778 samples (69.73%) and 350 of the
 501 unique labels (69.86%). Both policies produce 85,153 target tokens in
 total, so this difference changes which bigrams are learned rather than the
@@ -116,15 +116,15 @@ greedy consumes `ho` first.
 
 Therefore, switching the IAM tokenizer to greedy defines a new derived
 segmentation variant, not simply loading the original DTLR model unchanged.
-Greedy left-to-right was frozen as the FAU primary policy on 2026-09-21 for
+Greedy left-to-right was frozen as the ED primary policy on 2026-09-21 for
 compatibility with established TVA Bigram behavior. It is exposed under the
 separate tokenizer key `handwriting_bigram_greedy`; the existing
 `handwriting_bigram` DP runtime and all completed OnHW experiments remain
-unchanged. The matched FAU comparator must also use greedy segmentation. DP may
+unchanged. The matched ED comparator must also use greedy segmentation. DP may
 be evaluated later only as an explicitly named ablation applied to both
 vocabularies.
 
-After the adapter bytes were frozen, `audit_fau_handwriting_bigram.py`
+After the adapter bytes were frozen, `audit_ed_handwriting_bigram.py`
 authenticated both source archives and encoded every canonical annotation in
 both packages. The audit checked 2,550 records per archive (5,100 encodings),
 170,306 total emitted target tokens, zero blank IDs, zero reconstruction
@@ -135,14 +135,14 @@ external-reference tests were skipped.
 
 ### Matched IAM-text linguistic comparator
 
-The matched linguistic comparator was frozen on 2026-09-21 before FAU model
+The matched linguistic comparator was frozen on 2026-09-21 before ED model
 training. Its vocabulary evidence comes only from the same complete 5,694-line
 IAM training split used by the handwriting pipeline. The authenticated IAM
 `labels.pkl` SHA-256 is
 `5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab`;
 the complete-train selection-manifest SHA-256 is
 `7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2`.
-No IAM validation/test text and no FAU label were used to select pairs.
+No IAM validation/test text and no ED label were used to select pairs.
 
 After NFC normalization, the builder counts every case-sensitive adjacent
 ASCII-letter pair occurrence within each IAM training line. It found 861
@@ -152,12 +152,12 @@ are retained to match the handwriting vocabulary. The last selected pair is
 `bu` with count 273; the first excluded pair is `tu` with count 270, so the
 selection boundary is not tied. The frozen evidence file is
 `artifacts/tokenizers/source/iam-train-letter-bigram-counts-v1.json`, SHA-256
-`3a2d90f7233dd550f399e3296f92390291201482ca690c9cd85eb30d8b8079ca`.
+`7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb`.
 
 The canonical comparator is
-`artifacts/tokenizers/fau_english_iam_linguistic_bigram_greedy_v1.json`,
+`artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json`,
 SHA-256
-`0a7e173afdd2a911780c14517e651b9787c3b8b3c0fdedb74f915920b4d4f392`.
+`1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd`.
 It uses the identical blank ID, ordered 78-character singleton layer,
 145-bigram count, 224-class output size, NFC normalization, and greedy
 left-to-right segmentation as the handwriting condition. Pair utilities are
@@ -165,11 +165,11 @@ normalized IAM counts retained for audit metadata; greedy segmentation does
 not consult them. The two vocabularies share 72 bigrams and differ in 73 pairs
 per condition.
 
-The post-freeze compatibility audit encoded all 2,550 canonical FAU labels in
+The post-freeze compatibility audit encoded all 2,550 canonical ED labels in
 both archives. The linguistic comparator emitted 79,078 target tokens per
 archive, with zero blank IDs and zero round-trip failures. The handwriting
 condition emits 85,153 per archive, so the linguistic vocabulary shortens the
-FAU targets by 6,075 tokens (7.13%). This is an intrinsic consequence of the
+ED targets by 6,075 tokens (7.13%). This is an intrinsic consequence of the
 different frozen pair memberships—not a segmentation-policy difference—but it
 must be considered when interpreting recognition results.
 
@@ -181,7 +181,7 @@ mentions a `gold_wi/meta.json` save path even though the archive's split
 metadata correctly says `writer_dependent`. The fold contents themselves pass
 the structural WD checks above.
 
-### FAU ZIP loader and matched pipeline smoke validation
+### ED ZIP loader and matched pipeline smoke validation
 
 - Date completed: 2026-09-21
 - Scope: fold 0, eight training and four validation samples per condition
@@ -195,7 +195,7 @@ the structural WD checks above.
 - Result: all four conditions completed training, validation, decoding, metric
   calculation, and resumable checkpoint saving.
 
-`FauZipDataset` authenticates the WD/WI source archive SHA-256 before use and
+`EdZipDataset` authenticates the WD/WI source archive SHA-256 before use and
 streams semicolon-delimited float32 sequences directly from the ZIP. It checks
 the declared distribution, five-fold structure, 100 Hz rate, seven-channel
 shape, complete member paths, 78-character alphabet, finite signal values, and
@@ -216,14 +216,14 @@ not recognition evidence.
 | Linguistic WI | `b3a54dab2c5e1953849bb399364bdcd1de185824b8f2fb9679f54c874c2dc284` |
 
 The committed smoke configurations use the portable directory
-`data/tva/fau_english`. On the current machine they were executed by setting
-`TVA_FAU_DATASET_DIR=/mnt/c/Users/Ali/Downloads/fau-english-dataset`, so no
+`data/tva/ed`. On the current machine they were executed by setting
+`TVA_ED_DATASET_DIR=/mnt/c/Users/Ali/Downloads/ed-dataset`, so no
 machine-specific source path is stored in configuration files.
 
 After loader integration, the complete TVA suite ran 46 tests: 44 passed and
 two unrelated optional external-reference checks were skipped.
 
-### FAU fold-0 production configuration freeze
+### ED fold-0 production configuration freeze
 
 - Date frozen: 2026-09-23
 - Conditions: handwriting/linguistic Bigram × WD/WI
@@ -234,9 +234,9 @@ two unrelated optional external-reference checks were skipped.
 - Evaluation/checkpoints: validation every epoch; resumable latest and
   best-CER/best-WER checkpoints; numbered checkpoint every 25 epochs
 
-The four production configurations are under `configs/thesis/fau/` and are
+The four production configurations are under `configs/thesis/ed/` and are
 matched in every non-condition field. All runs must start from scratch. The
-FAU signals are substantially longer than OnHW word signals: the archive
+ED signals are substantially longer than OnHW word signals: the archive
 reports a mean of 2,137.65 samples, median 2,055, minimum 393, and maximum
 7,314. Fold 0 contains 2,047 WD or 2,025 WI training recordings and 503 WD or
 525 WI validation recordings. Batch size 8 was the conservative RTX 4060
@@ -246,7 +246,7 @@ setting. D022 later selected a separate batch-32 laptop protocol for the actual
 five-fold matrix after all four fold-0 runs completed consistently at batch 32.
 
 Before a production run, execute
-`configs/thesis/fau/timing_bigram_handwriting_wd.yaml`. It differs from the
+`configs/thesis/ed/timing_bigram_handwriting_wd.yaml`. It differs from the
 handwriting-WD production configuration only in running one epoch, using a
 development result directory, a one-epoch warmup, and disabling numbered
 milestone saves. It consumes the complete fold, so its training and validation
@@ -256,10 +256,10 @@ thesis recognition evidence and must not be reused for initialization.
 The post-freeze regression suite ran 49 tests: 47 passed and the same two
 optional external-reference checks were skipped.
 
-### FAU full-architecture CUDA timing result
+### ED full-architecture CUDA timing result
 
 - Date: 2026-09-23
-- Config: `configs/thesis/fau/timing_bigram_handwriting_wd.yaml`
+- Config: `configs/thesis/ed/timing_bigram_handwriting_wd.yaml`
 - Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
 - Scope: complete WD fold 0; 2,047 train and 503 validation recordings
 - Effective batches: 256 train and 63 validation at batch size 8
@@ -301,14 +301,14 @@ must not be combined as fold 0 with batch-64 folds 1--4 in a five-fold summary;
 such a final batch-64 matrix requires rerunning fold 0 at batch 64. The
 one-epoch diagnostic metrics are not recognition evidence.
 
-### FAU handwriting-aware Bigram — WD fold 0, batch 32
+### ED handwriting-aware Bigram — WD fold 0, batch 32
 
 - Completed: 2026-09-24
 - Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
 - Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
 - Tokenizer: frozen IAM handwriting-aware Bigram artifact, greedy left-to-right
   segmentation
-- Data: FAU English WD fold 0; no FAU labels were used to select bigrams
+- Data: ED WD fold 0; no ED labels were used to select bigrams
 - Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
 - Wall-clock interval including initial caching: approximately 1 hour 9 minutes
   25 seconds
@@ -331,14 +331,14 @@ matched IAM linguistic-Bigram condition is trained with the same batch size,
 fold, seed, architecture, and schedule. Because this run used batch 32, it is
 not interchangeable with a batch-64 fold in the planned A6000 five-fold matrix.
 
-### FAU linguistic Bigram — WD fold 0, batch 32
+### ED linguistic Bigram — WD fold 0, batch 32
 
 - Completed: 2026-09-24
 - Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
 - Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
 - Tokenizer: frozen IAM linguistic-frequency Bigram artifact, greedy
   left-to-right segmentation
-- Data: FAU English WD fold 0; no FAU labels were used to select bigrams
+- Data: ED WD fold 0; no ED labels were used to select bigrams
 - Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
 - Wall-clock interval including initial caching: approximately 1 hour 9 minutes
   36 seconds
@@ -363,14 +363,14 @@ five-fold generalization or statistical significance. Both conditions used a
 single seed and metric-specific best epochs. The batch-32 comparison also
 remains separate from the frozen batch-64 A6000 matrix.
 
-### FAU handwriting-aware Bigram — WI fold 0, batch 32
+### ED handwriting-aware Bigram — WI fold 0, batch 32
 
 - Completed: 2026-09-24
 - Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
 - Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
 - Tokenizer: frozen IAM handwriting-aware Bigram artifact, greedy left-to-right
   segmentation
-- Data: FAU English WI fold 0; no FAU labels were used to select bigrams
+- Data: ED WI fold 0; no ED labels were used to select bigrams
 - Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
 - Runtime including initial caching: approximately 1 hour 11 minutes 7 seconds
 - Best validation CER: 0.1642117744 at epoch 264
@@ -380,14 +380,14 @@ remains separate from the frozen batch-64 A6000 matrix.
 - Best-WER checkpoint SHA-256:
   `2cd1c3c0d05e13194c823de2587b9a64083794d001f0e407f95e8c196b22eeaf`
 
-### FAU linguistic Bigram — WI fold 0, batch 32
+### ED linguistic Bigram — WI fold 0, batch 32
 
 - Completed: 2026-09-24
 - Code commit: `9761142e491dc631c2411763fae3677edbfa861a`
 - Hardware: NVIDIA GeForce RTX 4060 Laptop GPU
 - Tokenizer: frozen IAM linguistic-frequency Bigram artifact, greedy
   left-to-right segmentation
-- Data: FAU English WI fold 0; no FAU labels were used to select bigrams
+- Data: ED WI fold 0; no ED labels were used to select bigrams
 - Training: 300 epochs, batch 32, seed 42, CUDA mixed precision
 - Runtime including initial caching: approximately 1 hour 10 minutes 38 seconds
 - Best validation CER: 0.1859637922 at epoch 262
@@ -407,16 +407,16 @@ is promising, but a single fold and seed do not establish generalization or
 statistical significance. These batch-32 results must remain separate from a
 batch-64 five-fold aggregate.
 
-### FAU five-fold laptop protocol and launcher
+### ED five-fold laptop protocol and launcher
 
-The final FAU matrix is frozen at physical batch size 32 on the RTX 4060
+The final ED matrix is frozen at physical batch size 32 on the RTX 4060
 laptop. The four completed fold-0 conditions are retained; the remaining
 matrix comprises handwriting-aware and linguistic Bigram under WD and WI for
 folds 1--4, or 16 sequential runs. This choice avoids mixing batch protocols
 and supersedes the provisional A6000 batch-64 deployment plan for this matrix.
 The A6000 timings remain valid systems evidence but are not recognition runs.
 
-`run_fau_matrix.py` makes the effective protocol explicit without changing the
+`run_ed_matrix.py` makes the effective protocol explicit without changing the
 four batch-64 base templates. It overrides only `idx_fold` and `size_batch`,
 defaults to batch 32 and folds 1--4, validates the frozen training invariants,
 checks all 16 target directories before launching anything, and refuses to
@@ -424,13 +424,13 @@ overwrite any non-empty result directory. Each `main.py` run saves its actual
 effective YAML in its result directory. Preview the complete plan with:
 
 ```bash
-python run_fau_matrix.py --dry-run
+python run_ed_matrix.py --dry-run
 ```
 
-After setting `TVA_FAU_DATASET_DIR`, start the sequential matrix with:
+After setting `TVA_ED_DATASET_DIR`, start the sequential matrix with:
 
 ```bash
-MPLBACKEND=Agg python run_fau_matrix.py
+MPLBACKEND=Agg python run_ed_matrix.py
 ```
 
 The launcher stops on the first nonzero training exit and leaves all existing
@@ -438,6 +438,58 @@ outputs intact. Continue only with explicitly selected untouched folds and
 conditions after diagnosing and documenting a failure. At the observed fold-0
 runtime of about 69--71 minutes, the 16 remaining runs require roughly 18--19
 hours sequentially, excluding interruption and backup overhead.
+
+### ED WD five-fold comparison completed
+
+- Completed: 2026-09-25
+- Code for folds 1--4: commit `1047487` (`Add safe ED five-fold launcher`)
+- Protocol: ED WD, folds 0--4, batch 32, seed 42, 300 epochs,
+  BLConv-B + BiLSTM-B + CTC, CUDA mixed precision, and greedy left-to-right
+  segmentation
+- Controlled variable: the frozen IAM bigram-selection source
+  (handwriting-aware evidence versus linguistic frequency)
+- Result directories: `results/thesis/ed/handwriting_wd/{0..4}/` and
+  `results/thesis/ed/linguistic_wd/{0..4}/`
+
+Every run reached epoch 299 and retained `latest.pth`, `best_cer.pth`, and
+`best_wer.pth`. The values below are the independently best validation metrics;
+CER and WER can therefore come from different epochs and checkpoints.
+
+| Fold | Handwriting CER (epoch) | Linguistic CER (epoch) | CER reduction | Handwriting WER (epoch) | Linguistic WER (epoch) | WER reduction |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 24.27% (206) | 32.20% (203) | 7.93 pp | 64.80% (245) | 71.17% (270) | 6.37 pp |
+| 1 | 23.04% (202) | 27.35% (220) | 4.31 pp | 62.22% (272) | 65.69% (205) | 3.46 pp |
+| 2 | 23.45% (257) | 27.80% (225) | 4.35 pp | 61.88% (187) | 65.38% (225) | 3.50 pp |
+| 3 | 25.82% (234) | 32.47% (165) | 6.65 pp | 66.41% (244) | 70.99% (248) | 4.59 pp |
+| 4 | 24.05% (251) | 30.39% (268) | 6.33 pp | 65.99% (254) | 69.57% (276) | 3.59 pp |
+| **Unweighted mean ± sample SD** | **24.13 ± 1.06%** | **30.04 ± 2.39%** | **5.91 pp** | **64.26 ± 2.10%** | **68.56 ± 2.84%** | **4.30 pp** |
+
+On the unweighted five-fold mean, handwriting-aware bigrams reduce CER by
+5.91 percentage points (19.69% relative) and WER by 4.30 points (6.27%
+relative) compared with the matched linguistic bigrams. The direction is
+consistent in every fold for both metrics. This is substantially stronger
+evidence than the earlier fold-0 observation, but it is still one seed and is
+specific to ED's writer-dependent split. The corresponding five-fold WI
+comparison remains necessary before drawing a writer-independent conclusion.
+
+The linguistic fold-2 process was killed by the host OOM handler after epoch
+208 while another memory-intensive process overlapped it. It was resumed from
+that run's `latest.pth` with the saved effective configuration and completed
+through epoch 299. The other WD runs completed without a recorded training-log
+error.
+
+| Condition / fold | Best-CER checkpoint SHA-256 | Best-WER checkpoint SHA-256 |
+| --- | --- | --- |
+| Handwriting 0 | `35a1f5ce12362bfbb9e2e50ccba249b5e09d517f974b667dcf5cfccf25c4db7b` | `83f583c05d13d8b1972b880e58311294df35eab332fc623e24a2ccd26e07f993` |
+| Handwriting 1 | `d051dfd553c3e46891dd2328c88e255f3ebd73174531e7ac8b566b4407933834` | `8a75c045ce51f28f2deb388f3921597afa44b41edbfa28f900ac4130d6aa25ca` |
+| Handwriting 2 | `649bcb2cc917f4de816c3c8d500989a05a389c813f90722bb9726bfc27b3f6b1` | `fa7fa42cc6276c1f6377d71e3ef0c720d59450f528a76e10587e6dc5a58dcb5b` |
+| Handwriting 3 | `5e7181e8eaabef25e8b00f8ef21e3eef1739c898f2f84452b4eca6b593542345` | `a9edaa61291ba7b2e7bb7ec571188c95c5acbca142ec718bc01c15102c529699` |
+| Handwriting 4 | `8e64ebe165b538a9fc12cfdc897313fe6c2a6525b6242cca8039d8f1935e88ee` | `577d60901aa460eb8c07b06ae86d50ced16912fe7060a9ac3c553afaa9ef0571` |
+| Linguistic 0 | `6a3270ac9e7b3733a941a6e9177d51b90a7f266282123e2b3594ea8d0dd8bc53` | `35d1f0dd9fef8677822407e83c62e1481c915b70bea63799612cdbde1ce99c7f` |
+| Linguistic 1 | `daa6b062cdbd16e7d06f55d65b95f59924d62ab21ede63572216055cafb2a312` | `b33ba6f0d2a1fe97382f4f76cbcde150bd26d22053e980702b4f25a5cc2066bb` |
+| Linguistic 2 | `0153de2d843a785d8c194983df0c2965ea93b6387b62b98fe1d07f04bef35f58` | `0153de2d843a785d8c194983df0c2965ea93b6387b62b98fe1d07f04bef35f58` |
+| Linguistic 3 | `578c905d84ef465ec28d5fd66af55e7bda48fa26b384483615fb3636082eb216` | `15954a74b00ad39a3bb37b3815a77deef7f6b209ae973cc0c2606f8f1460c416` |
+| Linguistic 4 | `8665a07bb1f9c99d204369a24c7d6d8fbe3debcc540d426f147de441885436a0` | `06cf73bd27e30f94fabf24a2fdd5f579776803ab84a6afbfb395d93ee6673a05` |
 
 ### A6000 batch-8 deployment timing
 
@@ -805,8 +857,7 @@ it must not be directly compared with this single-fold value.
 - `latest.pth` and the epoch-299 milestone checkpoint were retained.
 - This run preceded automatic best-CER/best-WER checkpoint saving. Metrics and
   predictions for epochs 286 and 289 are preserved, but their exact model
-  weights are not. The epoch-299 model can be used for initial forced-alignment
-  development.
+  weights are not. The epoch-299 model remains available for reproducibility.
 - Backup archive checksum: not yet recorded in this log.
 
 ## B0 character baseline — WI/RH fold 0
@@ -836,13 +887,11 @@ These are single-fold development results. They must not be presented as the
 final writer-independent result, which will require the agreed five-fold
 evaluation.
 
-### Artifacts and use
+### Artifacts
 
 - The run used automatic validation-selected checkpoint saving.
-- `best_cer.pth` from epoch 244 is the preferred checkpoint for WI forced
-  alignment because alignment quality depends most directly on character
-  recognition.
-- `best_wer.pth` from epoch 269 is retained for recognition comparison, while
+- `best_cer.pth` from epoch 244 and `best_wer.pth` from epoch 269 are retained
+  for recognition comparison, while
   `latest.pth` remains the resumable end-of-training checkpoint.
-- The complete run directory should be archived before alignment development.
+- The complete run directory should be archived.
 - Backup archive checksum: not yet recorded in this log.

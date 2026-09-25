@@ -1,4 +1,4 @@
-"""Audit all FAU English labels against the already-frozen greedy adapter."""
+"""Audit all ED labels against the already-frozen greedy adapter."""
 
 import argparse
 import hashlib
@@ -7,19 +7,19 @@ from pathlib import Path
 import unicodedata
 import zipfile
 
-from tva.fau_handwriting_bigram import FAU_ALPHABET
+from tva.ed_handwriting_bigram import ED_ALPHABET
 from tva.handwriting_bigram_tokenizer import GreedyHandwritingBigramTokenizer
 from tva.handwriting_bigram_tokenizer import GreedyLinguisticBigramTokenizer
-from tva.dataset.fau import FAU_ARCHIVE_SHA256
+from tva.dataset.ed import ED_ARCHIVE_SHA256
 
 
 ARCHIVE_SHA256 = {
     f'gold_{distribution}': digest
-    for distribution, digest in FAU_ARCHIVE_SHA256.items()
+    for distribution, digest in ED_ARCHIVE_SHA256.items()
 }
-DEFAULT_DATASET_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/fau-english-dataset')
+DEFAULT_DATASET_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
 DEFAULT_ADAPTER = Path(
-    'artifacts/tokenizers/fau_english_iam_handwriting_bigram_greedy_v1.json'
+    'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
 )
 
 
@@ -40,7 +40,7 @@ def read_archive(path: Path, stem: str) -> dict:
         )
     with zipfile.ZipFile(path) as archive:
         value = json.loads(archive.read(f'{stem}/annotations.json'))
-    if value.get('categories') != list(FAU_ALPHABET):
+    if value.get('categories') != list(ED_ALPHABET):
         raise ValueError(f'{stem} declared categories do not match the frozen alphabet')
     return value
 

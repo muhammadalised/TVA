@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the frozen FAU tokenizer comparison sequentially and safely."""
+"""Run the frozen ED tokenizer comparison sequentially and safely."""
 
 import argparse
 import os
@@ -12,7 +12,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parent
-CONFIG_ROOT = REPO_ROOT / 'configs' / 'thesis' / 'fau'
+CONFIG_ROOT = REPO_ROOT / 'configs' / 'thesis' / 'ed'
 CONDITION_CONFIGS = {
     'handwriting_wd': CONFIG_ROOT / 'bigram_handwriting_wd.yaml',
     'linguistic_wd': CONFIG_ROOT / 'bigram_linguistic_wd.yaml',
@@ -26,7 +26,7 @@ NUM_FOLDS = 5
 
 
 def validate_folds(folds: list[int] | tuple[int, ...]) -> tuple[int, ...]:
-    """Return unique, valid FAU fold indices in the requested order."""
+    """Return unique, valid ED fold indices in the requested order."""
     normalized = tuple(folds)
     if not normalized:
         raise ValueError('At least one fold is required.')
@@ -34,7 +34,7 @@ def validate_folds(folds: list[int] | tuple[int, ...]) -> tuple[int, ...]:
         raise ValueError('Fold indices must be unique.')
     invalid = [fold for fold in normalized if fold not in range(NUM_FOLDS)]
     if invalid:
-        raise ValueError(f'FAU fold indices must be in 0..4; got {invalid}.')
+        raise ValueError(f'ED fold indices must be in 0..4; got {invalid}.')
     return normalized
 
 
@@ -68,7 +68,7 @@ def load_effective_configs(
 
 
 def _validate_base_config(condition: str, config: dict) -> None:
-    """Fail before training if a frozen FAU production invariant drifted."""
+    """Fail before training if a frozen ED production invariant drifted."""
     expected_distribution = condition.rsplit('_', 1)[1]
     expected_tokenizer = (
         'handwriting_bigram_greedy'
@@ -77,11 +77,11 @@ def _validate_base_config(condition: str, config: dict) -> None:
     )
     expected = {
         'checkpoint': None,
-        'dataset_format': 'fau-zip',
+        'dataset_format': 'ed-zip',
         'device': 'cuda',
         'epoch': 300,
         'epoch_warmup': 30,
-        'fau_distribution': expected_distribution,
+        'ed_distribution': expected_distribution,
         'num_channel': 7,
         'seed': 42,
         'test': False,
@@ -108,7 +108,7 @@ def ensure_outputs_absent(runs: list[tuple[str, int, dict, Path]]) -> None:
     if occupied:
         formatted = '\n'.join(f'  - {path}' for path in occupied)
         raise FileExistsError(
-            'Refusing to overwrite existing FAU run directories:\n'
+            'Refusing to overwrite existing ED run directories:\n'
             f'{formatted}\n'
             'Inspect the existing run and select only untouched folds and '
             'conditions.'
@@ -116,11 +116,11 @@ def ensure_outputs_absent(runs: list[tuple[str, int, dict, Path]]) -> None:
 
 
 def validate_dataset() -> Path:
-    """Validate the FAU archive override used by the dataset loader."""
-    value = os.environ.get('TVA_FAU_DATASET_DIR')
+    """Validate the ED archive override used by the dataset loader."""
+    value = os.environ.get('TVA_ED_DATASET_DIR')
     if not value:
         raise RuntimeError(
-            'Set TVA_FAU_DATASET_DIR to the directory containing '
+            'Set TVA_ED_DATASET_DIR to the directory containing '
             'gold_wd.zip and gold_wi.zip.'
         )
     directory = Path(value).expanduser()
@@ -130,7 +130,7 @@ def validate_dataset() -> Path:
     ]
     if missing:
         raise FileNotFoundError(
-            f'Missing FAU archives in {directory}: {", ".join(missing)}'
+            f'Missing ED archives in {directory}: {", ".join(missing)}'
         )
     return directory
 
@@ -147,7 +147,7 @@ def run_matrix(
     environment['MPLBACKEND'] = 'Agg'
     total = len(runs)
 
-    with tempfile.TemporaryDirectory(prefix='tva_fau_matrix_') as temporary:
+    with tempfile.TemporaryDirectory(prefix='tva_ed_matrix_') as temporary:
         directory = Path(temporary)
         for index, (condition, fold, config, output) in enumerate(runs, 1):
             path_config = directory / f'{condition}_fold_{fold}.yaml'
@@ -181,13 +181,13 @@ def run_matrix(
             'without --dry-run to regenerate them and start training.'
         )
     else:
-        print(f'FAU matrix complete: {total} runs finished successfully.')
+        print(f'ED matrix complete: {total} runs finished successfully.')
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            'Run the frozen FAU handwriting-aware versus linguistic Bigram '
+            'Run the frozen ED handwriting-aware versus linguistic Bigram '
             'matrix sequentially. Defaults preserve completed fold 0.'
         )
     )

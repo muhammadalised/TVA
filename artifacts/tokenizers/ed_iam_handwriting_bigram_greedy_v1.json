@@ -2,7 +2,7 @@
   "adapter": {
     "annotation_label_values_read_by_builder": false,
     "frozen_date": "2026-09-21",
-    "policy_id": "fau-english-iam-handwriting-bigram-greedy-v1",
+    "policy_id": "ed-iam-handwriting-bigram-greedy-v1",
     "projection": "declared-task-alphabet-v1",
     "retained_source_bigram_count": 145,
     "source_model": {
@@ -17,7 +17,7 @@
     "source_singletons_excluded": [
       "*"
     ],
-    "task": "FAU English sentence recognition, WD and WI",
+    "task": "ED sentence recognition, WD and WI",
     "task_alphabet": [
       " ",
       "!",
@@ -107,7 +107,7 @@
   },
   "blank_id": 0,
   "blank_token": "",
-  "dataset": "FAU English",
+  "dataset": "ED",
   "eligible_bigram_count": 145,
   "idx_token": {
     "0": "",
@@ -335,8 +335,8 @@
     "98": "La",
     "99": "Le"
   },
-  "model_version": "fau-english-iam-handwriting-bigram-greedy-v1",
-  "note": "FAU adapter of the frozen IAM-only handwriting bigram vocabulary. The 145 bigrams and their scores are unchanged. FAU labels and recognition results did not select or rank tokens.",
+  "model_version": "ed-iam-handwriting-bigram-greedy-v1",
+  "note": "ED adapter of the frozen IAM-only handwriting bigram vocabulary. The 145 bigrams and their scores are unchanged. ED labels and recognition results did not select or rank tokens.",
   "policy": {
     "overlap_resolution": "greedy-left-to-right-v1",
     "required_characters": [
@@ -422,7 +422,7 @@
     "single_character_utility": 0.0,
     "vocabulary_selection": "frozen-iam-train-handwriting-evidence-only"
   },
-  "schema_version": "tva.fau-handwriting-bigram-adapter.v1",
+  "schema_version": "tva.ed-handwriting-bigram-adapter.v1",
   "size": 224,
   "status": "frozen-downstream-adapter",
   "text_normalization": "NFC",

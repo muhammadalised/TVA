@@ -1,4 +1,4 @@
-"""Matched IAM-text linguistic Bigram comparator for FAU English."""
+"""Matched IAM-text linguistic Bigram comparator for ED."""
 
 from __future__ import annotations
 
@@ -11,21 +11,21 @@ import string
 from typing import Any
 import unicodedata
 
-from tva.fau_handwriting_bigram import FAU_ALPHABET, GREEDY_POLICY
+from tva.ed_handwriting_bigram import ED_ALPHABET, GREEDY_POLICY
 from tva.handwriting_bigram_adapter import canonical_json_bytes, sha256_bytes
 
 
 LABELS_SHA256 = '5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab'
 SELECTION_SHA256 = '7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2'
 EVIDENCE_SCHEMA = 'tva.iam-letter-bigram-counts.v1'
-EVIDENCE_SHA256 = '3a2d90f7233dd550f399e3296f92390291201482ca690c9cd85eb30d8b8079ca'
+EVIDENCE_SHA256 = '7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb'
 
-ADAPTER_SCHEMA = 'tva.fau-frequency-bigram-adapter.v1'
-ADAPTER_POLICY_ID = 'fau-english-iam-frequency-bigram-greedy-v1'
+ADAPTER_SCHEMA = 'tva.ed-frequency-bigram-adapter.v1'
+ADAPTER_POLICY_ID = 'ed-iam-frequency-bigram-greedy-v1'
 ADAPTER_FROZEN_DATE = '2026-09-21'
 ADAPTER_SIZE = 224
 ADAPTER_BIGRAM_COUNT = 145
-ADAPTER_SHA256 = '0a7e173afdd2a911780c14517e651b9787c3b8b3c0fdedb74f915920b4d4f392'
+ADAPTER_SHA256 = '1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd'
 
 
 def _file_sha256(path: Path) -> str:
@@ -116,7 +116,7 @@ def build_iam_frequency_evidence(
         },
         'counts': rows,
         'note': (
-            'Frequency evidence uses IAM training transcripts only. No FAU '
+            'Frequency evidence uses IAM training transcripts only. No ED '
             'labels or recognition results were read.'
         ),
     }
@@ -174,7 +174,7 @@ def validate_evidence(evidence: dict[str, Any], digest: str) -> None:
         raise ValueError('IAM frequency evidence total count mismatch')
 
 
-def build_fau_linguistic_adapter(evidence_path: str | Path) -> dict[str, Any]:
+def build_ed_linguistic_adapter(evidence_path: str | Path) -> dict[str, Any]:
     """Build the matched 224-class comparator from frozen IAM text counts."""
     content = Path(evidence_path).read_bytes()
     digest = sha256_bytes(content)
@@ -197,14 +197,14 @@ def build_fau_linguistic_adapter(evidence_path: str | Path) -> dict[str, Any]:
         }
         for rank, row in enumerate(selected, start=1)
     ]
-    ordered_tokens = ['', *FAU_ALPHABET, *(row['token'] for row in rows)]
+    ordered_tokens = ['', *ED_ALPHABET, *(row['token'] for row in rows)]
     if len(set(ordered_tokens)) != len(ordered_tokens):
         raise ValueError('linguistic adapter tokens are not unique')
     adapter = {
         'schema_version': ADAPTER_SCHEMA,
         'model_version': ADAPTER_POLICY_ID,
         'status': 'frozen-matched-comparator',
-        'dataset': 'FAU English',
+        'dataset': 'ED',
         'text_normalization': 'NFC',
         'blank_token': '',
         'blank_id': 0,
@@ -212,7 +212,7 @@ def build_fau_linguistic_adapter(evidence_path: str | Path) -> dict[str, Any]:
             'vocabulary_selection': 'iam-train-adjacent-pair-frequency-v1',
             'overlap_resolution': GREEDY_POLICY,
             'single_character_utility': 0.0,
-            'required_characters': list(FAU_ALPHABET),
+            'required_characters': list(ED_ALPHABET),
             'selection_count': ADAPTER_BIGRAM_COUNT,
             'tie_breaking': 'descending-count-then-lexical-token',
         },
@@ -226,7 +226,7 @@ def build_fau_linguistic_adapter(evidence_path: str | Path) -> dict[str, Any]:
         'adapter': {
             'policy_id': ADAPTER_POLICY_ID,
             'frozen_date': ADAPTER_FROZEN_DATE,
-            'task': 'FAU English sentence recognition, WD and WI',
+            'task': 'ED sentence recognition, WD and WI',
             'frequency_evidence': {
                 'schema_version': EVIDENCE_SCHEMA,
                 'sha256': digest,
@@ -237,13 +237,13 @@ def build_fau_linguistic_adapter(evidence_path: str | Path) -> dict[str, Any]:
                 'selection_sha256': SELECTION_SHA256,
             },
             'projection': 'declared-task-alphabet-v1',
-            'task_alphabet': list(FAU_ALPHABET),
+            'task_alphabet': list(ED_ALPHABET),
             'iam_training_transcripts_read': True,
-            'fau_annotation_label_values_read_by_builder': False,
+            'annotation_label_values_read_by_builder': False,
         },
         'note': (
             'Matched linguistic comparator selected from IAM training-text '
-            'frequency only. FAU labels and recognition results did not select '
+            'frequency only. ED labels and recognition results did not select '
             'or rank tokens.'
         ),
     }
@@ -251,7 +251,7 @@ def build_fau_linguistic_adapter(evidence_path: str | Path) -> dict[str, Any]:
         raise ValueError('matched comparator does not have the required dimensions')
     adapter_digest = sha256_bytes(canonical_json_bytes(adapter))
     if ADAPTER_SHA256 and adapter_digest != ADAPTER_SHA256:
-        raise ValueError('frozen FAU linguistic adapter SHA-256 mismatch')
+        raise ValueError('frozen ED linguistic adapter SHA-256 mismatch')
     return adapter
 
 

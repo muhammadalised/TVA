@@ -71,6 +71,13 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+# Local thesis planning and handoff notes
+docs/PROJECT_HANDOFF_RTX.md
+docs/PROPOSAL_PLAN.md
+docs/THESIS_PROJECT.md
+docs/TOKENIZER_COMPATIBILITY_AUDIT.md
+docs/DECISIONS.md
+
 # PyBuilder
 .pybuilder/
 target/

@@ -223,8 +223,7 @@ best_wer.pth
 ```
 
 They are replaced only when an epoch obtains a strictly lower CER or WER than
-all earlier epochs in the same run. For forced alignment, use `best_cer.pth`
-because character placement is the relevant selection criterion.
+all earlier epochs in the same run.
 
 To resume, set `checkpoint` in the same experiment configuration while leaving
 `epoch` at the original total number of intended epochs:
