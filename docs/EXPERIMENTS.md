@@ -144,6 +144,20 @@ the complete-train selection-manifest SHA-256 is
 `7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2`.
 No IAM validation/test text and no ED label were used to select pairs.
 
+The separate builder is required by this comparison policy, not because TVA
+lacked greedy Bigram encoding. TVA's original `BigramTokenizer.train()` learns
+a fold-specific vocabulary directly from the recognition dataset's
+`train.json`, collapses labels to distinct word types, and saves only the token
+mappings. Applying it to ED would create an in-domain, ED-training-label
+baseline. That would not be validation leakage when implemented separately per
+fold, but it would answer a different question and would not match the external
+IAM evidence source used by the handwriting condition. The ED comparator
+therefore uses a deterministic IAM-only builder, is frozen once for all WD/WI
+folds, applies explicit lexical tie-breaking, and records source hashes and
+leakage declarations. The additional metadata and artifact authentication do
+not affect model predictions; the selected bigram inventory and resulting
+target segmentation can affect training and recognition.
+
 After NFC normalization, the builder counts every case-sensitive adjacent
 ASCII-letter pair occurrence within each IAM training line. It found 861
 candidate pairs and 153,350 eligible occurrences. Pairs are ranked by
@@ -172,6 +186,14 @@ condition emits 85,153 per archive, so the linguistic vocabulary shortens the
 ED targets by 6,075 tokens (7.13%). This is an intrinsic consequence of the
 different frozen pair memberships—not a segmentation-policy difference—but it
 must be considered when interpreting recognition results.
+
+Accordingly, the reported ED comparison supports only the narrow claim
+"IAM handwriting evidence versus IAM training-text frequency at matched size
+and greedy policy." It does not establish superiority over a linguistic
+tokenizer optimized directly from each ED training fold. Such an ED-trained
+linguistic tokenizer is a valid additional baseline and could produce different
+CER/WER, but it must be named and reported as a separate condition rather than
+silently replacing the frozen IAM-matched control.
 
 The complete TVA regression suite passed after integration: 40 tests ran, 38
 passed, and two unrelated optional external-reference checks were skipped.
