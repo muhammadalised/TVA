@@ -27,6 +27,21 @@ from tva.visualize import visualize
 warnings.filterwarnings('ignore', category=UserWarning)
 
 
+def load_configured_tokenizer(cfgs: argparse.Namespace) -> object:
+    """Load a frozen artifact or an explicit character vocabulary."""
+    tokenizer = get_tokenizer(cfgs.tokenizer)
+    path_config = getattr(cfgs, 'dir_tokenizer', None)
+    if cfgs.tokenizer == 'char' and path_config is None:
+        tokenizer.load_categories(cfgs.categories)
+        return tokenizer
+    if path_config is None:
+        raise ValueError(
+            f'dir_tokenizer is required for tokenizer {cfgs.tokenizer!r}'
+        )
+    tokenizer.load(resolve_tokenizer_path(path_config, cfgs.idx_fold))
+    return tokenizer
+
+
 def build_dataset(
     cfgs: argparse.Namespace,
     split: str,
@@ -187,8 +202,7 @@ def main(cfgs: argparse.Namespace) -> None:
         f'Using device {device.type}; CUDA mixed precision '
         f'{"enabled" if amp_enabled else "disabled"}.'
     )
-    tokenizer = get_tokenizer(cfgs.tokenizer)
-    tokenizer.load(resolve_tokenizer_path(cfgs.dir_tokenizer, cfgs.idx_fold))
+    tokenizer = load_configured_tokenizer(cfgs)
     ctc_decoder = BestPath(tokenizer)
     model = BaseModel(
         cfgs.arch_en,

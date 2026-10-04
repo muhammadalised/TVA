@@ -17,17 +17,25 @@ from tva.tokenizers import get_tokenizer
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_ROOT = REPO_ROOT / 'configs/thesis/ed'
 ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
-SMOKE_CONFIGS = {
-    f'{kind}_{distribution}': CONFIG_ROOT / f'smoke_bigram_{kind}_{distribution}.yaml'
-    for kind in ('handwriting', 'linguistic')
-    for distribution in ('wd', 'wi')
-}
 PRODUCTION_CONFIGS = {
     f'{kind}_{distribution}': CONFIG_ROOT / f'bigram_{kind}_{distribution}.yaml'
-    for kind in ('handwriting', 'linguistic')
+    for kind in ('handwriting', 'tva_original')
     for distribution in ('wd', 'wi')
 }
-TIMING_CONFIG = CONFIG_ROOT / 'timing_bigram_handwriting_wd.yaml'
+
+
+def bounded_config(name):
+    config = yaml.safe_load(PRODUCTION_CONFIGS[name].read_text(encoding='utf-8'))
+    config.update(
+        arch_de='bilstm_s', arch_en='blconv_s', aug=False,
+        device='cpu', epoch=1, epoch_warmup=1,
+        freq_log=1, freq_save=0, max_train_samples=8, max_val_samples=4,
+        num_worker=0, size_batch=2,
+        dir_work=f'results/thesis/development/smoke_ed_{name}',
+    )
+    return config
+
+
 MATCHED_KEYS = (
     'arch_de',
     'arch_en',
@@ -61,8 +69,8 @@ class EdSmokeConfigTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.configs = {
-            name: yaml.safe_load(path.read_text(encoding='utf-8'))
-            for name, path in SMOKE_CONFIGS.items()
+            name: bounded_config(name)
+            for name in PRODUCTION_CONFIGS
         }
 
     def test_all_four_smoke_conditions_are_strictly_matched(self):
@@ -101,7 +109,7 @@ class EdSmokeConfigTests(unittest.TestCase):
             expected = (
                 'handwriting_bigram_greedy'
                 if name.startswith('handwriting')
-                else 'linguistic_bigram_greedy'
+                else 'bigram'
             )
             self.assertEqual(config['tokenizer'], expected)
             self.assertIn(name.split('_')[0], config['dir_tokenizer'])
@@ -148,7 +156,7 @@ class EdProductionConfigTests(unittest.TestCase):
                 expected_tokenizer = (
                     'handwriting_bigram_greedy'
                     if name.startswith('handwriting')
-                    else 'linguistic_bigram_greedy'
+                    else 'bigram'
                 )
                 tokenizer = get_tokenizer(config['tokenizer'])
                 tokenizer.load(REPO_ROOT / config['dir_tokenizer'])
@@ -168,34 +176,10 @@ class EdProductionConfigTests(unittest.TestCase):
                 self.assertEqual(model.decoder.fc.out_features, 224)
                 self.assertEqual(config['epoch'], 300)
                 self.assertEqual(config['epoch_warmup'], 30)
-                self.assertEqual(config['size_batch'], 64)
+                self.assertEqual(config['size_batch'], 32)
                 self.assertTrue(config['aug'])
                 self.assertIsNone(config['checkpoint'])
 
-    def test_timing_config_matches_production_where_it_matters(self):
-        timing = yaml.safe_load(TIMING_CONFIG.read_text(encoding='utf-8'))
-        production = self.configs['handwriting_wd']
-        intentional_differences = {
-            'dir_work',
-            'epoch',
-            'epoch_warmup',
-            'freq_save',
-        }
-        self.assertEqual(
-            {
-                key: value
-                for key, value in timing.items()
-                if key not in intentional_differences
-            },
-            {
-                key: value
-                for key, value in production.items()
-                if key not in intentional_differences
-            },
-        )
-        self.assertEqual(timing['epoch'], 1)
-        self.assertEqual(timing['epoch_warmup'], 1)
-        self.assertEqual(timing['freq_save'], 0)
 
 
 class EdZipDatasetTests(unittest.TestCase):
@@ -234,7 +218,7 @@ class EdZipDatasetTests(unittest.TestCase):
         self.assertTrue(torch.all(label_lengths > 0))
 
     def test_validation_split_is_bounded_independently(self):
-        config = self._load_config('linguistic_wi')
+        config = self._load_config('tva_original_wi')
         tokenizer = get_tokenizer(config.tokenizer)
         tokenizer.load(REPO_ROOT / config.dir_tokenizer)
         with patch.dict(os.environ, {'TVA_ED_DATASET_DIR': str(ED_DIRECTORY)}):
@@ -245,7 +229,7 @@ class EdZipDatasetTests(unittest.TestCase):
 
     def _load_config(self, name: str) -> argparse.Namespace:
         return argparse.Namespace(
-            **yaml.safe_load(SMOKE_CONFIGS[name].read_text())
+            **bounded_config(name)
         )
 
 

@@ -71,8 +71,7 @@ class CharacterTokenizer:
         dir_tokenizers = os.path.join(dir_ds, 'tokenizers', 'char')
         os.makedirs(dir_tokenizers, exist_ok=True)
 
-        self.vocab = {char: i for i, char in enumerate(categories)}
-        self.idx_char = {v: k for k, v in self.vocab.items()}
+        self.load_categories(categories)
 
         with open(os.path.join(dir_ds, 'train.json'), 'r') as f:
             num_fold = json.load(f)['info']['num_fold']
@@ -88,6 +87,39 @@ class CharacterTokenizer:
                 )
 
         logger.info(f'CharacterTokenizers are saved at {dir_tokenizers}.')
+
+    def load_categories(self, categories: list[str]) -> None:
+        '''Initialize a character vocabulary from an explicit ordered list.
+
+        The first category must be the empty CTC blank token. This path is
+        useful when the complete alphabet is part of a frozen experiment
+        configuration and no data-derived tokenizer artifact is required.
+
+        Args:
+            categories: Ordered character vocabulary including blank ID 0.
+
+        Raises:
+            ValueError: If the vocabulary is empty, duplicated, malformed, or
+                does not reserve ID 0 for the CTC blank.
+        '''
+        if not isinstance(categories, list) or not categories:
+            raise ValueError('categories must be a non-empty list')
+        if any(not isinstance(char, str) for char in categories):
+            raise ValueError('every category must be a string')
+        if categories[0] != '':
+            raise ValueError('CTC blank must be the empty category at ID 0')
+        if any(char == '' for char in categories[1:]):
+            raise ValueError('CTC blank may appear only at ID 0')
+        if len(set(categories)) != len(categories):
+            raise ValueError('categories must not contain duplicates')
+
+        self.vocab = {char: i for i, char in enumerate(categories)}
+        self.idx_char = {index: char for char, index in self.vocab.items()}
+
+        logger.info(
+            f'CharacterTokenizer initialized from {len(categories)} '
+            'configured categories.'
+        )
 
     def load(self, path_config: str) -> None:
         '''Loads vocabulary from a JSON file.

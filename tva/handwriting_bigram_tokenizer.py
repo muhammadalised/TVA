@@ -28,15 +28,23 @@ from tva.ed_handwriting_bigram import (
     GREEDY_POLICY,
     SOURCE_SHA256 as ED_SOURCE_SHA256,
 )
-from tva.ed_linguistic_bigram import (
-    ADAPTER_BIGRAM_COUNT as ED_LINGUISTIC_BIGRAM_COUNT,
-    ADAPTER_POLICY_ID as ED_LINGUISTIC_POLICY_ID,
-    ADAPTER_SCHEMA as ED_LINGUISTIC_SCHEMA,
-    ADAPTER_SHA256 as ED_LINGUISTIC_SHA256,
-    ADAPTER_SIZE as ED_LINGUISTIC_SIZE,
-    EVIDENCE_SHA256 as IAM_FREQUENCY_EVIDENCE_SHA256,
-)
-from tva.linguistic_bigram import MANIFEST_SHA256
+
+
+# Frozen historical artifact identities; no vocabulary construction here.
+ED_LINGUISTIC_BIGRAM_COUNT = 145
+ED_LINGUISTIC_POLICY_ID = 'ed-iam-frequency-bigram-greedy-v1'
+ED_LINGUISTIC_SCHEMA = 'tva.ed-frequency-bigram-adapter.v1'
+ED_LINGUISTIC_SHA256 = '1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd'
+ED_LINGUISTIC_SIZE = 224
+IAM_FREQUENCY_EVIDENCE_SHA256 = '7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb'
+MANIFEST_SHA256 = {
+    'onhw_words500_wd_word_rh': (
+        'c6895783d3da442e80ddf169be2e6397839ff2b0158df19b2c6ecb1bc40a2faa'
+    ),
+    'onhw_words500_wi_word_rh': (
+        '605b0f627d3044340111d7ee0b6ba364790b51130d431640d8eca3e1cc9bb392'
+    ),
+}
 
 
 HANDWRITING_SCHEMA = 'dtlr.handwriting-bigram-tokenizer.v2'
@@ -305,7 +313,10 @@ class HandwritingBigramTokenizer:
 
 
 class LinguisticBigramTokenizer(HandwritingBigramTokenizer):
-    """Runtime for fold-specific frequency-derived Bigram baselines."""
+    """Compatibility loader for completed OnHW frequency/utility experiments.
+
+    New linguistic vocabularies use the original TVA BigramTokenizer.
+    """
 
     def load(self, path_config: str | Path) -> None:
         """Load and validate one fold's linguistic tokenizer artifact."""
@@ -462,7 +473,10 @@ class GreedyHandwritingBigramTokenizer(HandwritingBigramTokenizer):
 
 
 class GreedyLinguisticBigramTokenizer(GreedyHandwritingBigramTokenizer):
-    """Greedy runtime for the frozen IAM-frequency ED comparator."""
+    """Compatibility loader for the completed custom IAM-frequency ED runs.
+
+    Kept for historical configs and analysis, not new vocabulary training.
+    """
 
     supported_schemas = {ED_LINGUISTIC_SCHEMA}
     bigram_kind = 'linguistic-bigram'

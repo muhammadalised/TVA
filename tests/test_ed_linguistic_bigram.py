@@ -5,26 +5,19 @@ import unittest
 
 from audit_ed_handwriting_bigram import audit
 from tva.ed_handwriting_bigram import ADAPTER_SHA256 as HANDWRITING_SHA256
-from tva.ed_linguistic_bigram import (
-    ADAPTER_BIGRAM_COUNT,
-    ADAPTER_POLICY_ID,
-    ADAPTER_SHA256,
-    ADAPTER_SIZE,
-    EVIDENCE_SHA256,
-    LABELS_SHA256,
-    SELECTION_SHA256,
-    build_ed_linguistic_adapter,
-    build_iam_frequency_evidence,
-)
 from tva.handwriting_bigram_adapter import canonical_json_bytes, sha256_bytes
-from tva.handwriting_bigram_tokenizer import GreedyLinguisticBigramTokenizer
+from tva.handwriting_bigram_tokenizer import (
+    ED_LINGUISTIC_BIGRAM_COUNT as ADAPTER_BIGRAM_COUNT,
+    ED_LINGUISTIC_POLICY_ID as ADAPTER_POLICY_ID,
+    ED_LINGUISTIC_SHA256 as ADAPTER_SHA256,
+    ED_LINGUISTIC_SIZE as ADAPTER_SIZE,
+    IAM_FREQUENCY_EVIDENCE_SHA256 as EVIDENCE_SHA256,
+    GreedyLinguisticBigramTokenizer,
+)
 from tva.tokenizers import get_tokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE_PATH = (
-    REPO_ROOT / 'artifacts/tokenizers/source/iam-train-letter-bigram-counts-v1.json'
-)
 LINGUISTIC_PATH = (
     REPO_ROOT
     / 'artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json'
@@ -34,32 +27,26 @@ HANDWRITING_PATH = (
     / 'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
 )
 ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
-IAM_LABELS = Path('/home/artellisys/DTLR/data/IAM_new/labels.pkl')
-IAM_SELECTION = Path('/home/artellisys/dtlr-output/iam-train-full/selection.json')
 
 
-class EdLinguisticBuilderTests(unittest.TestCase):
-    def test_frequency_evidence_is_frozen_and_reproducible(self):
-        content = EVIDENCE_PATH.read_bytes()
-        evidence = json.loads(content)
-        self.assertEqual(content, canonical_json_bytes(evidence))
-        self.assertEqual(sha256_bytes(content), EVIDENCE_SHA256)
-        self.assertEqual(evidence['line_count'], 5_694)
-        self.assertEqual(evidence['candidate_bigram_count'], 861)
-        self.assertEqual(evidence['sources']['labels_sha256'], LABELS_SHA256)
+class FrozenEdLinguisticArtifactTests(unittest.TestCase):
+    def test_retained_adapter_records_authenticated_iam_provenance(self):
+        adapter = json.loads(LINGUISTIC_PATH.read_bytes())
+        evidence = adapter['adapter']['frequency_evidence']
+        self.assertEqual(evidence['sha256'], EVIDENCE_SHA256)
+        self.assertEqual(evidence['dataset'], 'IAM')
+        self.assertEqual(evidence['split'], 'train')
+        self.assertEqual(evidence['line_count'], 5694)
         self.assertEqual(
-            evidence['sources']['selection_sha256'], SELECTION_SHA256
+            evidence['labels_sha256'],
+            '5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab',
         )
-        self.assertEqual(evidence['counts'][144], {'token': 'bu', 'count': 273})
-        self.assertEqual(evidence['counts'][145], {'token': 'tu', 'count': 270})
+        self.assertEqual(
+            evidence['selection_sha256'],
+            '7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2',
+        )
 
-    def test_external_iam_sources_rebuild_evidence_when_available(self):
-        if not IAM_LABELS.exists() or not IAM_SELECTION.exists():
-            self.skipTest('authenticated external IAM sources are unavailable')
-        rebuilt = build_iam_frequency_evidence(IAM_LABELS, IAM_SELECTION)
-        self.assertEqual(canonical_json_bytes(rebuilt), EVIDENCE_PATH.read_bytes())
-
-    def test_adapter_is_canonical_reproducible_and_matched(self):
+    def test_adapter_is_frozen_and_matched(self):
         content = LINGUISTIC_PATH.read_bytes()
         adapter = json.loads(content)
         handwriting = json.loads(HANDWRITING_PATH.read_bytes())
@@ -68,10 +55,6 @@ class EdLinguisticBuilderTests(unittest.TestCase):
         )
         self.assertEqual(content, canonical_json_bytes(adapter))
         self.assertEqual(sha256_bytes(content), ADAPTER_SHA256)
-        self.assertEqual(
-            canonical_json_bytes(build_ed_linguistic_adapter(EVIDENCE_PATH)),
-            content,
-        )
         self.assertEqual(adapter['model_version'], ADAPTER_POLICY_ID)
         self.assertEqual(adapter['size'], ADAPTER_SIZE)
         self.assertEqual(adapter['eligible_bigram_count'], ADAPTER_BIGRAM_COUNT)
@@ -87,12 +70,12 @@ class EdLinguisticBuilderTests(unittest.TestCase):
             adapter['adapter']['annotation_label_values_read_by_builder']
         )
 
-    def test_changed_evidence_is_rejected(self):
+    def test_changed_frozen_adapter_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / 'evidence.json'
-            path.write_bytes(EVIDENCE_PATH.read_bytes() + b'\n')
+            path = Path(directory) / 'adapter.json'
+            path.write_bytes(LINGUISTIC_PATH.read_bytes() + b'\n')
             with self.assertRaisesRegex(ValueError, 'SHA-256 mismatch'):
-                build_ed_linguistic_adapter(path)
+                GreedyLinguisticBigramTokenizer().load(path)
 
 
 class GreedyEdLinguisticTokenizerTests(unittest.TestCase):

@@ -278,6 +278,74 @@ thesis recognition evidence and must not be reused for initialization.
 The post-freeze regression suite ran 49 tests: 47 passed and the same two
 optional external-reference checks were skipped.
 
+### ED character baseline — WD fold 0 protocol
+
+The character baseline is the reference condition for measuring whether either
+Bigram vocabulary improves recognition. Its vocabulary is fixed directly from
+the declared ED alphabet: blank ID 0 followed by 78 characters, for a 79-class
+CTC output head. It contains no learned bigrams and reads no label frequencies,
+so tokenizer construction cannot leak validation-label statistics.
+
+The fold-0 configuration is `configs/thesis/ed/character_wd.yaml`. It matches
+the actual batch-32 Bigram study in architecture (BLConv-B + BiLSTM-B), seven
+input channels, WD fold 0, augmentation, seed 42, learning rate 0.001, and the
+300-epoch schedule with 30 warmup epochs. Training starts from scratch and
+writes to `results/thesis/ed/character_wd/0/`. This condition changes only the
+token vocabulary and corresponding output-head width; it must not initialize
+from a Bigram checkpoint.
+
+The run completed on 2026-09-25 through epoch 299. Its independently best
+validation CER was 0.158331 (15.83%) at epoch 241, and its independently best
+validation WER was 0.546480 (54.65%) at epoch 199. The best-CER checkpoint has
+SHA-256 `de86cac7b3c89966344d62bb8b1dc6d12b31df4bc5da3712ba3949543613d122`;
+the best-WER checkpoint has SHA-256
+`df8e3a2d5c52314bc2367fd3392a46d4ab3545c2c1c34e45280079aa1569011d`.
+
+| ED WD fold-0 condition | Best CER | Best WER |
+| --- | ---: | ---: |
+| Character | **15.83%** | **54.65%** |
+| IAM handwriting-aware Bigram | 24.27% | 64.80% |
+| IAM linguistic Bigram | 32.20% | 71.17% |
+
+On fold 0, character improves over handwriting-aware Bigram by 8.44 absolute
+CER points (34.76% relative) and 10.16 WER points (15.67% relative). It
+improves over linguistic Bigram by 16.37 CER points (50.83% relative) and
+16.52 WER points (23.22% relative). This is strong fold-0 evidence that the
+larger 224-class Bigram output space does not help this ED condition, despite
+the handwriting-aware vocabulary remaining better than the linguistic Bigram
+control. A final tokenizer conclusion requires the character baseline on all
+five WD folds; this single-fold comparison is not a five-fold aggregate.
+
+### ED character baseline — WI fold 0 protocol
+
+The matched writer-independent character run uses
+`configs/thesis/ed/character_wi.yaml`. It changes the distribution to WI and
+writes to `results/thesis/ed/character_wi/0/`; all other scientific settings
+match the WD character run and the completed batch-32 WI Bigram fold-0 pair.
+The vocabulary remains blank ID 0 plus the fixed 78-character ED alphabet, for
+a 79-class output head.
+
+The run completed on 2026-09-25 through epoch 299. Its independently best
+validation CER was 0.137717 (13.77%) at epoch 276, and its independently best
+validation WER was 0.423058 (42.31%) at epoch 285. The best-CER checkpoint has
+SHA-256 `d8831121878ab80f6639a9eee8e9b0a2d26a337293e75b9205324eb64698c548`;
+the best-WER checkpoint has SHA-256
+`6fd88eac1f4274b41904e628cf7b797f2c0aecb92627f2aee1995aa4486d68fa`.
+
+| ED WI fold-0 condition | Best CER | Best WER |
+| --- | ---: | ---: |
+| Character | **13.77%** | **42.31%** |
+| IAM handwriting-aware Bigram | 16.42% | 44.84% |
+| IAM linguistic Bigram | 18.60% | 47.49% |
+
+On fold 0, character improves over handwriting-aware Bigram by 2.65 absolute
+CER points (16.13% relative) and 2.53 WER points (5.65% relative). It improves
+over linguistic Bigram by 4.82 CER points (25.94% relative) and 5.19 WER points
+(10.92% relative). Character therefore leads both Bigram systems on both WD
+and WI fold 0. The WI margin over handwriting-aware Bigram is smaller than the
+WD margin, and no five-fold character conclusion should be drawn until the
+remaining folds are complete.
+
 ### ED full-architecture CUDA timing result
 
 - Date: 2026-09-23
@@ -917,3 +985,275 @@ evaluation.
   `latest.pth` remains the resumable end-of-training checkpoint.
 - The complete run directory should be archived.
 - Backup archive checksum: not yet recorded in this log.
+
+## Original TVA linguistic bigram trained on IAM — notebook and pre-training audit
+
+- Date: 2026-10-03
+- Notebook: `train_iam_tva_bigram_tokenizer.ipynb`, following the existing
+  `train_tokenizers.ipynb` factory/train/load workflow.
+- Native artifact:
+  `artifacts/tokenizers/ed_iam_tva_original_bigram_greedy_v1.json`.
+- Artifact SHA-256:
+  `796a676bcfe4087acfdebf795a5e9797a8dd05ff93054d9e72de14e4d44eb73f`.
+- Provenance and full comparison are saved beside the artifact as
+  `ed_iam_tva_original_bigram_greedy_v1.provenance.json` and
+  `ed_iam_tva_original_bigram_greedy_v1.audit.json`.
+
+### Method
+
+The notebook authenticates the existing IAM `labels.pkl` and complete
+training selection manifest using their pinned hashes and every selected
+transcription hash. All 5,694 training lines are represented in a temporary,
+one-fold TVA `train.json`; the original `BigramTokenizer.train()` reduces
+them to 5,337 unique complete labels. No IAM validation/test labels enter
+tokenizer training. Raw training text is retained without additional
+normalization, filtering, lowercasing, or stripping.
+
+The original trainer counts every adjacent pair and uses
+`Counter.most_common`, with original greedy encoding at runtime. Its
+implementation is unchanged. Blank plus the existing 78-character ED alphabet
+leave 145 bigram slots in a 224-class vocabulary. Selected unrestricted pairs
+are checked for ED alphabet compatibility, with no silent filtering.
+
+A subprocess launched with `PYTHONHASHSEED=42` makes the original set iteration
+and encounter-order tie behavior reproducible under recorded Python 3.11.15.
+Two training executions produced byte-identical artifacts. This retains the
+original algorithm; it does not introduce lexical tie-breaking. There are
+1,397 candidate pairs. The selection boundary count is 385, shared by
+`fi`, `ig`, and `ke`; hash seed/Python details therefore matter to exact
+membership and token IDs. Provenance records the trainer-source hash.
+
+### Vocabulary and ED segmentation comparison
+
+Original TVA selects 109 ASCII-letter pairs and 36 non-letter pairs.
+Of the latter, 35 contain a space and three contain punctuation; these
+categories overlap. No selected pair contains a digit. This candidate policy
+differs from the handwriting and custom linguistic letter-pair conditions.
+
+| Vocabulary pair | Shared bigrams (of 145 each) |
+| --- | ---: |
+| Original TVA / handwriting | 58 |
+| Original TVA / custom linguistic | 109 |
+| Handwriting / custom linguistic | 72 |
+
+Both authenticated ED archives contain the same 2,550 labeled records with
+106,087 characters. All three tokenizers reconstructed all records exactly,
+with zero blank targets and zero round-trip failures. Per-archive totals are
+identical because the records are identical; they are not independent samples.
+
+| Condition | Encoded tokens per archive | Mean tokens per record | Reduction from characters |
+| --- | ---: | ---: | ---: |
+| Original TVA on IAM | 70,766 | 27.75 | 33.29% |
+| Custom linguistic on IAM | 79,078 | 31.01 | 25.46% |
+| Handwriting on IAM | 85,153 | 33.39 | 19.73% |
+
+Original TVA differs in token-string segmentation from the custom comparator
+on 2,427 records and from handwriting on 2,505 records. The audit also saves
+all five supplied WD/WI train/validation-fold token totals and example
+segmentations. ED labels are first read after tokenizer selection and freezing.
+
+### Interpretation and next step
+
+This is a separate linguistic baseline, not a replacement for the custom
+comparator or its completed results. Both counting and candidate eligibility
+differ, so outcomes cannot isolate either factor alone. Target compression
+does not establish recognition accuracy. The handwriting minimum-count 20 and
+connected-rate 0.5 selection thresholds remain provisional limitations.
+
+The artifact loads using `tokenizer: bigram` and the native JSON path above.
+Recognition training has not been launched and no recognition config was
+created for this condition. A future manual run must use a separate result
+directory and match the saved ED study protocol: batch 32, seed 42, 300 epochs,
+BLConv-B + BiLSTM-B, seven channels, standard augmentation, no concatenation.
+Some older templates still specify batch 64. The supervisor's OnHW-trained
+transfer setup still requires its exact tokenizer/config/scores for comparison.
+## 2026-10-03 — Retired custom linguistic vocabulary builders
+
+Removed the superseded construction paths:
+`build_ed_linguistic_bigram_adapter.py`, `tva/ed_linguistic_bigram.py`,
+`build_linguistic_bigram_tokenizers.py`, and `tva/linguistic_bigram.py`.
+New IAM linguistic vocabularies are trained with the original TVA algorithm
+through `train_iam_tva_bigram_tokenizer.ipynb`.
+
+Retained frozen custom ED/OnHW vocabularies, frequency evidence, saved configs,
+results, and the small compatibility loaders in
+`tva/handwriting_bigram_tokenizer.py`. Those loaders still authenticate and
+encode historical artifacts with their original greedy or utility-DP policy;
+they do not select vocabularies. Their pinned artifact identities now live
+beside the loaders rather than importing deleted construction modules. The
+analysis notebook and historical experiment configs continue to work.
+
+Builder-only tests were retired; frozen-artifact integrity, source-provenance,
+round-trip, and runtime tests remain. The IAM notebook carries its two pinned
+source hashes directly and no longer imports the retired ED builder.
+All frozen JSON files remained byte-identical. Existing character-baseline
+changes were preserved.
+
+Validation: 55 repository tests completed successfully (seven optional skips).
+Every IAM notebook code cell was then executed successfully, reproducing the
+same tokenizer, provenance, and complete ED audit files. No recognition
+training was launched. For reconstruction of the retired historical policies,
+the removed source is available in Git revision
+`339a2f49a3538c48aa4206c988048fd38534109b`; it is no longer an active builder
+entry point. No commit or push was performed.
+## 2026-10-03 — Config and artifact cleanup
+
+Removed 11 redundant config templates: the four OnHW handwriting/custom
+linguistic Bigram templates, two ED custom linguistic production templates,
+four ED smoke templates, and the ED timing template. Exact historical run
+configs remain in their original result directories. The related OnHW
+template-only tests were retired; historical tokenizer/runtime tests remain.
+ED smoke checks now derive bounded in-memory settings from the active
+production configs rather than retaining duplicate YAML files.
+
+Removed nine unused artifacts: the eight custom OnHW linguistic vocabularies
+for WD/WI folds 1–4 (no corresponding saved runs), and the full IAM
+letter-pair count evidence used only by the retired custom builder.
+Retained both completed OnHW linguistic fold-0 vocabularies and their
+unchanged original checksum manifests. Those original manifests still record
+all five original folds; only the completed fold-0 artifact is retained
+locally. Removed tracked configs/evidence/vocabularies are recoverable from
+Git revision `339a2f49a3538c48aa4206c988048fd38534109b`.
+
+The ED custom linguistic tokenizer remains for completed-run analysis and
+the IAM notebook's three-condition comparison. Its source hashes and selected
+counts remain in its frozen metadata. The IAM-only handwriting source,
+ED handwriting adapter, native original-TVA tokenizer, provenance, audit,
+and historical IAM+READ handwriting artifact are also retained. All retained
+artifact bytes and every saved result YAML remained unchanged.
+
+The six active ED production configs now cover character, handwriting, and
+original TVA-on-IAM, each in WD/WI. Added explicitly named
+`bigram_tva_original_wd.yaml` and `bigram_tva_original_wi.yaml`, with
+`tokenizer: bigram`, the shared native IAM artifact, batch 32, and isolated
+`results/thesis/ed/tva_original_wd|wi` directories. The two current
+handwriting templates now specify batch 32, matching the actual completed ED
+study and character configs. Saved historical batch settings were not edited.
+
+The matrix launcher uses `tva_original_wd|wi` instead of the removed custom
+linguistic config names. Existing output protection is preserved. Include
+fold 0 explicitly when starting the new baseline; launcher defaults still
+start at fold 1. Recognition training remains manual.
+
+Validation: 52 repository tests completed successfully, with seven optional
+external-data/reference skips. The original IAM notebook passed end to end against the available ED archives,
+reproducing the frozen outputs. The launcher dry run validated all ten new
+WD/WI fold configurations without launching recognition training. No
+recognition training, commit, or push was performed.
+## 2026-10-03 — Fold-0 original-TVA linguistic comparison prepared
+
+The next comparison uses original TVA-on-IAM linguistic Bigram against the
+completed IAM handwriting Bigram condition on ED fold 0. Both WD and WI
+linguistic configs passed launcher preflight without launching recognition
+training. The native tokenizer is already frozen; the new recognition models
+have no saved runs yet.
+
+Existing handwriting run JSON files report independently best validation
+CER/WER: WD 24.270563% / 64.803869% (epochs 206 / 245), and
+WI 16.421177% / 44.837093% (epochs 264 / 265). Saved run YAMLs confirm the
+batch-32, seed-42, 300-epoch, seven-channel BLConv-B + BiLSTM-B protocol with
+augmentation and no concatenation. Their historical dataset/tokenizer names
+predate the documented ED metadata rename; those records were left unchanged.
+The existing handwriting results can be reused for this matched comparison.
+
+Manual WSL command after setting `TVA_ED_DATASET_DIR`:
+
+```bash
+/home/artellisys/miniconda3/envs/tva/bin/python run_ed_matrix.py --conditions tva_original_wd tva_original_wi --folds 0
+```
+
+Run from `/home/artellisys/TVA`. The launcher trains the two new recognizers
+sequentially and evaluates validation data each epoch. It uses isolated
+`tva_original_wd/0` and `tva_original_wi/0` result directories and refuses
+occupied outputs. Do not use the earlier custom linguistic result directories
+for this condition. Original-TVA CER/WER remain pending the manual runs.
+
+## 2026-10-04 — Original TVA-on-IAM ED fold-0 results verified
+
+Recorded the completed manual original-TVA linguistic recognition runs for
+ED WD and WI fold 0. Both result files contain exactly epochs 0–299.
+Their saved configs confirm batch 32, seed 42, 300 epochs, 30 warmup epochs,
+learning rate 0.001, BLConv-B + BiLSTM-B, seven input channels, standard
+augmentation, no concatenation, and the shared frozen IAM native bigram
+tokenizer. Vocabulary selection did not use ED labels.
+
+Native tokenizer SHA-256:
+`796a676bcfe4087acfdebf795a5e9797a8dd05ff93054d9e72de14e4d44eb73f`.
+
+### Original TVA linguistic metrics
+
+| Split | Metric | Raw value | Percent | Epoch |
+| --- | --- | ---: | ---: | ---: |
+| WD | CER | 0.3595569172755126 | 35.96% | 191 |
+| WD | WER | 0.7923159591617410 | 79.23% | 224 |
+| WI | CER | 0.20931187012631675 | 20.93% | 250 |
+| WI | WER | 0.5243107769423558 | 52.43% | 258 |
+
+Minimum validation Levenshtein distance was 15.165009940357853 for WD
+(epoch 191) and 8.742857142857142 for WI (epoch 250).
+Average validation reference length was 42.17693836978131 characters for WD
+and 41.76952380952381 for WI. These lengths are reference statistics, not
+optimized model scores. Best CER and WER are selected independently and
+need not occur at the same epoch.
+
+### Matched fold-0 comparison
+
+All values below are independently best validation CER/WER from the saved
+300-epoch runs. The custom comparator is a retained historical condition;
+its results are not reassigned to original TVA.
+
+| Condition | WD CER | WD WER | WI CER | WI WER |
+| --- | ---: | ---: | ---: | ---: |
+| Character | 15.83% | 54.65% | 13.77% | 42.31% |
+| IAM handwriting bigram | 24.27% | 64.80% | 16.42% | 44.84% |
+| Custom IAM linguistic bigram | 32.20% | 71.17% | 18.60% | 47.49% |
+| Original TVA-on-IAM linguistic bigram | 35.96% | 79.23% | 20.93% | 52.43% |
+
+Handwriting has lower error than original TVA by 11.69 CER and 14.43 WER
+percentage points on WD, and 4.51 CER and 7.59 WER points on WI.
+Character remains the best tested condition on both splits. Original TVA is
+also worse than the earlier custom linguistic comparator on this fold.
+
+This confirms that using the original TVA algorithm on IAM does not improve
+the fold-0 linguistic baseline in these runs. Original TVA has shorter
+encoded ED targets than both other bigram vocabularies, but lower target
+counts did not translate into lower recognition error here. This is an
+observed association, not an explanation of the cause.
+
+The evidence is one fold and one seed for each split. Complete the remaining
+folds before generalizing the ranking. Vocabulary selection conditions differ
+in candidate eligibility and counting/connection evidence; these results do
+not isolate a causal effect of handwriting connectivity. The handwriting
+selection thresholds remain provisional. The supervisor's OnHW-trained
+transfer experiment still requires its artifact, config, and scores for a
+direct comparison.
+
+### Saved run evidence
+
+WD directory: `results/thesis/ed/tva_original_wd/0/`.
+
+| File | SHA-256 |
+| --- | --- |
+| `train_20261003230725.json` | `9a8001737de89c96a99ee7613edbb7084a05538bb33c27750d7da1842026ae52` |
+| `train_20261003230725.yaml` | `2fd3627b42468032d9c04cd9abd0b11cec39b662d7aafe11d9bb9a98a417b59b` |
+| `checkpoints/best_cer.pth` | `40ca32849769ed7a7bcd971ed94930dcd60daea31beb27be9b73470dbffb89c1` |
+| `checkpoints/best_wer.pth` | `b571999fb3f8f76544bc6f7627b81994f80a2b57920b724287351dc736e4822d` |
+
+WI directory: `results/thesis/ed/tva_original_wi/0/`.
+
+| File | SHA-256 |
+| --- | --- |
+| `train_20261004001614.json` | `c25d59a60ee3db7b6edf586da6c44b8c3b135ad7638fa553d49bbb9832238c07` |
+| `train_20261004001614.yaml` | `60d9d9c41de45064c0b6af5c56513036cd0e3c915c53da4960d87abc79be8f15` |
+| `checkpoints/best_cer.pth` | `48e17ec8c5d1a9f6b1a32440948f2afb90f93df6ed2087f63a42d45cbd4b1e28` |
+| `checkpoints/best_wer.pth` | `304b16fc435bfa51ed6fc85228a24edb6c7e83554de9e34721acde49c8018865` |
+
+Metrics were read from the saved per-run JSON `best` entries; the generic
+`evaluate.py` summary currently reports WER at the best-CER epoch for
+training runs, which is a different convention. Use the independent minima
+above consistently when comparing with the previous thesis tables.
+External backup location/checksum is not yet recorded.
+
+No tokenizer policy, training config, saved result, or checkpoint was changed
+during verification. No additional recognition run, commit, or push was
+performed.

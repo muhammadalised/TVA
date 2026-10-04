@@ -1,0 +1,1571 @@
+{
+  "archive_sha256": {
+    "gold_wd": "edaf78b0f422f719bbb13153249a5a6667a814d6f5a8d7d0d2ba02535ae55a3e",
+    "gold_wi": "0ba1b8e5d53c7208bbdc4a43cfb701ed6a1d27be382a23ba0aaade8cb3283304"
+  },
+  "comparator_sha256": {
+    "custom_linguistic": "1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd",
+    "handwriting": "d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7"
+  },
+  "ed_labels_used_for_vocabulary_selection": false,
+  "examples": [
+    {
+      "id": 0,
+      "label": "In short, there will be on TV!",
+      "tokens": {
+        "custom_linguistic": [
+          "I",
+          "n",
+          " ",
+          "sh",
+          "or",
+          "t",
+          ",",
+          " ",
+          "th",
+          "er",
+          "e",
+          " ",
+          "wi",
+          "ll",
+          " ",
+          "be",
+          " ",
+          "on",
+          " ",
+          "T",
+          "V",
+          "!"
+        ],
+        "handwriting": [
+          "I",
+          "n",
+          " ",
+          "s",
+          "ho",
+          "r",
+          "t",
+          ",",
+          " ",
+          "th",
+          "er",
+          "e",
+          " ",
+          "w",
+          "i",
+          "ll",
+          " ",
+          "be",
+          " ",
+          "on",
+          " ",
+          "T",
+          "V",
+          "!"
+        ],
+        "original_tva": [
+          "I",
+          "n ",
+          "sh",
+          "or",
+          "t",
+          ", ",
+          "th",
+          "er",
+          "e ",
+          "wi",
+          "ll",
+          " b",
+          "e ",
+          "on",
+          " ",
+          "T",
+          "V",
+          "!"
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "label": "Kocheln has been in the department for seven years.",
+      "tokens": {
+        "custom_linguistic": [
+          "K",
+          "o",
+          "ch",
+          "el",
+          "n",
+          " ",
+          "ha",
+          "s",
+          " ",
+          "be",
+          "en",
+          " ",
+          "in",
+          " ",
+          "th",
+          "e",
+          " ",
+          "de",
+          "pa",
+          "rt",
+          "me",
+          "nt",
+          " ",
+          "fo",
+          "r",
+          " ",
+          "se",
+          "ve",
+          "n",
+          " ",
+          "y",
+          "ea",
+          "rs",
+          "."
+        ],
+        "handwriting": [
+          "K",
+          "o",
+          "ch",
+          "el",
+          "n",
+          " ",
+          "ha",
+          "s",
+          " ",
+          "be",
+          "en",
+          " ",
+          "i",
+          "n",
+          " ",
+          "th",
+          "e",
+          " ",
+          "de",
+          "p",
+          "ar",
+          "t",
+          "me",
+          "n",
+          "t",
+          " ",
+          "fo",
+          "r",
+          " ",
+          "se",
+          "v",
+          "en",
+          " ",
+          "y",
+          "ea",
+          "r",
+          "s",
+          "."
+        ],
+        "original_tva": [
+          "K",
+          "o",
+          "ch",
+          "el",
+          "n ",
+          "ha",
+          "s ",
+          "be",
+          "en",
+          " i",
+          "n ",
+          "th",
+          "e ",
+          "de",
+          "pa",
+          "rt",
+          "me",
+          "nt",
+          " f",
+          "or",
+          " s",
+          "ev",
+          "en",
+          " ",
+          "y",
+          "ea",
+          "rs",
+          "."
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "label": "But what of the Zelda franchise?",
+      "tokens": {
+        "custom_linguistic": [
+          "B",
+          "ut",
+          " ",
+          "wh",
+          "at",
+          " ",
+          "of",
+          " ",
+          "th",
+          "e",
+          " ",
+          "Z",
+          "el",
+          "d",
+          "a",
+          " ",
+          "fr",
+          "an",
+          "ch",
+          "is",
+          "e",
+          "?"
+        ],
+        "handwriting": [
+          "B",
+          "ut",
+          " ",
+          "w",
+          "ha",
+          "t",
+          " ",
+          "of",
+          " ",
+          "th",
+          "e",
+          " ",
+          "Z",
+          "el",
+          "d",
+          "a",
+          " ",
+          "fr",
+          "an",
+          "ch",
+          "i",
+          "se",
+          "?"
+        ],
+        "original_tva": [
+          "B",
+          "ut",
+          " w",
+          "ha",
+          "t ",
+          "of",
+          " t",
+          "he",
+          " ",
+          "Z",
+          "el",
+          "d",
+          "a ",
+          "f",
+          "ra",
+          "nc",
+          "hi",
+          "se",
+          "?"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "label": "Some are looking for jobs abroad; others look for more.",
+      "tokens": {
+        "custom_linguistic": [
+          "S",
+          "om",
+          "e",
+          " ",
+          "ar",
+          "e",
+          " ",
+          "lo",
+          "o",
+          "k",
+          "in",
+          "g",
+          " ",
+          "fo",
+          "r",
+          " ",
+          "j",
+          "o",
+          "b",
+          "s",
+          " ",
+          "ab",
+          "ro",
+          "ad",
+          ";",
+          " ",
+          "ot",
+          "he",
+          "rs",
+          " ",
+          "lo",
+          "o",
+          "k",
+          " ",
+          "fo",
+          "r",
+          " ",
+          "mo",
+          "re",
+          "."
+        ],
+        "handwriting": [
+          "S",
+          "om",
+          "e",
+          " ",
+          "ar",
+          "e",
+          " ",
+          "l",
+          "oo",
+          "ki",
+          "n",
+          "g",
+          " ",
+          "fo",
+          "r",
+          " ",
+          "j",
+          "o",
+          "b",
+          "s",
+          " ",
+          "ab",
+          "ro",
+          "a",
+          "d",
+          ";",
+          " ",
+          "o",
+          "th",
+          "er",
+          "s",
+          " ",
+          "l",
+          "oo",
+          "k",
+          " ",
+          "fo",
+          "r",
+          " ",
+          "m",
+          "or",
+          "e",
+          "."
+        ],
+        "original_tva": [
+          "S",
+          "om",
+          "e ",
+          "ar",
+          "e ",
+          "lo",
+          "o",
+          "k",
+          "in",
+          "g ",
+          "fo",
+          "r ",
+          "j",
+          "o",
+          "b",
+          "s ",
+          "a",
+          "b",
+          "ro",
+          "ad",
+          ";",
+          " o",
+          "th",
+          "er",
+          "s ",
+          "lo",
+          "o",
+          "k",
+          " f",
+          "or",
+          " m",
+          "or",
+          "e",
+          "."
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "label": "\"What kind of stuff is that!\"",
+      "tokens": {
+        "custom_linguistic": [
+          "\"",
+          "W",
+          "ha",
+          "t",
+          " ",
+          "k",
+          "in",
+          "d",
+          " ",
+          "of",
+          " ",
+          "st",
+          "u",
+          "f",
+          "f",
+          " ",
+          "is",
+          " ",
+          "th",
+          "at",
+          "!",
+          "\""
+        ],
+        "handwriting": [
+          "\"",
+          "W",
+          "ha",
+          "t",
+          " ",
+          "ki",
+          "n",
+          "d",
+          " ",
+          "of",
+          " ",
+          "s",
+          "tu",
+          "ff",
+          " ",
+          "i",
+          "s",
+          " ",
+          "th",
+          "at",
+          "!",
+          "\""
+        ],
+        "original_tva": [
+          "\"",
+          "W",
+          "ha",
+          "t ",
+          "k",
+          "in",
+          "d ",
+          "of",
+          " s",
+          "t",
+          "u",
+          "f",
+          "f ",
+          "is",
+          " t",
+          "ha",
+          "t",
+          "!",
+          "\""
+        ]
+      }
+    }
+  ],
+  "schema_version": "tva.iam-original-bigram-comparison.v1",
+  "segmentation": {
+    "gold_wd": {
+      "conditions": {
+        "custom_linguistic": {
+          "bigram_tokens_used": 27009,
+          "blank_ids_emitted": 0,
+          "characters": 106087,
+          "encoded_tokens": 79078,
+          "mean_tokens_per_record": 31.010980392156863,
+          "records": 2550,
+          "round_trip_failures": 0,
+          "token_reduction_vs_characters": 0.25459292844552117
+        },
+        "handwriting": {
+          "bigram_tokens_used": 20934,
+          "blank_ids_emitted": 0,
+          "characters": 106087,
+          "encoded_tokens": 85153,
+          "mean_tokens_per_record": 33.39333333333333,
+          "records": 2550,
+          "round_trip_failures": 0,
+          "token_reduction_vs_characters": 0.19732860765220994
+        },
+        "original_tva": {
+          "bigram_tokens_used": 35321,
+          "blank_ids_emitted": 0,
+          "characters": 106087,
+          "encoded_tokens": 70766,
+          "mean_tokens_per_record": 27.751372549019607,
+          "records": 2550,
+          "round_trip_failures": 0,
+          "token_reduction_vs_characters": 0.3329437160066737
+        }
+      },
+      "different_segmentations": {
+        "handwriting vs custom_linguistic": 2463,
+        "original_tva vs custom_linguistic": 2427,
+        "original_tva vs handwriting": 2505
+      },
+      "folds": {
+        "0": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63421,
+              "handwriting": 68256,
+              "original_tva": 56792
+            },
+            "records": 2047
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 15657,
+              "handwriting": 16897,
+              "original_tva": 13974
+            },
+            "records": 503
+          }
+        },
+        "1": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63508,
+              "handwriting": 68286,
+              "original_tva": 56952
+            },
+            "records": 2039
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 15570,
+              "handwriting": 16867,
+              "original_tva": 13814
+            },
+            "records": 511
+          }
+        },
+        "2": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63106,
+              "handwriting": 67946,
+              "original_tva": 56380
+            },
+            "records": 2036
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 15972,
+              "handwriting": 17207,
+              "original_tva": 14386
+            },
+            "records": 514
+          }
+        },
+        "3": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 62463,
+              "handwriting": 67430,
+              "original_tva": 56017
+            },
+            "records": 2019
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 16615,
+              "handwriting": 17723,
+              "original_tva": 14749
+            },
+            "records": 531
+          }
+        },
+        "4": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63814,
+              "handwriting": 68694,
+              "original_tva": 56923
+            },
+            "records": 2059
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 15264,
+              "handwriting": 16459,
+              "original_tva": 13843
+            },
+            "records": 491
+          }
+        }
+      }
+    },
+    "gold_wi": {
+      "conditions": {
+        "custom_linguistic": {
+          "bigram_tokens_used": 27009,
+          "blank_ids_emitted": 0,
+          "characters": 106087,
+          "encoded_tokens": 79078,
+          "mean_tokens_per_record": 31.010980392156863,
+          "records": 2550,
+          "round_trip_failures": 0,
+          "token_reduction_vs_characters": 0.25459292844552117
+        },
+        "handwriting": {
+          "bigram_tokens_used": 20934,
+          "blank_ids_emitted": 0,
+          "characters": 106087,
+          "encoded_tokens": 85153,
+          "mean_tokens_per_record": 33.39333333333333,
+          "records": 2550,
+          "round_trip_failures": 0,
+          "token_reduction_vs_characters": 0.19732860765220994
+        },
+        "original_tva": {
+          "bigram_tokens_used": 35321,
+          "blank_ids_emitted": 0,
+          "characters": 106087,
+          "encoded_tokens": 70766,
+          "mean_tokens_per_record": 27.751372549019607,
+          "records": 2550,
+          "round_trip_failures": 0,
+          "token_reduction_vs_characters": 0.3329437160066737
+        }
+      },
+      "different_segmentations": {
+        "handwriting vs custom_linguistic": 2463,
+        "original_tva vs custom_linguistic": 2427,
+        "original_tva vs handwriting": 2505
+      },
+      "folds": {
+        "0": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 62820,
+              "handwriting": 67613,
+              "original_tva": 56197
+            },
+            "records": 2025
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 16258,
+              "handwriting": 17540,
+              "original_tva": 14569
+            },
+            "records": 525
+          }
+        },
+        "1": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63046,
+              "handwriting": 67890,
+              "original_tva": 56390
+            },
+            "records": 2025
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 16032,
+              "handwriting": 17263,
+              "original_tva": 14376
+            },
+            "records": 525
+          }
+        },
+        "2": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63305,
+              "handwriting": 68194,
+              "original_tva": 56657
+            },
+            "records": 2050
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 15773,
+              "handwriting": 16959,
+              "original_tva": 14109
+            },
+            "records": 500
+          }
+        },
+        "3": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63683,
+              "handwriting": 68620,
+              "original_tva": 56993
+            },
+            "records": 2050
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 15395,
+              "handwriting": 16533,
+              "original_tva": 13773
+            },
+            "records": 500
+          }
+        },
+        "4": {
+          "train": {
+            "encoded_tokens": {
+              "custom_linguistic": 63458,
+              "handwriting": 68295,
+              "original_tva": 56827
+            },
+            "records": 2050
+          },
+          "val": {
+            "encoded_tokens": {
+              "custom_linguistic": 15620,
+              "handwriting": 16858,
+              "original_tva": 13939
+            },
+            "records": 500
+          }
+        }
+      }
+    }
+  },
+  "tokenizer_sha256": "796a676bcfe4087acfdebf795a5e9797a8dd05ff93054d9e72de14e4d44eb73f",
+  "unique_ed_records": 2550,
+  "vocabulary_comparison": {
+    "candidate_pair_count": 1397,
+    "pairs_tied_at_selection_boundary": [
+      "fi",
+      "ig",
+      "ke"
+    ],
+    "pairwise_overlap": {
+      "handwriting vs custom_linguistic": 72,
+      "original_tva vs custom_linguistic": 109,
+      "original_tva vs handwriting": 58
+    },
+    "selected_ascii_letter_pairs": 109,
+    "selected_bigrams": [
+      {
+        "rank": 1,
+        "token": "e ",
+        "unique_label_occurrence_count": 6281
+      },
+      {
+        "rank": 2,
+        "token": " t",
+        "unique_label_occurrence_count": 5156
+      },
+      {
+        "rank": 3,
+        "token": "th",
+        "unique_label_occurrence_count": 4749
+      },
+      {
+        "rank": 4,
+        "token": "he",
+        "unique_label_occurrence_count": 4539
+      },
+      {
+        "rank": 5,
+        "token": "s ",
+        "unique_label_occurrence_count": 3772
+      },
+      {
+        "rank": 6,
+        "token": " a",
+        "unique_label_occurrence_count": 3530
+      },
+      {
+        "rank": 7,
+        "token": "in",
+        "unique_label_occurrence_count": 3279
+      },
+      {
+        "rank": 8,
+        "token": "t ",
+        "unique_label_occurrence_count": 3154
+      },
+      {
+        "rank": 9,
+        "token": "er",
+        "unique_label_occurrence_count": 3108
+      },
+      {
+        "rank": 10,
+        "token": "d ",
+        "unique_label_occurrence_count": 3088
+      },
+      {
+        "rank": 11,
+        "token": "n ",
+        "unique_label_occurrence_count": 2846
+      },
+      {
+        "rank": 12,
+        "token": "an",
+        "unique_label_occurrence_count": 2634
+      },
+      {
+        "rank": 13,
+        "token": "re",
+        "unique_label_occurrence_count": 2466
+      },
+      {
+        "rank": 14,
+        "token": "on",
+        "unique_label_occurrence_count": 2220
+      },
+      {
+        "rank": 15,
+        "token": "en",
+        "unique_label_occurrence_count": 2132
+      },
+      {
+        "rank": 16,
+        "token": " o",
+        "unique_label_occurrence_count": 2124
+      },
+      {
+        "rank": 17,
+        "token": " w",
+        "unique_label_occurrence_count": 1972
+      },
+      {
+        "rank": 18,
+        "token": "at",
+        "unique_label_occurrence_count": 1944
+      },
+      {
+        "rank": 19,
+        "token": " i",
+        "unique_label_occurrence_count": 1881
+      },
+      {
+        "rank": 20,
+        "token": "r ",
+        "unique_label_occurrence_count": 1860
+      },
+      {
+        "rank": 21,
+        "token": "y ",
+        "unique_label_occurrence_count": 1832
+      },
+      {
+        "rank": 22,
+        "token": "is",
+        "unique_label_occurrence_count": 1802
+      },
+      {
+        "rank": 23,
+        "token": " s",
+        "unique_label_occurrence_count": 1784
+      },
+      {
+        "rank": 24,
+        "token": "ed",
+        "unique_label_occurrence_count": 1760
+      },
+      {
+        "rank": 25,
+        "token": ", ",
+        "unique_label_occurrence_count": 1735
+      },
+      {
+        "rank": 26,
+        "token": "nd",
+        "unique_label_occurrence_count": 1735
+      },
+      {
+        "rank": 27,
+        "token": " h",
+        "unique_label_occurrence_count": 1728
+      },
+      {
+        "rank": 28,
+        "token": "es",
+        "unique_label_occurrence_count": 1724
+      },
+      {
+        "rank": 29,
+        "token": "to",
+        "unique_label_occurrence_count": 1715
+      },
+      {
+        "rank": 30,
+        "token": "ha",
+        "unique_label_occurrence_count": 1675
+      },
+      {
+        "rank": 31,
+        "token": "or",
+        "unique_label_occurrence_count": 1624
+      },
+      {
+        "rank": 32,
+        "token": "ar",
+        "unique_label_occurrence_count": 1621
+      },
+      {
+        "rank": 33,
+        "token": " b",
+        "unique_label_occurrence_count": 1592
+      },
+      {
+        "rank": 34,
+        "token": "te",
+        "unique_label_occurrence_count": 1544
+      },
+      {
+        "rank": 35,
+        "token": "st",
+        "unique_label_occurrence_count": 1532
+      },
+      {
+        "rank": 36,
+        "token": "o ",
+        "unique_label_occurrence_count": 1520
+      },
+      {
+        "rank": 37,
+        "token": ". ",
+        "unique_label_occurrence_count": 1513
+      },
+      {
+        "rank": 38,
+        "token": "ng",
+        "unique_label_occurrence_count": 1502
+      },
+      {
+        "rank": 39,
+        "token": "it",
+        "unique_label_occurrence_count": 1496
+      },
+      {
+        "rank": 40,
+        "token": "ti",
+        "unique_label_occurrence_count": 1460
+      },
+      {
+        "rank": 41,
+        "token": "of",
+        "unique_label_occurrence_count": 1379
+      },
+      {
+        "rank": 42,
+        "token": "ou",
+        "unique_label_occurrence_count": 1374
+      },
+      {
+        "rank": 43,
+        "token": "as",
+        "unique_label_occurrence_count": 1372
+      },
+      {
+        "rank": 44,
+        "token": "nt",
+        "unique_label_occurrence_count": 1331
+      },
+      {
+        "rank": 45,
+        "token": "f ",
+        "unique_label_occurrence_count": 1328
+      },
+      {
+        "rank": 46,
+        "token": "ve",
+        "unique_label_occurrence_count": 1299
+      },
+      {
+        "rank": 47,
+        "token": "al",
+        "unique_label_occurrence_count": 1291
+      },
+      {
+        "rank": 48,
+        "token": " f",
+        "unique_label_occurrence_count": 1283
+      },
+      {
+        "rank": 49,
+        "token": " c",
+        "unique_label_occurrence_count": 1279
+      },
+      {
+        "rank": 50,
+        "token": "le",
+        "unique_label_occurrence_count": 1225
+      },
+      {
+        "rank": 51,
+        "token": "se",
+        "unique_label_occurrence_count": 1180
+      },
+      {
+        "rank": 52,
+        "token": "ea",
+        "unique_label_occurrence_count": 1174
+      },
+      {
+        "rank": 53,
+        "token": " p",
+        "unique_label_occurrence_count": 1168
+      },
+      {
+        "rank": 54,
+        "token": "hi",
+        "unique_label_occurrence_count": 1124
+      },
+      {
+        "rank": 55,
+        "token": "me",
+        "unique_label_occurrence_count": 1107
+      },
+      {
+        "rank": 56,
+        "token": " m",
+        "unique_label_occurrence_count": 1084
+      },
+      {
+        "rank": 57,
+        "token": "de",
+        "unique_label_occurrence_count": 1057
+      },
+      {
+        "rank": 58,
+        "token": "ri",
+        "unique_label_occurrence_count": 1054
+      },
+      {
+        "rank": 59,
+        "token": "be",
+        "unique_label_occurrence_count": 1023
+      },
+      {
+        "rank": 60,
+        "token": "ne",
+        "unique_label_occurrence_count": 995
+      },
+      {
+        "rank": 61,
+        "token": "ll",
+        "unique_label_occurrence_count": 970
+      },
+      {
+        "rank": 62,
+        "token": "ro",
+        "unique_label_occurrence_count": 938
+      },
+      {
+        "rank": 63,
+        "token": "a ",
+        "unique_label_occurrence_count": 933
+      },
+      {
+        "rank": 64,
+        "token": "l ",
+        "unique_label_occurrence_count": 931
+      },
+      {
+        "rank": 65,
+        "token": "g ",
+        "unique_label_occurrence_count": 909
+      },
+      {
+        "rank": 66,
+        "token": "ic",
+        "unique_label_occurrence_count": 880
+      },
+      {
+        "rank": 67,
+        "token": "ce",
+        "unique_label_occurrence_count": 875
+      },
+      {
+        "rank": 68,
+        "token": "li",
+        "unique_label_occurrence_count": 867
+      },
+      {
+        "rank": 69,
+        "token": "h ",
+        "unique_label_occurrence_count": 863
+      },
+      {
+        "rank": 70,
+        "token": "ch",
+        "unique_label_occurrence_count": 856
+      },
+      {
+        "rank": 71,
+        "token": "ho",
+        "unique_label_occurrence_count": 807
+      },
+      {
+        "rank": 72,
+        "token": "ma",
+        "unique_label_occurrence_count": 800
+      },
+      {
+        "rank": 73,
+        "token": " d",
+        "unique_label_occurrence_count": 799
+      },
+      {
+        "rank": 74,
+        "token": "io",
+        "unique_label_occurrence_count": 799
+      },
+      {
+        "rank": 75,
+        "token": "om",
+        "unique_label_occurrence_count": 790
+      },
+      {
+        "rank": 76,
+        "token": "ra",
+        "unique_label_occurrence_count": 781
+      },
+      {
+        "rank": 77,
+        "token": "co",
+        "unique_label_occurrence_count": 781
+      },
+      {
+        "rank": 78,
+        "token": "il",
+        "unique_label_occurrence_count": 752
+      },
+      {
+        "rank": 79,
+        "token": "ta",
+        "unique_label_occurrence_count": 748
+      },
+      {
+        "rank": 80,
+        "token": "el",
+        "unique_label_occurrence_count": 741
+      },
+      {
+        "rank": 81,
+        "token": "pe",
+        "unique_label_occurrence_count": 730
+      },
+      {
+        "rank": 82,
+        "token": "ur",
+        "unique_label_occurrence_count": 729
+      },
+      {
+        "rank": 83,
+        "token": "la",
+        "unique_label_occurrence_count": 729
+      },
+      {
+        "rank": 84,
+        "token": " n",
+        "unique_label_occurrence_count": 705
+      },
+      {
+        "rank": 85,
+        "token": "ad",
+        "unique_label_occurrence_count": 683
+      },
+      {
+        "rank": 86,
+        "token": "ee",
+        "unique_label_occurrence_count": 677
+      },
+      {
+        "rank": 87,
+        "token": "si",
+        "unique_label_occurrence_count": 665
+      },
+      {
+        "rank": 88,
+        "token": " e",
+        "unique_label_occurrence_count": 652
+      },
+      {
+        "rank": 89,
+        "token": "fo",
+        "unique_label_occurrence_count": 651
+      },
+      {
+        "rank": 90,
+        "token": " r",
+        "unique_label_occurrence_count": 647
+      },
+      {
+        "rank": 91,
+        "token": "ut",
+        "unique_label_occurrence_count": 640
+      },
+      {
+        "rank": 92,
+        "token": "ns",
+        "unique_label_occurrence_count": 624
+      },
+      {
+        "rank": 93,
+        "token": "ot",
+        "unique_label_occurrence_count": 622
+      },
+      {
+        "rank": 94,
+        "token": "ly",
+        "unique_label_occurrence_count": 614
+      },
+      {
+        "rank": 95,
+        "token": " l",
+        "unique_label_occurrence_count": 610
+      },
+      {
+        "rank": 96,
+        "token": "et",
+        "unique_label_occurrence_count": 607
+      },
+      {
+        "rank": 97,
+        "token": "us",
+        "unique_label_occurrence_count": 603
+      },
+      {
+        "rank": 98,
+        "token": "wa",
+        "unique_label_occurrence_count": 599
+      },
+      {
+        "rank": 99,
+        "token": "ie",
+        "unique_label_occurrence_count": 593
+      },
+      {
+        "rank": 100,
+        "token": "ai",
+        "unique_label_occurrence_count": 587
+      },
+      {
+        "rank": 101,
+        "token": "no",
+        "unique_label_occurrence_count": 586
+      },
+      {
+        "rank": 102,
+        "token": "un",
+        "unique_label_occurrence_count": 585
+      },
+      {
+        "rank": 103,
+        "token": "wi",
+        "unique_label_occurrence_count": 582
+      },
+      {
+        "rank": 104,
+        "token": "tr",
+        "unique_label_occurrence_count": 571
+      },
+      {
+        "rank": 105,
+        "token": "ca",
+        "unique_label_occurrence_count": 565
+      },
+      {
+        "rank": 106,
+        "token": "di",
+        "unique_label_occurrence_count": 564
+      },
+      {
+        "rank": 107,
+        "token": "em",
+        "unique_label_occurrence_count": 563
+      },
+      {
+        "rank": 108,
+        "token": "ac",
+        "unique_label_occurrence_count": 557
+      },
+      {
+        "rank": 109,
+        "token": "wh",
+        "unique_label_occurrence_count": 554
+      },
+      {
+        "rank": 110,
+        "token": "nc",
+        "unique_label_occurrence_count": 552
+      },
+      {
+        "rank": 111,
+        "token": "ec",
+        "unique_label_occurrence_count": 551
+      },
+      {
+        "rank": 112,
+        "token": "rs",
+        "unique_label_occurrence_count": 551
+      },
+      {
+        "rank": 113,
+        "token": "we",
+        "unique_label_occurrence_count": 547
+      },
+      {
+        "rank": 114,
+        "token": "ol",
+        "unique_label_occurrence_count": 508
+      },
+      {
+        "rank": 115,
+        "token": "ul",
+        "unique_label_occurrence_count": 508
+      },
+      {
+        "rank": 116,
+        "token": "ow",
+        "unique_label_occurrence_count": 504
+      },
+      {
+        "rank": 117,
+        "token": "ir",
+        "unique_label_occurrence_count": 500
+      },
+      {
+        "rank": 118,
+        "token": "rt",
+        "unique_label_occurrence_count": 490
+      },
+      {
+        "rank": 119,
+        "token": "mo",
+        "unique_label_occurrence_count": 490
+      },
+      {
+        "rank": 120,
+        "token": "sh",
+        "unique_label_occurrence_count": 489
+      },
+      {
+        "rank": 121,
+        "token": "ss",
+        "unique_label_occurrence_count": 483
+      },
+      {
+        "rank": 122,
+        "token": "po",
+        "unique_label_occurrence_count": 473
+      },
+      {
+        "rank": 123,
+        "token": " M",
+        "unique_label_occurrence_count": 468
+      },
+      {
+        "rank": 124,
+        "token": " g",
+        "unique_label_occurrence_count": 467
+      },
+      {
+        "rank": 125,
+        "token": "ct",
+        "unique_label_occurrence_count": 466
+      },
+      {
+        "rank": 126,
+        "token": "ge",
+        "unique_label_occurrence_count": 462
+      },
+      {
+        "rank": 127,
+        "token": "Th",
+        "unique_label_occurrence_count": 457
+      },
+      {
+        "rank": 128,
+        "token": "ay",
+        "unique_label_occurrence_count": 455
+      },
+      {
+        "rank": 129,
+        "token": "so",
+        "unique_label_occurrence_count": 453
+      },
+      {
+        "rank": 130,
+        "token": "ni",
+        "unique_label_occurrence_count": 451
+      },
+      {
+        "rank": 131,
+        "token": "ld",
+        "unique_label_occurrence_count": 444
+      },
+      {
+        "rank": 132,
+        "token": "mi",
+        "unique_label_occurrence_count": 443
+      },
+      {
+        "rank": 133,
+        "token": "pr",
+        "unique_label_occurrence_count": 437
+      },
+      {
+        "rank": 134,
+        "token": "lo",
+        "unique_label_occurrence_count": 424
+      },
+      {
+        "rank": 135,
+        "token": "pa",
+        "unique_label_occurrence_count": 410
+      },
+      {
+        "rank": 136,
+        "token": "r.",
+        "unique_label_occurrence_count": 405
+      },
+      {
+        "rank": 137,
+        "token": "ev",
+        "unique_label_occurrence_count": 404
+      },
+      {
+        "rank": 138,
+        "token": "ts",
+        "unique_label_occurrence_count": 403
+      },
+      {
+        "rank": 139,
+        "token": "pl",
+        "unique_label_occurrence_count": 394
+      },
+      {
+        "rank": 140,
+        "token": " u",
+        "unique_label_occurrence_count": 394
+      },
+      {
+        "rank": 141,
+        "token": "iv",
+        "unique_label_occurrence_count": 392
+      },
+      {
+        "rank": 142,
+        "token": "id",
+        "unique_label_occurrence_count": 387
+      },
+      {
+        "rank": 143,
+        "token": "fi",
+        "unique_label_occurrence_count": 385
+      },
+      {
+        "rank": 144,
+        "token": "ke",
+        "unique_label_occurrence_count": 385
+      },
+      {
+        "rank": 145,
+        "token": "ig",
+        "unique_label_occurrence_count": 385
+      }
+    ],
+    "selected_digit_pairs": [],
+    "selected_nonletter_pairs": [
+      "e ",
+      " t",
+      "s ",
+      " a",
+      "t ",
+      "d ",
+      "n ",
+      " o",
+      " w",
+      " i",
+      "r ",
+      "y ",
+      " s",
+      ", ",
+      " h",
+      " b",
+      "o ",
+      ". ",
+      "f ",
+      " f",
+      " c",
+      " p",
+      " m",
+      "a ",
+      "l ",
+      "g ",
+      "h ",
+      " d",
+      " n",
+      " e",
+      " r",
+      " l",
+      " M",
+      " g",
+      "r.",
+      " u"
+    ],
+    "selected_punctuation_pairs": [
+      ", ",
+      ". ",
+      "r."
+    ],
+    "selected_space_pairs": [
+      "e ",
+      " t",
+      "s ",
+      " a",
+      "t ",
+      "d ",
+      "n ",
+      " o",
+      " w",
+      " i",
+      "r ",
+      "y ",
+      " s",
+      ", ",
+      " h",
+      " b",
+      "o ",
+      ". ",
+      "f ",
+      " f",
+      " c",
+      " p",
+      " m",
+      "a ",
+      "l ",
+      "g ",
+      "h ",
+      " d",
+      " n",
+      " e",
+      " r",
+      " l",
+      " M",
+      " g",
+      " u"
+    ],
+    "selection_boundary_count": 385
+  }
+}

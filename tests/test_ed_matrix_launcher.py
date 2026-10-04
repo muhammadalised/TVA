@@ -40,6 +40,19 @@ class EdMatrixLauncherTests(unittest.TestCase):
                 self.assertIsNone(config['checkpoint'])
                 self.assertEqual(output.name, '3')
 
+    def test_original_tva_configs_use_native_artifact_and_isolated_outputs(self):
+        conditions = ('tva_original_wd', 'tva_original_wi')
+        runs = load_effective_configs([0], conditions, 32)
+        for condition, fold, config, output in runs:
+            with self.subTest(condition=condition):
+                self.assertEqual(config['tokenizer'], 'bigram')
+                self.assertEqual(
+                    config['dir_tokenizer'],
+                    'artifacts/tokenizers/ed_iam_tva_original_bigram_greedy_v1.json',
+                )
+                self.assertEqual(output.parent.name, condition)
+                self.assertNotIn('linguistic', str(output))
+
     def test_fold_validation_rejects_duplicates_and_out_of_range(self):
         with self.assertRaises(ValueError):
             validate_folds([1, 1])
@@ -64,7 +77,7 @@ class EdMatrixLauncherTests(unittest.TestCase):
             absent = Path(temporary) / 'absent'
             runs = [
                 ('handwriting_wd', 1, {}, empty),
-                ('linguistic_wd', 1, {}, absent),
+                ('tva_original_wd', 1, {}, absent),
             ]
             ensure_outputs_absent(runs)
 

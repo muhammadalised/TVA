@@ -41,6 +41,34 @@ We use a MSCOCO-like structure for the training and evaluation of our dataset. A
 
 ## Usage
 
+### Thesis IAM linguistic tokenizer
+
+Run `train_iam_tva_bigram_tokenizer.ipynb` in the WSL TVA Python environment.
+It calls the original `BigramTokenizer.train()` on authenticated IAM training
+labels and saves 145 bigrams plus the ED alphabet and CTC blank (224 classes).
+ED labels are used only after freezing for reconstruction and segmentation
+audits. Recognition-model training remains a separate manual step.
+
+The custom ED letter-frequency and OnHW frequency builder scripts/modules
+have been retired. Frozen artifacts and compatibility loaders remain for
+historical experiments and `analyze_ed.ipynb`; use the original TVA notebook
+for new linguistic training. See `docs/EXPERIMENTS.md` for provenance and
+methodological differences.
+
+Current ED configs are in `configs/thesis/ed/`: character, handwriting, and
+`bigram_tva_original_wd.yaml` / `bigram_tva_original_wi.yaml`, all using
+batch 32. The matrix launcher's new linguistic condition names are
+`tva_original_wd` and `tva_original_wi`, with separate result directories.
+Preview all five new-baseline folds without training:
+
+```bash
+python run_ed_matrix.py --conditions tva_original_wd tva_original_wi --folds 0 1 2 3 4 --dry-run
+```
+
+Completed experiments retain their exact saved configs under `results/`.
+Only completed OnHW linguistic fold-0 artifacts remain locally; their original
+five-fold checksum manifests are kept intact for historical authentication.
+
 ### Training
 
 In the paper, models are trained in a 5-fold cross validation style, which can be done using the `main.py` to train each fold individually. Please adjust the configurations in the `configs/train.yaml` configuration file accordingly.

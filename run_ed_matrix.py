@@ -15,9 +15,9 @@ REPO_ROOT = Path(__file__).resolve().parent
 CONFIG_ROOT = REPO_ROOT / 'configs' / 'thesis' / 'ed'
 CONDITION_CONFIGS = {
     'handwriting_wd': CONFIG_ROOT / 'bigram_handwriting_wd.yaml',
-    'linguistic_wd': CONFIG_ROOT / 'bigram_linguistic_wd.yaml',
+    'tva_original_wd': CONFIG_ROOT / 'bigram_tva_original_wd.yaml',
     'handwriting_wi': CONFIG_ROOT / 'bigram_handwriting_wi.yaml',
-    'linguistic_wi': CONFIG_ROOT / 'bigram_linguistic_wi.yaml',
+    'tva_original_wi': CONFIG_ROOT / 'bigram_tva_original_wi.yaml',
 }
 DEFAULT_CONDITIONS = tuple(CONDITION_CONFIGS)
 DEFAULT_FOLDS = (1, 2, 3, 4)
@@ -73,7 +73,7 @@ def _validate_base_config(condition: str, config: dict) -> None:
     expected_tokenizer = (
         'handwriting_bigram_greedy'
         if condition.startswith('handwriting')
-        else 'linguistic_bigram_greedy'
+        else 'bigram'
     )
     expected = {
         'checkpoint': None,
@@ -187,8 +187,8 @@ def run_matrix(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            'Run the frozen ED handwriting-aware versus linguistic Bigram '
-            'matrix sequentially. Defaults preserve completed fold 0.'
+            'Run the frozen ED handwriting-aware versus original-TVA-on-IAM Bigram '
+            'matrix sequentially. For the new baseline include --folds 0 explicitly.'
         )
     )
     parser.add_argument(
