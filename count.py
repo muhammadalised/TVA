@@ -10,7 +10,7 @@ import yaml
 from torch.utils.data import DataLoader
 
 from tva.dataset import HRDataset, fn_collate
-from tva.tokenizers import get_tokenizer, resolve_tokenizer_path
+from tva.handwriting_tokenizers import get_tokenizer, resolve_tokenizer_path
 from tva.model import BaseModel
 
 warnings.filterwarnings('ignore', category=UserWarning)

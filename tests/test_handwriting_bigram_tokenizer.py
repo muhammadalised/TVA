@@ -6,9 +6,9 @@ import tempfile
 import unittest
 import unicodedata
 
-from tva.handwriting_bigram_adapter import ADAPTER_SIZE
-from tva.handwriting_bigram_tokenizer import HandwritingBigramTokenizer
-from tva.tokenizers import get_tokenizer, resolve_tokenizer_path
+from tva.handwriting.onhw import ADAPTER_SIZE
+from tva.handwriting_tokenizers import HandwritingBigramTokenizer
+from tva.handwriting_tokenizers import get_tokenizer, resolve_tokenizer_path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

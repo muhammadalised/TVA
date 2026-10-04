@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import copy
-import hashlib
 import json
 from pathlib import Path
 from typing import Any, Sequence
+
+from .common import canonical_json_bytes, sha256_bytes
 
 
 SOURCE_SCHEMA = 'dtlr.handwriting-bigram-tokenizer.v2'
@@ -24,23 +26,6 @@ ADAPTER_SHA256 = '12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2b
 ONHW_ALPHABET = tuple(
     'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜabcdefghijklmnopqrstuvwxyzäöüß'
 )
-
-
-def sha256_bytes(content: bytes) -> str:
-    """Return the lowercase SHA-256 digest for bytes."""
-    return hashlib.sha256(content).hexdigest()
-
-
-def canonical_json_bytes(value: Any) -> bytes:
-    """Serialize JSON deterministically for a stable artifact checksum."""
-    text = json.dumps(
-        value,
-        ensure_ascii=False,
-        sort_keys=True,
-        indent=2,
-        allow_nan=False,
-    )
-    return f'{text}\n'.encode('utf-8')
 
 
 def _validate_mappings(model: dict[str, Any]) -> None:
@@ -236,3 +221,43 @@ def write_adapter(adapter: dict[str, Any], output_path: str | Path) -> str:
     content = canonical_json_bytes(adapter)
     output.write_bytes(content)
     return sha256_bytes(content)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '--source',
+        required=True,
+        type=Path,
+        help='Path to the pinned combined IAM+READ model.json.',
+    )
+    parser.add_argument(
+        '--output',
+        type=Path,
+        default=Path('artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json'),
+        help='Canonical adapter output path.',
+    )
+    parser.add_argument(
+        '--overwrite',
+        action='store_true',
+        help='Replace an existing output file.',
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    if args.output.exists() and not args.overwrite:
+        raise FileExistsError(
+            f'output already exists: {args.output}; pass --overwrite to replace it'
+        )
+    adapter = build_frozen_onhw_adapter(args.source)
+    digest = write_adapter(adapter, args.output)
+    print(f'Wrote {args.output}')
+    print(f'Policy: {ADAPTER_POLICY_ID}')
+    print(f'Classes: {ADAPTER_SIZE} ({ADAPTER_BIGRAM_COUNT} bigrams)')
+    print(f'SHA-256: {digest}')
+
+
+if __name__ == '__main__':
+    main()

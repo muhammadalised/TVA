@@ -124,7 +124,7 @@ this specification and in `docs/PROGRESS.md`.
 ## TVA runtime integration
 
 TVA loads this condition with tokenizer key `handwriting_bigram`. The runtime
-implementation is `tva/handwriting_bigram_tokenizer.py`; unlike TVA's legacy
+implementation is `tva/handwriting_tokenizers.py`; unlike TVA's legacy
 `bigram` condition, it uses NFC normalization and the frozen
 maximum-total-utility dynamic program. File loading authenticates the complete
 canonical artifact checksum before accepting the model, validates its source

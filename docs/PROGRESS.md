@@ -1040,3 +1040,37 @@ Next step: complete remaining ED original-TVA linguistic and character folds
 under the same frozen protocol before drawing five-fold conclusions.
 Handwriting WD already has five completed folds; WI handwriting still needs
 its remaining folds if a full WI comparison is pursued.
+
+## 2026-10-04 — Simplified tokenizer layout and ED notebook
+
+The ED entry point is now train_ed_tokenizers.ipynb: declare categories and
+source paths, import classes, call train, and inspect an encoding example.
+The original train_tokenizers.ipynb remains unchanged for OnHW. The historical
+IAM+READ notebook is now train_onhw_handwriting_tokenizer.ipynb.
+
+Runtime handwriting classes live in tva/handwriting_tokenizers.py. Source
+validation, vocabulary preparation, IAM training, and optional audits live
+in tva/handwriting/. The old root builder/audit scripts and scattered
+handwriting modules were replaced by this package; their consumers were
+updated. Original TVA training and segmentation algorithms are unchanged.
+
+Executed the new ED notebook and reproduced the existing tokenizer/provenance
+bytes. The relocated full comparison audit reproduced the existing audit
+report exactly. Frozen artifacts, recognition configs, and saved results
+remain unchanged. No recognition training was launched.
+
+Validation: both simplified notebooks executed successfully; unittest discovery
+ran 56 tests (49 passed, 7 skipped for optional external inputs).
+
+### Original TVA tokenizer module restored
+
+Restored tva/tokenizers.py byte for byte from the initial TVA commit cff221c.
+All thesis extensions (IAM training wrapper, explicit character alphabet,
+handwriting/historical linguistic classes, extended factory, and shared-file
+path resolution) live in tva/handwriting_tokenizers.py. Recognition entry
+points, the ED notebook, audits, and tests import the extensions there.
+Original tokenizer algorithms are inherited or called through the original
+factory. Existing configuration keys and artifact formats remain unchanged.
+
+Verified both notebooks and the byte-identical comparison audit after restoring
+the upstream file. All 56 tests completed: 49 passed, 7 optional skips.

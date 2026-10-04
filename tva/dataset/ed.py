@@ -16,7 +16,7 @@ from loguru import logger
 import numpy as np
 from tqdm import tqdm
 
-from tva.ed_handwriting_bigram import ED_ALPHABET
+from tva.handwriting.ed import ED_ALPHABET
 
 from . import HRDataset
 from .transforms import AddNoise, Drift, Dropout, TimeWarp

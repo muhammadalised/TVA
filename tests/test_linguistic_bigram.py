@@ -3,17 +3,17 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from tva.handwriting_bigram_adapter import (
+from tva.handwriting.onhw import (
     ADAPTER_SIZE,
     canonical_json_bytes,
     sha256_bytes,
 )
-from tva.handwriting_bigram_tokenizer import (
+from tva.handwriting_tokenizers import (
     LINGUISTIC_SCHEMA,
     MANIFEST_SHA256,
     LinguisticBigramTokenizer,
 )
-from tva.tokenizers import get_tokenizer
+from tva.handwriting_tokenizers import get_tokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

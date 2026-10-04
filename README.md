@@ -41,33 +41,65 @@ We use a MSCOCO-like structure for the training and evaluation of our dataset. A
 
 ## Usage
 
-### Thesis IAM linguistic tokenizer
+### Thesis ED tokenizers
 
-Run `train_iam_tva_bigram_tokenizer.ipynb` in the WSL TVA Python environment.
-It calls the original `BigramTokenizer.train()` on authenticated IAM training
-labels and saves 145 bigrams plus the ED alphabet and CTC blank (224 classes).
-ED labels are used only after freezing for reconstruction and segmentation
-audits. Recognition-model training remains a separate manual step.
+Start with **train_ed_tokenizers.ipynb** in the WSL TVA Python environment.
+The notebook declares the ED categories and source paths, imports the tokenizer
+classes, and calls their training methods:
 
-The custom ED letter-frequency and OnHW frequency builder scripts/modules
-have been retired. Frozen artifacts and compatibility loaders remain for
-historical experiments and `analyze_ed.ipynb`; use the original TVA notebook
-for new linguistic training. See `docs/EXPERIMENTS.md` for provenance and
-methodological differences.
+```python
+from tva.handwriting_tokenizers import IAMBigramTokenizer, GreedyHandwritingBigramTokenizer
 
-Current ED configs are in `configs/thesis/ed/`: character, handwriting, and
-`bigram_tva_original_wd.yaml` / `bigram_tva_original_wi.yaml`, all using
-batch 32. The matrix launcher's new linguistic condition names are
-`tva_original_wd` and `tva_original_wi`, with separate result directories.
-Preview all five new-baseline folds without training:
+linguistic = IAMBigramTokenizer()
+linguistic.train(iam_labels, categories, 224,
+                 selection_path=iam_selection, output_path=linguistic_output)
+
+handwriting = GreedyHandwritingBigramTokenizer()
+handwriting.train(iam_handwriting, categories, output_path=handwriting_output)
+```
+
+The linguistic tokenizer runs the original TVA bigram algorithm on IAM training
+transcripts. The handwriting tokenizer prepares the ED vocabulary from the
+frozen IAM handwriting evidence. Both have 145 bigrams, 78 ED characters, and
+CTC blank (224 classes). Neither selects bigrams from ED labels. The character
+baseline uses the configured alphabet directly (79 classes).
+
+```text
+train_ed_tokenizers.ipynb            ED categories, imports, train, example
+train_tokenizers.ipynb               Original TVA OnHW notebook, unchanged
+train_onhw_handwriting_tokenizer.ipynb  Historical IAM+READ OnHW condition
+tva/
+  tokenizers.py                     Original TVA tokenizers, unchanged
+  handwriting_tokenizers.py         Thesis tokenizer classes and integration
+  handwriting/
+    common.py                       Shared frozen-file helpers
+    iam.py                          IAM transcript validation and TVA training
+    ed.py                           IAM handwriting vocabulary for ED
+    onhw.py                         Historical OnHW vocabulary preparation
+    audit.py                        Optional reconstruction/comparison audits
+```
+
+Tokenizer files already exist in artifacts/tokenizers/. Running the ED notebook
+reproduces them and refuses to overwrite a differing frozen file. Detailed
+audits are separate from the training notebook:
+
+```bash
+python -m tva.handwriting.audit --compare --dataset-directory /mnt/c/Users/Ali/Downloads/fau-english-dataset
+```
+
+Historical custom linguistic artifacts and loaders remain for saved experiments
+and analyze_ed.ipynb. Their retired builders are not needed for new training.
+See docs/EXPERIMENTS.md for provenance and methodological differences.
+
+Recognition training is a separate manual step. Current ED configs live in
+configs/thesis/ed/: character, handwriting, and original TVA linguistic WD/WI,
+all using batch 32. Preview the linguistic recognition runs without training:
 
 ```bash
 python run_ed_matrix.py --conditions tva_original_wd tva_original_wi --folds 0 1 2 3 4 --dry-run
 ```
 
-Completed experiments retain their exact saved configs under `results/`.
-Only completed OnHW linguistic fold-0 artifacts remain locally; their original
-five-fold checksum manifests are kept intact for historical authentication.
+Completed experiments retain their exact saved configs under results/.
 
 ### Training
 

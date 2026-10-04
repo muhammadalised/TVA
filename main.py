@@ -13,7 +13,7 @@ from tva.dataset import EdZipDataset, HRDataset, fn_collate, resolve_ed_archive
 from tva.decoder_ctc import BestPath
 from tva.evaluate import evaluate
 from tva.loss import CTCLoss
-from tva.tokenizers import get_tokenizer, resolve_tokenizer_path
+from tva.handwriting_tokenizers import get_tokenizer, resolve_tokenizer_path
 from tva.manager import RunManager
 from tva.model import BaseModel
 from tva.utils import (

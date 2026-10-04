@@ -3,8 +3,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from audit_ed_handwriting_bigram import audit
-from tva.ed_handwriting_bigram import (
+from tva.handwriting.audit import audit
+from tva.handwriting.ed import (
     ADAPTER_BIGRAM_COUNT,
     ADAPTER_POLICY_ID,
     ADAPTER_SHA256,
@@ -14,12 +14,12 @@ from tva.ed_handwriting_bigram import (
     SOURCE_SHA256,
     build_ed_adapter,
 )
-from tva.handwriting_bigram_adapter import canonical_json_bytes, sha256_bytes
-from tva.handwriting_bigram_tokenizer import (
+from tva.handwriting.common import canonical_json_bytes, sha256_bytes
+from tva.handwriting_tokenizers import (
     GreedyHandwritingBigramTokenizer,
     HandwritingBigramTokenizer,
 )
-from tva.tokenizers import get_tokenizer
+from tva.handwriting_tokenizers import get_tokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

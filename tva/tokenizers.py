@@ -1,30 +1,17 @@
 import json
 import os
 from collections import Counter
-from pathlib import Path
 from typing import Any
 
 from loguru import logger
 from tokenizers import Tokenizer, decoders, models, pre_tokenizers, trainers
 
-from tva.handwriting_bigram_tokenizer import (
-    GreedyHandwritingBigramTokenizer,
-    GreedyLinguisticBigramTokenizer,
-    HandwritingBigramTokenizer,
-    LinguisticBigramTokenizer,
-)
-
 __all__ = [
     'CharacterTokenizer',
     'BigramTokenizer',
-    'HandwritingBigramTokenizer',
-    'GreedyHandwritingBigramTokenizer',
-    'GreedyLinguisticBigramTokenizer',
-    'LinguisticBigramTokenizer',
     'BPETokenizer',
-    'UnigramTokenizer',
+    'UnigramTokenizer'
     'get_tokenizer',
-    'resolve_tokenizer_path',
 ]
 
 
@@ -71,7 +58,8 @@ class CharacterTokenizer:
         dir_tokenizers = os.path.join(dir_ds, 'tokenizers', 'char')
         os.makedirs(dir_tokenizers, exist_ok=True)
 
-        self.load_categories(categories)
+        self.vocab = {char: i for i, char in enumerate(categories)}
+        self.idx_char = {v: k for k, v in self.vocab.items()}
 
         with open(os.path.join(dir_ds, 'train.json'), 'r') as f:
             num_fold = json.load(f)['info']['num_fold']
@@ -87,39 +75,6 @@ class CharacterTokenizer:
                 )
 
         logger.info(f'CharacterTokenizers are saved at {dir_tokenizers}.')
-
-    def load_categories(self, categories: list[str]) -> None:
-        '''Initialize a character vocabulary from an explicit ordered list.
-
-        The first category must be the empty CTC blank token. This path is
-        useful when the complete alphabet is part of a frozen experiment
-        configuration and no data-derived tokenizer artifact is required.
-
-        Args:
-            categories: Ordered character vocabulary including blank ID 0.
-
-        Raises:
-            ValueError: If the vocabulary is empty, duplicated, malformed, or
-                does not reserve ID 0 for the CTC blank.
-        '''
-        if not isinstance(categories, list) or not categories:
-            raise ValueError('categories must be a non-empty list')
-        if any(not isinstance(char, str) for char in categories):
-            raise ValueError('every category must be a string')
-        if categories[0] != '':
-            raise ValueError('CTC blank must be the empty category at ID 0')
-        if any(char == '' for char in categories[1:]):
-            raise ValueError('CTC blank may appear only at ID 0')
-        if len(set(categories)) != len(categories):
-            raise ValueError('categories must not contain duplicates')
-
-        self.vocab = {char: i for i, char in enumerate(categories)}
-        self.idx_char = {index: char for char, index in self.vocab.items()}
-
-        logger.info(
-            f'CharacterTokenizer initialized from {len(categories)} '
-            'configured categories.'
-        )
 
     def load(self, path_config: str) -> None:
         '''Loads vocabulary from a JSON file.
@@ -540,10 +495,8 @@ def get_tokenizer(tokenizer: str) -> Any:
     '''Factory function to get a tokenizer instance.
 
     Args:
-        tokenizer: Key of the tokenizer. Options: 'char', 'bigram',
-            'handwriting_bigram', 'handwriting_bigram_greedy',
-            'linguistic_bigram', 'linguistic_bigram_greedy', 'bpe', or
-            'unigram'.
+        tokenizer: Key of the tokenizer. Options: 'char', 'bigram', 'bpe',
+            'embed'.
 
     Returns:
         The requested tokenizer object.
@@ -553,30 +506,12 @@ def get_tokenizer(tokenizer: str) -> Any:
             return CharacterTokenizer()
         case 'bigram':
             return BigramTokenizer()
-        case 'handwriting_bigram':
-            return HandwritingBigramTokenizer()
-        case 'handwriting_bigram_greedy':
-            return GreedyHandwritingBigramTokenizer()
-        case 'linguistic_bigram':
-            return LinguisticBigramTokenizer()
-        case 'linguistic_bigram_greedy':
-            return GreedyLinguisticBigramTokenizer()
         case 'bpe':
             return BPETokenizer()
         case 'unigram':
             return UnigramTokenizer()
         case _:
             raise ValueError(
-                f'Unknown tokenizer: "{tokenizer}". '
-                'Supported: ["char", "bigram", "handwriting_bigram", '
-                '"handwriting_bigram_greedy", "linguistic_bigram", '
-                '"linguistic_bigram_greedy", "bpe", "unigram"]'
+                f'Unknown loss function: "{tokenizer}". '
+                'Supported: ["char", "bigram", "bpe", "unigram"]'
             )
-
-
-def resolve_tokenizer_path(path_config: str, idx_fold: int) -> str:
-    """Resolve a shared tokenizer file or a legacy fold directory."""
-    path = Path(path_config)
-    if path.is_file():
-        return str(path)
-    return str(path / f'{idx_fold}.json')

@@ -4,7 +4,7 @@ import os
 import unittest
 from pathlib import Path
 
-from tva.handwriting_bigram_adapter import (
+from tva.handwriting.onhw import (
     ADAPTER_BIGRAM_COUNT,
     ADAPTER_POLICY_ID,
     ADAPTER_SHA256,

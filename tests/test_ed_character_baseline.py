@@ -5,9 +5,9 @@ import unittest
 import yaml
 
 from main import load_configured_tokenizer
-from tva.ed_handwriting_bigram import ED_ALPHABET
+from tva.handwriting.ed import ED_ALPHABET
 from tva.model import BaseModel
-from tva.tokenizers import CharacterTokenizer
+from tva.handwriting_tokenizers import CharacterTokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

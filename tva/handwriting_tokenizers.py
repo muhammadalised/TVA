@@ -1,4 +1,4 @@
-"""Runtime tokenizer for frozen handwriting-aware bigram models."""
+"""Thesis tokenizer extensions; original TVA code stays in tva.tokenizers."""
 
 from __future__ import annotations
 
@@ -11,15 +11,22 @@ from typing import Any
 
 from loguru import logger
 
-from tva.handwriting_bigram_adapter import (
+from tva.tokenizers import (
+    BigramTokenizer,
+    CharacterTokenizer as OriginalCharacterTokenizer,
+    get_tokenizer as get_original_tokenizer,
+)
+
+from tva.handwriting.common import canonical_json_bytes, require, save_frozen, sha256_bytes
+
+from tva.handwriting.onhw import (
     ADAPTER_BIGRAM_COUNT,
     ADAPTER_POLICY_ID,
     ADAPTER_SHA256,
     ADAPTER_SIZE,
     SOURCE_SHA256,
-    sha256_bytes,
 )
-from tva.ed_handwriting_bigram import (
+from tva.handwriting.ed import (
     ADAPTER_BIGRAM_COUNT as ED_ADAPTER_BIGRAM_COUNT,
     ADAPTER_POLICY_ID as ED_ADAPTER_POLICY_ID,
     ADAPTER_SCHEMA as ED_ADAPTER_SCHEMA,
@@ -86,6 +93,15 @@ class HandwritingBigramTokenizer:
         if not self.vocab:
             raise ValueError('Tokenizer not trained or loaded.')
         return len(self.vocab)
+
+    def train(self, source_path, categories, *, output_path) -> None:
+        """Prepare the historical IAM+READ-to-OnHW vocabulary and load it."""
+        from tva.handwriting.onhw import ONHW_ALPHABET, build_frozen_onhw_adapter
+
+        require(list(categories) == ['', *ONHW_ALPHABET], 'Expected the declared OnHW alphabet')
+        model = build_frozen_onhw_adapter(source_path)
+        save_frozen(output_path, canonical_json_bytes(model))
+        self.load(output_path)
 
     def load(self, path_config: str | Path) -> None:
         """Load and authenticate the canonical frozen OnHW adapter."""
@@ -318,6 +334,10 @@ class LinguisticBigramTokenizer(HandwritingBigramTokenizer):
     New linguistic vocabularies use the original TVA BigramTokenizer.
     """
 
+    def train(self, *args, **kwargs) -> None:
+        """Historical artifacts are load-only."""
+        raise NotImplementedError('Use IAMBigramTokenizer for new linguistic training')
+
     def load(self, path_config: str | Path) -> None:
         """Load and validate one fold's linguistic tokenizer artifact."""
         path = Path(path_config)
@@ -373,6 +393,18 @@ class GreedyHandwritingBigramTokenizer(HandwritingBigramTokenizer):
     supported_schemas = {ED_ADAPTER_SCHEMA}
     supported_overlap_policy = GREEDY_POLICY
     bigram_kind = 'handwriting-bigram'
+
+    def train(self, source_path, categories, *, output_path) -> None:
+        """Prepare ED IDs/alphabet from already-frozen IAM handwriting evidence.
+
+        All 145 selected bigrams are retained; no ED label values are read.
+        """
+        from tva.handwriting.ed import ED_ALPHABET, build_ed_adapter
+
+        require(list(categories) == ['', *ED_ALPHABET], 'Expected the declared ED alphabet')
+        model = build_ed_adapter(source_path)
+        save_frozen(output_path, canonical_json_bytes(model))
+        self.load(output_path)
 
     def load(self, path_config: str | Path) -> None:
         """Load and authenticate the canonical frozen ED adapter."""
@@ -481,6 +513,10 @@ class GreedyLinguisticBigramTokenizer(GreedyHandwritingBigramTokenizer):
     supported_schemas = {ED_LINGUISTIC_SCHEMA}
     bigram_kind = 'linguistic-bigram'
 
+    def train(self, *args, **kwargs) -> None:
+        """Historical artifacts are load-only."""
+        raise NotImplementedError('Use IAMBigramTokenizer for new linguistic training')
+
     def load(self, path_config: str | Path) -> None:
         path = Path(path_config)
         content = path.read_bytes()
@@ -523,3 +559,80 @@ class GreedyLinguisticBigramTokenizer(GreedyHandwritingBigramTokenizer):
             raise ValueError(
                 'ED linguistic adapter does not declare leakage-safe construction'
             )
+
+
+class CharacterTokenizer(OriginalCharacterTokenizer):
+    """Original character encoding with explicit alphabet initialization."""
+
+    def load_categories(self, categories: list[str]) -> None:
+        '''Initialize a character vocabulary from an explicit ordered list.
+
+        The first category must be the empty CTC blank token. This path is
+        useful when the complete alphabet is part of a frozen experiment
+        configuration and no data-derived tokenizer artifact is required.
+
+        Args:
+            categories: Ordered character vocabulary including blank ID 0.
+
+        Raises:
+            ValueError: If the vocabulary is empty, duplicated, malformed, or
+                does not reserve ID 0 for the CTC blank.
+        '''
+        if not isinstance(categories, list) or not categories:
+            raise ValueError('categories must be a non-empty list')
+        if any(not isinstance(char, str) for char in categories):
+            raise ValueError('every category must be a string')
+        if categories[0] != '':
+            raise ValueError('CTC blank must be the empty category at ID 0')
+        if any(char == '' for char in categories[1:]):
+            raise ValueError('CTC blank may appear only at ID 0')
+        if len(set(categories)) != len(categories):
+            raise ValueError('categories must not contain duplicates')
+
+        self.vocab = {char: i for i, char in enumerate(categories)}
+        self.idx_char = {index: char for char, index in self.vocab.items()}
+
+        logger.info(
+            f'CharacterTokenizer initialized from {len(categories)} '
+            'configured categories.'
+        )
+
+
+class IAMBigramTokenizer(BigramTokenizer):
+    """Original TVA algorithm with authenticated IAM training input.
+
+    Input validation and a fixed subprocess hash seed are handled internally.
+    BigramTokenizer supplies vocabulary selection, encoding, and decoding.
+    """
+
+    def train(
+        self, labels_path, categories, size=224, *, selection_path, output_path,
+    ) -> None:
+        from tva.handwriting.iam import train_iam_bigram
+
+        output = train_iam_bigram(
+            labels_path, selection_path, categories, size, output_path,
+        )
+        self.load(str(output))
+
+
+def get_tokenizer(tokenizer: str) -> Any:
+    """Use thesis extensions or delegate to the original TVA factory."""
+    extensions = {
+        'char': CharacterTokenizer,
+        'handwriting_bigram': HandwritingBigramTokenizer,
+        'handwriting_bigram_greedy': GreedyHandwritingBigramTokenizer,
+        'linguistic_bigram': LinguisticBigramTokenizer,
+        'linguistic_bigram_greedy': GreedyLinguisticBigramTokenizer,
+    }
+    if tokenizer in extensions:
+        return extensions[tokenizer]()
+    return get_original_tokenizer(tokenizer)
+
+
+def resolve_tokenizer_path(path_config: str, idx_fold: int) -> str:
+    """Resolve a shared tokenizer file or a legacy fold directory."""
+    path = Path(path_config)
+    if path.is_file():
+        return str(path)
+    return str(path / f'{idx_fold}.json')

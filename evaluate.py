@@ -10,7 +10,7 @@ import yaml
 from thop import profile
 
 from tva.model import BaseModel
-from tva.tokenizers import get_tokenizer, resolve_tokenizer_path
+from tva.handwriting_tokenizers import get_tokenizer, resolve_tokenizer_path
 
 
 def get_mean_std_cv(
