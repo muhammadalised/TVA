@@ -1,0 +1,74 @@
+{
+  "archive_sha256": {
+    "gold_wd": "edaf78b0f422f719bbb13153249a5a6667a814d6f5a8d7d0d2ba02535ae55a3e",
+    "gold_wi": "0ba1b8e5d53c7208bbdc4a43cfb701ed6a1d27be382a23ba0aaade8cb3283304"
+  },
+  "audit_date": "2026-10-08",
+  "ed_labels_used_for_vocabulary_selection": false,
+  "schema_version": "tva.ed-handwriting-subwords-audit.v1",
+  "source_manifest_sha256": "e8b42352a286dde90d6956ae22e92a33d8a94fcf8d251d2ce1cfe224492b6528",
+  "tokenizers": {
+    "bpe": {
+      "adapter_sha256": "fcf244d112f55fc7e30edde4eaaabda70d282ea193b7834acbdcdac6cbc4c4ea",
+      "characters": 106087,
+      "classes": 224,
+      "compatibility": {
+        "archives_checked": 2,
+        "blank_ids_emitted": 0,
+        "encoded_tokens_checked": 167978,
+        "label_encodings_checked": 5100,
+        "records_per_archive": 2550,
+        "round_trip_failures": 0
+      },
+      "encoded_tokens": 83989,
+      "forced_added_symbols": 845,
+      "pieces": 145,
+      "reference_segmentation_check": {
+        "ED_encodings": 5100,
+        "ED_extension": "Reference encoding of chunks between forced %/= symbols",
+        "compatible_IAM_train_lines": 5612,
+        "different_segmentations": 0
+      },
+      "source_sha256": "a504c2306200faf6eab98f3feef6f98b81e6e6c6c7f707cf31aa3399a660be47",
+      "token_length_histogram": {
+        "1": 64745,
+        "2": 16655,
+        "3": 2324,
+        "4": 265
+      },
+      "unique_ED_records": 2550
+    },
+    "unigram": {
+      "adapter_sha256": "e1628c0d2c30cdc9d05898a848c80bfb055d282cf78d39aa27d6d1a3cf8471f0",
+      "characters": 106087,
+      "classes": 224,
+      "compatibility": {
+        "archives_checked": 2,
+        "blank_ids_emitted": 0,
+        "encoded_tokens_checked": 169636,
+        "label_encodings_checked": 5100,
+        "records_per_archive": 2550,
+        "round_trip_failures": 0
+      },
+      "encoded_tokens": 84818,
+      "forced_added_symbols": 845,
+      "pieces": 145,
+      "reference_segmentation_check": {
+        "ED_encodings": 5100,
+        "ED_extension": "Reference encoding of chunks between forced %/= symbols",
+        "compatible_IAM_train_lines": 5612,
+        "different_segmentations": 0
+      },
+      "source_sha256": "af2bc8455afd796367737857f3a36f1deb45f07ec9783a4bbd7f15057f2b9476",
+      "token_length_histogram": {
+        "1": 66324,
+        "2": 16024,
+        "3": 2199,
+        "4": 252,
+        "5": 4,
+        "6": 15
+      },
+      "unique_ED_records": 2550
+    }
+  }
+}

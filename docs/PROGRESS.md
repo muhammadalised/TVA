@@ -1074,3 +1074,24 @@ factory. Existing configuration keys and artifact formats remain unchanged.
 
 Verified both notebooks and the byte-identical comparison audit after restoring
 the upstream file. All 56 tests completed: 49 passed, 7 optional skips.
+
+## 2026-10-08 — Handwriting BPE/Unigram ready for ED fold 0
+
+Verified and bundled both frozen IAM-only DTLR releases and their manifest.
+Prepared separately versioned ED adapters with 224 classes, retaining all 145
+pieces, BPE merge order and Unigram learned scores. `%`/`=` use forced singleton
+fallback; ED labels were read only after construction for compatibility checks.
+The original TVA tokenizer module and existing experiments remain unchanged.
+
+Updated the simple ED notebook and added four matched WD/WI fold-0 configs.
+Files are already prepared; the notebook is optional. Recognition training is
+manual and has not started. No commit or push was performed in this integration.
+
+Validation: 54/61 TVA tests passed, 7 optional skips; notebook executed;
+5,612 common-alphabet IAM lines matched DTLR segmentation; each tokenizer
+round-tripped all 5,100 ED encodings; eight real ED CPU batches yielded finite
+224-class outputs/CTC loss. See [the experiment record](EXPERIMENTS.md#2026-10-08--frozen-iam-handwriting-bpeunigram-integrated-for-ed-fold-0)
+for pinned hashes, inference policy, scientific scope and manual commands.
+
+Next: manually run handwriting BPE and Unigram fold 0 for WD and WI, then compare
+their independent best CER/WER metrics with the existing character/bigram runs.

@@ -1,4 +1,4 @@
-"""Audit all ED labels against the already-frozen greedy adapter."""
+"""Audit ED label compatibility after tokenizer vocabularies are frozen."""
 
 import argparse
 import hashlib
@@ -11,6 +11,7 @@ import zipfile
 from .ed import ED_ALPHABET
 from tva.handwriting_tokenizers import GreedyHandwritingBigramTokenizer
 from tva.handwriting_tokenizers import GreedyLinguisticBigramTokenizer
+from tva.handwriting_tokenizers import HandwritingBPETokenizer, HandwritingUnigramTokenizer
 from tva.dataset.ed import ED_ARCHIVE_SHA256
 
 
@@ -60,6 +61,8 @@ def audit(
         'handwriting': GreedyHandwritingBigramTokenizer,
         'linguistic': GreedyLinguisticBigramTokenizer,
         'original': BigramTokenizer,
+        'bpe': HandwritingBPETokenizer,
+        'unigram': HandwritingUnigramTokenizer,
     }
     tokenizer = tokenizer_classes[tokenizer_kind]()
     tokenizer.load(adapter_path)
@@ -242,7 +245,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dataset-directory', type=Path, default=DEFAULT_DATASET_DIRECTORY)
     parser.add_argument('--adapter', type=Path, default=DEFAULT_ADAPTER)
-    parser.add_argument('--tokenizer-kind', choices=('handwriting', 'linguistic', 'original'), default='handwriting')
+    parser.add_argument('--tokenizer-kind', choices=('handwriting', 'linguistic', 'original', 'bpe', 'unigram'), default='handwriting')
     parser.add_argument('--compare', action='store_true', help='Compare all frozen vocabularies and ED targets.')
     parser.add_argument('--output', type=Path, help='Optional frozen JSON report for --compare.')
     args = parser.parse_args()

@@ -616,10 +616,127 @@ class IAMBigramTokenizer(BigramTokenizer):
         self.load(str(output))
 
 
+class _HandwritingSubwordTokenizer:
+    """ED runtime using the frozen DTLR inference rules and ED class IDs."""
+
+    kind: str
+
+    def __init__(self) -> None:
+        self.model = {}
+        self.source_model = {}
+        self.vocab = {}
+        self.idx_token = {}
+
+    @property
+    def size(self) -> int:
+        if not self.model:
+            raise ValueError('Tokenizer not trained or loaded.')
+        return len(self.vocab)
+
+    def train(self, source_path, categories, *, output_path) -> None:
+        """Prepare ED alphabet/IDs; preserve the already-trained IAM model."""
+        from tva.handwriting.ed import ED_ALPHABET
+        from tva.handwriting.subwords import SOURCE_FILES, build_ed_subword_adapter
+
+        require(list(categories) == ['', *ED_ALPHABET], 'Expected the declared ED alphabet')
+        model = build_ed_subword_adapter(source_path, self.kind)
+        output_path = Path(output_path)
+        # Package the source beside the adapter so no DTLR checkout is needed.
+        save_frozen(output_path.parent / 'source' / SOURCE_FILES[self.kind],
+                    Path(source_path).read_bytes())
+        save_frozen(output_path, canonical_json_bytes(model))
+        self.load(output_path)
+
+    def load(self, path_config) -> None:
+        from tva.handwriting.subwords import load_ed_subword_adapter
+
+        model, source = load_ed_subword_adapter(path_config, self.kind)
+        self.model, self.source_model = model, source
+        self.vocab = dict(model['vocab'])
+        self.idx_token = {int(i): t for i, t in model['idx_token'].items()}
+        if self.kind == 'unigram':
+            # Keep learned scores exactly; new nonletters have one forced arc.
+            self._scores = {t: v for t, v in source['log_probs'].items() if t in self.vocab}
+            self._scores.update({t: 0.0 for t in model['policy']['added_singletons']})
+            self._max_length = max(map(len, self._scores))
+        logger.info(f'{type(self).__name__} is loaded from {path_config}.')
+
+    def segment(self, text: str) -> dict:
+        if not self.model:
+            raise ValueError('Tokenizer not trained or loaded.')
+        if not isinstance(text, str):
+            raise TypeError('text must be a string')
+        text = unicodedata.normalize('NFC', text)
+        missing = sorted(set(text) - set(self.vocab))
+        require(not missing, f'characters are absent from tokenizer vocabulary: {missing!r}')
+        if self.kind == 'bpe':
+            sequence = [(c, i, i + 1) for i, c in enumerate(text)]
+            for merge in self.source_model['merges']:
+                merged, i = [], 0
+                while i < len(sequence):
+                    if (i + 1 < len(sequence)
+                            and sequence[i][0] == merge['left']
+                            and sequence[i + 1][0] == merge['right']):
+                        merged.append((merge['token'], sequence[i][1], sequence[i + 1][2]))
+                        i += 2
+                    else:
+                        merged.append(sequence[i])
+                        i += 1
+                sequence = merged
+        else:
+            # Match DTLR's start/end traversal and strict improvement tie rule.
+            best = [-math.inf] * (len(text) + 1)
+            back = [None] * (len(text) + 1)
+            best[0] = 0.0
+            for start in range(len(text)):
+                for end in range(start + 1, min(len(text), start + self._max_length) + 1):
+                    token = text[start:end]
+                    if token in self._scores:
+                        candidate = best[start] + self._scores[token]
+                        if candidate > best[end]:
+                            best[end], back[end] = candidate, (token, start, end)
+            sequence, end = [], len(text)
+            while end:
+                step = back[end]
+                require(step is not None, 'text cannot be segmented')
+                sequence.append(step)
+                end = step[1]
+            sequence.reverse()
+        return {
+            'text': text, 'tokens': [t for t, _, _ in sequence],
+            'segments': [{'token': t, 'start': s, 'end': e} for t, s, e in sequence],
+        }
+
+    def encode(self, text: str) -> list[int]:
+        return [self.vocab[t] for t in self.segment(text)['tokens']]
+
+    def decode(self, ids: list[int]) -> str:
+        if not self.model:
+            raise ValueError('Tokenizer not trained or loaded.')
+        try:
+            return ''.join(self.idx_token[i] for i in ids)
+        except KeyError as error:
+            raise ValueError(f'unknown token ID: {error.args[0]}') from error
+
+
+class HandwritingBPETokenizer(_HandwritingSubwordTokenizer):
+    """Apply all frozen BPE merges in their learned order."""
+
+    kind = 'bpe'
+
+
+class HandwritingUnigramTokenizer(_HandwritingSubwordTokenizer):
+    """Viterbi segmentation with frozen IAM scores and forced ED symbols."""
+
+    kind = 'unigram'
+
+
 def get_tokenizer(tokenizer: str) -> Any:
     """Use thesis extensions or delegate to the original TVA factory."""
     extensions = {
         'char': CharacterTokenizer,
+        'handwriting_bpe': HandwritingBPETokenizer,
+        'handwriting_unigram': HandwritingUnigramTokenizer,
         'handwriting_bigram': HandwritingBigramTokenizer,
         'handwriting_bigram_greedy': GreedyHandwritingBigramTokenizer,
         'linguistic_bigram': LinguisticBigramTokenizer,

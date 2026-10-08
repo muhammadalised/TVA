@@ -1291,3 +1291,102 @@ factory. Existing configuration keys and artifact formats remain unchanged.
 
 Verified both notebooks and the byte-identical comparison audit after restoring
 the upstream file. All 56 tests completed: 49 passed, 7 optional skips.
+
+## 2026-10-08 — Frozen IAM handwriting BPE/Unigram integrated for ED fold 0
+
+Imported the DTLR release described in
+`/home/artellisys/DTLR/poc/provenance/iam-handwriting-subwords-v1-freeze.md`.
+The original released files and manifest are bundled under
+`artifacts/tokenizers/source/` with their exact bytes. DTLR's own frozen loader
+validated both sources; its reconstructed release manifest matched the pinned
+manifest exactly. No DTLR files were modified.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| IAM BPE source | `a504c2306200faf6eab98f3feef6f98b81e6e6c6c7f707cf31aa3399a660be47` |
+| IAM Unigram source | `af2bc8455afd796367737857f3a36f1deb45f07ec9783a4bbd7f15057f2b9476` |
+| Release manifest | `e8b42352a286dde90d6956ae22e92a33d8a94fcf8d251d2ce1cfe224492b6528` |
+| ED BPE adapter | `fcf244d112f55fc7e30edde4eaaabda70d282ea193b7834acbdcdac6cbc4c4ea` |
+| ED Unigram adapter | `e1628c0d2c30cdc9d05898a848c80bfb055d282cf78d39aa27d6d1a3cf8471f0` |
+
+### Alphabet and inference policy
+
+The separately versioned ED adapters each contain blank ID 0, the 78 declared
+ED singleton characters, and all 145 selected IAM pieces: 224 classes, matching
+the existing ED bigram comparison. They remove IAM-only singleton `#`, `&`, `*`,
+add `%`, `=`, and remap IDs. The source releases remain unchanged at 225 classes.
+Only the declared ED alphabet enters adapter construction; no ED label values,
+frequencies, folds, or recognition metrics enter vocabulary selection or fitting.
+
+BPE applies the frozen ordered merge list with left-to-right merge application.
+Unigram uses the frozen log probabilities and DTLR's Viterbi traversal/tie rule.
+No learned score is changed or renormalized. Added `%` and `=` have one forced
+singleton arc with score zero. Since all learned multi-character pieces consist
+of letters, these symbols cannot join a competing piece. The resulting scores
+are inference weights, not a newly normalized ED probability distribution.
+Symbols outside the declared alphabet raise an error; encoding never emits blank.
+
+This compares complete tokenizer methods: greedy handwriting bigram, ordered
+BPE merges, and Unigram Viterbi. It does not isolate vocabulary membership alone.
+All share IAM train evidence, the 145-piece budget and the ED recognition setup.
+DTLR thresholds (count 20/rate 0.5), length cap 6 and training settings remain
+exploratory. Unigram uses handwriting for candidate eligibility/initialization,
+then text likelihood for fitting. Text-only BPE/Unigram controls are separate
+future experiments. Fold-0 recognition results remain pending.
+
+### Code and manual runs
+
+`HandwritingBPETokenizer` and `HandwritingUnigramTokenizer` live in
+`tva/handwriting_tokenizers.py`; authentication and deterministic preparation
+live in `tva/handwriting/subwords.py`. Loading uses the bundled source beside
+the adapter and verifies exact adapter reconstruction. No DTLR dependency or
+checkout is needed for recognition. `tva/tokenizers.py` remains byte-identical
+to initial commit `cff221c`. Earlier artifacts, configs and results are unchanged.
+
+The simple `train_ed_tokenizers.ipynb` now prepares both adapters through `.train()`
+and demonstrates encoding. Files are already present; running it is optional.
+The call adapts alphabet/IDs and accepts only byte-identical existing outputs;
+it does not retrain the released IAM model.
+
+Run manually from the TVA root in the WSL `tva` environment:
+
+```bash
+export TVA_ED_DATASET_DIR=/mnt/c/Users/Ali/Downloads/fau-english-dataset
+python main.py -c configs/thesis/ed/bpe_handwriting_wd.yaml
+python main.py -c configs/thesis/ed/bpe_handwriting_wi.yaml
+python main.py -c configs/thesis/ed/unigram_handwriting_wd.yaml
+python main.py -c configs/thesis/ed/unigram_handwriting_wi.yaml
+```
+
+All four configs have `idx_fold: 0`, 300 epochs, 30 warmup epochs, batch 32,
+seed 42, learning rate 0.001, `blconv_b`/`bilstm_b`, seven channels,
+augmentation enabled and no concatenation. Apart from tokenizer/file/output
+paths they exactly match the existing handwriting bigram WD/WI configs.
+Outputs are isolated under `results/thesis/ed/handwriting_{bpe,unigram}_{wd,wi}/`.
+`run_ed_matrix.py` retains its existing bigram conditions; use these configs
+directly for the new fold-0 runs. No recognition training was launched here.
+
+### Validation
+
+- TVA unittest discovery: 61 tests, 54 passed and 7 optional-input skips.
+- The complete tokenizer-preparation notebook executed successfully and
+  reproduced all existing tokenizer bytes.
+- TVA and DTLR segmentations match exactly on all 5,612 IAM training lines
+  covered by the ED alphabet; the other 82 contain IAM-only symbols.
+- All 5,100 ED encodings per tokenizer (2,550 records in each of WD and WI)
+  decode exactly with no blank. They match reference chunk encoding between
+  added forced symbols, including the DTLR BPE merge order/Unigram choices.
+- Per unique ED set: BPE uses 83,989 tokens; Unigram uses 84,818 tokens for
+  106,087 characters. These are compatibility statistics, not recognition scores.
+- Two real samples per train/validation split, WD/WI and tokenizer: all eight
+  CPU forward batches output 224 classes and finite CTC loss. No optimizer step,
+  checkpoint or recognition result was created.
+
+The frozen compatibility report is
+`artifacts/tokenizers/ed_iam_handwriting_subwords_v1.audit.json`.
+The existing audit CLI can also recheck either adapter:
+
+```bash
+python -m tva.handwriting.audit --tokenizer-kind bpe --adapter artifacts/tokenizers/ed_iam_handwriting_bpe_v1.json
+python -m tva.handwriting.audit --tokenizer-kind unigram --adapter artifacts/tokenizers/ed_iam_handwriting_unigram_v1.json
+```

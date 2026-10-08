@@ -101,6 +101,29 @@ python run_ed_matrix.py --conditions tva_original_wd tva_original_wi --folds 0 1
 
 Completed experiments retain their exact saved configs under results/.
 
+### ED handwriting BPE and Unigram — fold 0
+
+The frozen IAM sources and ED tokenizer files are already bundled; no notebook
+run is required. `train_ed_tokenizers.ipynb` can reproduce the ED preparation
+with simple class imports and `.train()` calls. No ED labels are used to select
+or fit the vocabularies. Each method has 224 ED classes and 145 selected pieces.
+BPE keeps ordered merges; Unigram keeps its original Viterbi scores and uses
+forced character fallback for added `%` and `=`.
+
+From the TVA root in the WSL `tva` environment, run manually:
+
+```bash
+export TVA_ED_DATASET_DIR=/mnt/c/Users/Ali/Downloads/fau-english-dataset
+python main.py -c configs/thesis/ed/bpe_handwriting_wd.yaml
+python main.py -c configs/thesis/ed/bpe_handwriting_wi.yaml
+python main.py -c configs/thesis/ed/unigram_handwriting_wd.yaml
+python main.py -c configs/thesis/ed/unigram_handwriting_wi.yaml
+```
+
+These configs match the existing handwriting bigram fold-0 settings and use
+separate output directories. Hashes, compatibility checks, fallback policy and
+comparison scope are recorded in [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md#2026-10-08--frozen-iam-handwriting-bpeunigram-integrated-for-ed-fold-0).
+
 ### Training
 
 In the paper, models are trained in a 5-fold cross validation style, which can be done using the `main.py` to train each fold individually. Please adjust the configurations in the `configs/train.yaml` configuration file accordingly.
