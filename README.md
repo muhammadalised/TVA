@@ -138,6 +138,49 @@ python train_cv.py -c configs/train.yaml
 
 NOTE: Before the training with `train_cv.py`, please make sure the `idx_fold` in `configs/train.yaml` is set to -1.
 
+### OnHW WI character baseline on the workstation
+
+`configs/thesis/b0_char_wi_rh_cv.yaml` runs all five WI/RH folds from scratch.
+It retains the fold-0 baseline's model, seed 42, batch 64, 300 epochs,
+30-epoch warmup and standard augmentation without concatenation. Its output
+directory is `results/thesis/baselines/B0_char_wi_rh_cv_workstation`, so the
+original development results remain available.
+
+Sync the updated `train_cv.py` and CV config to the workstation first. The
+workstation needs the prepared WI dataset and character tokenizer files
+`0.json` through `4.json` under the configured dataset directory.
+
+From the workstation repository, create a persistent terminal:
+
+```bash
+cd ~/TVA  # adjust to the workstation checkout
+tmux new -s onhw-wi-char-cv
+```
+
+Inside tmux, activate the workstation's existing TVA environment (shown here
+as `tva-thesis`), preview the run, then start training:
+
+```bash
+conda activate tva-thesis
+python train_cv.py -c configs/thesis/b0_char_wi_rh_cv.yaml --dry-run
+mkdir -p results/thesis/baselines/B0_char_wi_rh_cv_workstation
+git rev-parse HEAD > results/thesis/baselines/B0_char_wi_rh_cv_workstation/code_revision.txt
+set -o pipefail
+python -u train_cv.py -c configs/thesis/b0_char_wi_rh_cv.yaml 2>&1 | tee results/thesis/baselines/B0_char_wi_rh_cv_workstation/console_$(date +%Y%m%d_%H%M%S).log
+```
+
+Proceed after the dry run validates folds `[0, 1, 2, 3, 4]`. Detach with
+**Ctrl+b**, then **d**; reconnect with `tmux attach -t onhw-wi-char-cv`.
+Folds run sequentially on one GPU. `latest.pth`, `best_cer.pth`, and
+`best_wer.pth` are saved in each fold's `checkpoints/` directory.
+
+The launcher stops on failure and refuses to overwrite populated fold
+directories. `--folds 2 3 4` selects untouched folds if only earlier folds
+have completed. To resume an interrupted fold, use a copy of the CV config
+with `checkpoint` set to the existing `latest.pth` path and select only that
+fold with `--folds N`; then launch the remaining untouched folds with the
+original CV config. Do not change the total epoch budget when resuming.
+
 ### Evaluation
 
 As we are using cross validation, the results are already given in the output files of training. However, you can always re-evaluate the model with the configuration and weight you want. In that case, please adjust the `test.yaml` file accordingly and run `main.py` with it.
