@@ -8,12 +8,12 @@ import unicodedata
 
 from tva.handwriting.onhw import ADAPTER_SIZE
 from tva.handwriting_tokenizers import HandwritingBigramTokenizer
-from tva.handwriting_tokenizers import get_tokenizer, resolve_tokenizer_path
+from tva.tokenizer_factory import get_tokenizer, resolve_tokenizer_path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ADAPTER_PATH = (
-    REPO_ROOT / 'artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json'
+    REPO_ROOT / 'artifacts/tokenizers/archive/onhw/handwriting/onhw_words500_rh_iam_read_v1.json'
 )
 DATASETS = (
     REPO_ROOT / 'data/tva/onhw_words500_wd_word_rh',

@@ -21,7 +21,7 @@ from tva.handwriting.onhw import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ADAPTER_PATH = (
-    REPO_ROOT / 'artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json'
+    REPO_ROOT / 'artifacts/tokenizers/archive/onhw/handwriting/onhw_words500_rh_iam_read_v1.json'
 )
 
 

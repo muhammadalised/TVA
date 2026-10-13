@@ -13,12 +13,11 @@ from tva.handwriting.ed import ED_ALPHABET
 from tva.handwriting.subwords import (
     ADAPTER_FILES, SOURCE_FILES, build_ed_subword_adapter,
 )
-from tva.handwriting_tokenizers import (
-    HandwritingBPETokenizer, HandwritingUnigramTokenizer, get_tokenizer,
-)
+from tva.handwriting_tokenizers import HandwritingBPETokenizer, HandwritingUnigramTokenizer
+from tva.tokenizer_factory import get_tokenizer
 
 ROOT = Path(__file__).resolve().parents[1]
-ARTIFACTS = ROOT / 'artifacts/tokenizers'
+ARTIFACTS = ROOT / 'artifacts/tokenizers/ed/handwriting'
 CLASSES = {'bpe': HandwritingBPETokenizer, 'unigram': HandwritingUnigramTokenizer}
 
 
@@ -34,7 +33,7 @@ class HandwritingSubwordTests(unittest.TestCase):
                 output = Path(directory) / 'tokenizer.json'
                 source = ARTIFACTS / 'source' / SOURCE_FILES[kind]
                 tokenizer = cls()
-                tokenizer.train(source, ['', *ED_ALPHABET], output_path=output)
+                tokenizer.prepare(source, ['', *ED_ALPHABET], output_path=output)
                 self.assertEqual(output.read_bytes(), (ARTIFACTS / ADAPTER_FILES[kind]).read_bytes())
                 self.assertEqual((output.parent / 'source' / source.name).read_bytes(), source.read_bytes())
                 self.assertEqual(tokenizer.size, 224)
@@ -71,7 +70,7 @@ class HandwritingSubwordTests(unittest.TestCase):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
                 source = ARTIFACTS / 'source' / SOURCE_FILES[kind]
                 output = Path(directory) / 'model.json'
-                cls().train(source, ['', *ED_ALPHABET], output_path=output)
+                cls().prepare(source, ['', *ED_ALPHABET], output_path=output)
                 original = output.read_bytes()
                 model = json.loads(original)
                 model['policy']['inference'] = 'greedy'
@@ -90,11 +89,11 @@ class HandwritingSubwordTests(unittest.TestCase):
                 source = ARTIFACTS / 'source' / SOURCE_FILES[kind]
                 output = Path(directory) / 'model.json'
                 with self.assertRaises(ValueError):
-                    cls().train(source, ['', 'a'], output_path=output)
+                    cls().prepare(source, ['', 'a'], output_path=output)
                 self.assertFalse(output.exists())
                 output.write_bytes(b'existing')
                 with self.assertRaises(ValueError):
-                    cls().train(source, ['', *ED_ALPHABET], output_path=output)
+                    cls().prepare(source, ['', *ED_ALPHABET], output_path=output)
                 self.assertEqual(output.read_bytes(), b'existing')
 
     def test_fold_zero_configs_match_bigram_and_load_through_training_entry(self):

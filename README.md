@@ -48,19 +48,21 @@ The notebook declares the ED categories and source paths, imports the tokenizer
 classes, and calls their training methods:
 
 ```python
-from tva.handwriting_tokenizers import IAMBigramTokenizer, GreedyHandwritingBigramTokenizer
+from tva.iam_tokenizers import IAMBigramTokenizer
+from tva.handwriting_tokenizers import GreedyHandwritingBigramTokenizer
 
 linguistic = IAMBigramTokenizer()
 linguistic.train(iam_labels, categories, 224,
                  selection_path=iam_selection, output_path=linguistic_output)
 
 handwriting = GreedyHandwritingBigramTokenizer()
-handwriting.train(iam_handwriting, categories, output_path=handwriting_output)
+handwriting.train(iam_evidence, categories, output_path=handwriting_output)
 ```
 
 The linguistic tokenizer runs the original TVA bigram algorithm on IAM training
-transcripts. The handwriting tokenizer prepares the ED vocabulary from the
-frozen IAM handwriting evidence. Both have 145 bigrams, 78 ED characters, and
+transcripts. The handwriting tokenizer selects its vocabulary in TVA from the
+portable IAM connectivity evidence exported by DTLR. Both have 145 bigrams,
+78 ED characters, and
 CTC blank (224 classes). Neither selects bigrams from ED labels. The character
 baseline uses the configured alphabet directly (79 classes).
 
@@ -70,25 +72,32 @@ train_tokenizers.ipynb               Original TVA OnHW notebook, unchanged
 train_onhw_handwriting_tokenizer.ipynb  Historical IAM+READ OnHW condition
 tva/
   tokenizers.py                     Original TVA tokenizers, unchanged
-  handwriting_tokenizers.py         Thesis tokenizer classes and integration
+  iam_tokenizers.py                 IAM input wrapper for original TVA bigram training
+  handwriting_tokenizers.py         Handwriting-aware tokenizer classes
+  tokenizer_factory.py              Shared recognition/analysis initialization
+  tokenizer_compatibility.py        Load-only historical linguistic tokenizers
   handwriting/
     common.py                       Shared frozen-file helpers
-    iam.py                          IAM transcript validation and TVA training
-    ed.py                           IAM handwriting vocabulary for ED
+    evidence.py                     Portable IAM connectivity export reader
+    training.py                     Bigram selection, supported BPE, Unigram EM
+    ed.py                           ED bigram alphabet/ID projection
     onhw.py                         Historical OnHW vocabulary preparation
     audit.py                        Optional reconstruction/comparison audits
 ```
 
-Tokenizer files already exist in artifacts/tokenizers/. Running the ED notebook
-reproduces them and refuses to overwrite a differing frozen file. Detailed
+Tokenizer files already exist in `artifacts/tokenizers/ed/handwriting/` and
+`artifacts/tokenizers/ed/linguistic/`. See [the artifact index](artifacts/tokenizers/README.md)
+for current and archived vocabularies. Running the ED notebook
+relearns the handwriting vocabularies from evidence, verifies exact reproduction,
+and refuses to overwrite a differing frozen file. Detailed
 audits are separate from the training notebook:
 
 ```bash
 python -m tva.handwriting.audit --compare --dataset-directory /mnt/c/Users/Ali/Downloads/fau-english-dataset
 ```
 
-Historical custom linguistic artifacts and loaders remain for saved experiments
-and analyze_ed.ipynb. Their retired builders are not needed for new training.
+Historical custom linguistic artifacts and loaders in
+`tva/tokenizer_compatibility.py` remain for saved experiments and analyze_ed.ipynb. Their retired builders are not needed for new training.
 See docs/EXPERIMENTS.md for provenance and methodological differences.
 
 Recognition training is a separate manual step. Current ED configs live in
@@ -104,8 +113,11 @@ Completed experiments retain their exact saved configs under results/.
 ### ED handwriting BPE and Unigram — fold 0
 
 The frozen IAM sources and ED tokenizer files are already bundled; no notebook
-run is required. `train_ed_tokenizers.ipynb` can reproduce the ED preparation
-with simple class imports and `.train()` calls. No ED labels are used to select
+run is required. `train_ed_tokenizers.ipynb` can reproduce their training
+with simple class imports and `.train()` calls. These now fit candidates and
+merges/probabilities from the bundled IAM evidence, then verify exact frozen-v1
+reproduction. Use `.load()` to reuse a tokenizer or `.prepare()` for projection
+without fitting. No ED labels are used to select
 or fit the vocabularies. Each method has 224 ED classes and 145 selected pieces.
 BPE keeps ordered merges; Unigram keeps its original Viterbi scores and uses
 forced character fallback for added `%` and `=`.

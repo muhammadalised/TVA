@@ -10,7 +10,7 @@ import zipfile
 
 from .ed import ED_ALPHABET
 from tva.handwriting_tokenizers import GreedyHandwritingBigramTokenizer
-from tva.handwriting_tokenizers import GreedyLinguisticBigramTokenizer
+from tva.tokenizer_compatibility import GreedyLinguisticBigramTokenizer
 from tva.handwriting_tokenizers import HandwritingBPETokenizer, HandwritingUnigramTokenizer
 from tva.dataset.ed import ED_ARCHIVE_SHA256
 
@@ -23,7 +23,7 @@ DEFAULT_DATASET_DIRECTORY = Path(os.environ.get(
     'TVA_ED_DATASET_DIR', '/mnt/c/Users/Ali/Downloads/fau-english-dataset'
 ))
 DEFAULT_ADAPTER = Path(
-    'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
+    'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
 )
 
 
@@ -106,15 +106,15 @@ def compare(dataset_directory, *, labels_path=None, selection_path=None, output_
     from itertools import combinations
     import string
 
-    from tva.handwriting_tokenizers import get_tokenizer
+    from tva.tokenizer_factory import get_tokenizer
     from .common import canonical_json_bytes as json_bytes, require, save_frozen, sha256_bytes as sha256
-    from .iam import DEFAULT_LABELS, DEFAULT_SELECTION, read_iam_training
+    from tva.iam_tokenizers import DEFAULT_LABELS, DEFAULT_SELECTION, read_iam_training
 
     REPO_ROOT = Path(__file__).resolve().parents[2]
     ED_DIRECTORY = Path(dataset_directory)
-    OUTPUT = REPO_ROOT / 'artifacts/tokenizers/ed_iam_tva_original_bigram_greedy_v1.json'
-    HANDWRITING = REPO_ROOT / 'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
-    CUSTOM_LINGUISTIC = REPO_ROOT / 'artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json'
+    OUTPUT = REPO_ROOT / 'artifacts/tokenizers/ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json'
+    HANDWRITING = REPO_ROOT / 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
+    CUSTOM_LINGUISTIC = REPO_ROOT / 'artifacts/tokenizers/archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'
     annotations = read_iam_training(labels_path or DEFAULT_LABELS, selection_path or DEFAULT_SELECTION)
     unique_labels = {row['label'] for row in annotations}
     vocab = json.loads(OUTPUT.read_bytes())['vocab']

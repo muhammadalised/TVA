@@ -218,10 +218,10 @@ def write_adapter(adapter: dict[str, Any], output_path: str | Path) -> str:
 
 
 DEFAULT_SOURCE = Path(
-    'artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json'
+    'artifacts/tokenizers/ed/handwriting/source/iam-english-handwriting-bigram-v1.json'
 )
 DEFAULT_OUTPUT = Path(
-    'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
+    'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
 )
 
 

@@ -1095,3 +1095,130 @@ for pinned hashes, inference policy, scientific scope and manual commands.
 
 Next: manually run handwriting BPE and Unigram fold 0 for WD and WI, then compare
 their independent best CER/WER metrics with the existing character/bigram runs.
+
+## 2026-10-08 — Handwriting BPE WD fold 0 completed
+
+The user's manual BPE WD run completed all 300 epochs. Verified run
+`20261008183405`, saved settings and 503 validation predictions per epoch.
+Best CER: 24.45439547% at epoch 185; best WER: 63.40677055% at epoch 261.
+These are independent validation minima from different checkpoints.
+
+Against handwriting bigram fold 0, BPE CER is 0.18383219 percentage points
+higher and WER is 1.39709833 points lower. Character remains better on both
+metrics; one fold/seed is insufficient for a general ranking. No training,
+vocabulary change, commit or push was performed while recording this result.
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-bpe-ed-wd-fold-0-completed)
+for the comparison, checkpoint-specific metrics and saved file hashes.
+
+Next: manually complete BPE WI and Unigram WD/WI fold-0 runs.
+
+## 2026-10-08 — Handwriting BPE WI fold 0 completed
+
+Verified all 300 epochs of run `20261008194420`, its matched saved config and
+525 validation labels. Best CER: 17.17816590% first at epoch 248;
+best WER: 44.73684211% at epoch 257. Epoch 257 also ties the minimum CER.
+
+Against handwriting bigram WI fold 0, BPE CER is 0.75698846 percentage
+points higher and WER is 0.10025063 points lower. Character remains lower
+on both metrics. BPE WD and WI fold 0 are complete; Unigram WD/WI is next.
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-bpe-ed-wi-fold-0-completed)
+for the comparison, checkpoint metrics and file hashes. No recognition training,
+commit or push was performed while recording the result.
+
+## 2026-10-08 — Handwriting Unigram WD fold 0 completed
+
+Verified all 300 epochs of run `20261008210048`, the matched saved config and
+503 validation labels. Best CER: 24.06787650% at epoch 265;
+best WER: 63.78291241% at epoch 229, from separate checkpoints.
+Unigram has the lowest CER among the three handwriting methods on WD fold 0;
+BPE has the lowest WER. Character remains lower on both metrics.
+
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-unigram-ed-wd-fold-0-completed)
+for comparisons, checkpoint-specific metrics and saved evidence hashes.
+Next: manually complete Unigram WI fold 0. Matched linguistic BPE/Unigram
+controls remain separate pending work. No training, commit or push was performed
+while recording this result.
+
+## 2026-10-08 — Handwriting Unigram WI fold 0 completed
+
+Verified all 300 epochs of run `20261008221323`, matched saved settings and
+525 validation labels. Best CER: 16.84071321% at epoch 277;
+best WER: 45.41353383% at epoch 261, from separate checkpoints.
+
+Handwriting BPE/Unigram fold 0 is now complete for WD and WI. Character remains
+lowest on both metrics in both distributions. Among handwriting methods,
+Unigram has lowest WD CER, bigram lowest WI CER, and BPE lowest WER in both.
+These one-fold/one-seed comparisons do not establish a general ranking.
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-unigram-ed-wi-fold-0-completed)
+for the complete comparison, checkpoint-specific metrics and file hashes.
+
+Next planned work: freeze and integrate matched IAM text-only BPE/Unigram
+controls, then manually evaluate ED fold 0. No training, commit or push was
+performed while recording this result.
+
+
+## 2026-10-10 — Artifact navigation
+
+Grouped current ED tokenizer artifacts under `artifacts/tokenizers/ed/`
+(handwriting and linguistic) and historical conditions under
+`artifacts/tokenizers/archive/`. Added `artifacts/tokenizers/README.md` with direct
+links and explanations. Updated active references and retained saved-config path
+compatibility. All 17 frozen JSON files retain their exact bytes and checksums.
+Recognition results stay in their existing directories.
+
+Validation: 64 tests passed, 7 optional tests skipped; ED preparation notebook
+executed successfully and all frozen artifact hashes remained unchanged.
+
+
+## 2026-10-10 — TVA owns handwriting vocabulary training
+
+Moved bigram selection, supported BPE merge learning, and Unigram EM/pruning
+from DTLR into `tva/handwriting/training.py`. Current handwriting `.train()` APIs
+fit from `artifacts/evidence/iam/iam_connectivity_v1.json.gz`; `.prepare()` and
+`.load()` remain separate ways to adapt/reuse frozen models. The simple ED
+notebook now trains all three from the same portable evidence input.
+DTLR exports evidence independently and retains historical trainer compatibility
+through lazy wrappers; its former training CLIs direct users to TVA.
+
+All three full fits reproduce the native and ED frozen artifacts exactly, so
+completed recognition runs retain their tokenizer identity. No ED labels are
+used for fitting. Original TVA tokenizers and recognition training outputs are
+unchanged. New TVA fitting reports record current code/evidence hashes while
+preserving historical frozen provenance. TVA: 86 tests passed, 7 optional skips;
+DTLR: 78 tests passed. The entire ED preparation/training notebook executed;
+all 17 existing artifact checksums stayed unchanged. No commit or push yet.
+
+### 2026-10-10 — Separate linguistic helpers from handwriting tokenizers
+
+Moved authenticated IAM input preparation and `IAMBigramTokenizer` to
+`tva/iam_tokenizers.py`. It still delegates vocabulary selection and text
+encoding to the unchanged original `tva/tokenizers.py` implementation.
+Moved the load-only historical OnHW and ED custom linguistic classes and their
+frozen identities to `tva/tokenizer_compatibility.py`; saved experiment keys
+and artifacts remain supported. `tva/tokenizer_factory.py` now supplies the
+shared factory, artifact path resolution, and explicit character alphabet
+initialization for recognition and analysis. Updated entry points, tests, ED
+notebooks, and README imports. `tva/handwriting_tokenizers.py` now contains only
+handwriting-aware tokenizer classes. Tokenizer files and training algorithms
+are unchanged; no recognition experiments were launched.
+
+Validation: TVA unittest suite passed (93 tests: 86 passed, 7 optional checks
+skipped). Verified all 17 frozen tokenizer artifacts remain byte-identical
+and `tva/tokenizers.py` matches the original TVA commit `cff221c`. Updated
+Python modules and ED notebook cells parse successfully.
+
+## 2026-10-11 — OnHW WI/RH character baseline: all five folds completed
+
+Verified all five fresh OnHW WI/RH character runs completed 300 epochs.
+Saved configs match across folds except the fold index; train/validation
+writers are disjoint. Recomputed selected-checkpoint metrics from predictions
+and confirmed all validation labels and 300 prediction sets per fold.
+Mean independently best CER: **7.3069%**; WER: **15.2473%**.
+Population fold standard deviations: 6.1204 / 9.0592 percentage points.
+The TVA paper reports 7.41% / 15.40%, a close aggregate reproduction.
+WER at each fold's best-CER checkpoint averages 15.3823%.
+See [the experiment record](EXPERIMENTS.md#2026-10-11--onhw-wirh-character-baseline-all-five-folds-completed)
+for per-fold results, selected epochs, dataset counts, scope and evidence hashes.
+Next: complete the five-fold WD baseline for its separate paper comparison.
+No training, tokenizer modification, commit or push was performed while
+recording these results.

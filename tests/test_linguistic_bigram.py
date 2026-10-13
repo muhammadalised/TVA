@@ -8,16 +8,12 @@ from tva.handwriting.onhw import (
     canonical_json_bytes,
     sha256_bytes,
 )
-from tva.handwriting_tokenizers import (
-    LINGUISTIC_SCHEMA,
-    MANIFEST_SHA256,
-    LinguisticBigramTokenizer,
-)
-from tva.handwriting_tokenizers import get_tokenizer
+from tva.tokenizer_compatibility import LINGUISTIC_SCHEMA, MANIFEST_SHA256, LinguisticBigramTokenizer
+from tva.tokenizer_factory import get_tokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ARTIFACT_ROOT = REPO_ROOT / 'artifacts/tokenizers/linguistic_bigram'
+ARTIFACT_ROOT = REPO_ROOT / 'artifacts/tokenizers/archive/onhw/linguistic_bigram'
 DATASETS = {
     'onhw_words500_wd_word_rh': REPO_ROOT / 'data/tva/onhw_words500_wd_word_rh',
     'onhw_words500_wi_word_rh': REPO_ROOT / 'data/tva/onhw_words500_wi_word_rh',

@@ -1,0 +1,29 @@
+{
+  "algorithm": "bigram",
+  "annotation_label_values_read_from_ed": false,
+  "candidate_count": 1259,
+  "dataset": "IAM",
+  "ed_adapter_sha256": "d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7",
+  "ed_ctc_classes": 224,
+  "evidence_sha256": "815304d2591bc187a2eea7dd76593499905c11645c8b9a146e7f1699c0e636fa",
+  "evidence_source_sha256": {
+    "detections": "5e68b4c2ef1db15b5d1776ba1d4b7696ba9289f81dd4dd018598dd7d6aea2b32",
+    "evidence": "9c75d6d240127c2e6a6c4dffd83c491beab6a31dc4be204461861c1913740bd3",
+    "manifest": "82cb95a14e71ab5b70c868ca1676b3f628552fabac395fbd30039fc7798bf190",
+    "scores": "45c86a9f703ebc3684563ec2a840e7c34241aa76e84d692be46cf11bfec27055",
+    "selection": "7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2"
+  },
+  "frozen_native_bytes_reproduced": true,
+  "frozen_native_sha256": "2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92",
+  "historical_source_provenance_preserved": true,
+  "implementation_sha256": {
+    "evidence.py": "5ac06822bb113a113c8c64d7a08fe918f81eed6b4c4285b22a56a202052d6cd9",
+    "training.py": "bd1e65682596b57ed9cc7230571a2ab42b5349b46ae06841b2a74b1ce38b1f80"
+  },
+  "learned_fields_recomputed_from_evidence": true,
+  "line_count": 5694,
+  "schema_version": "tva.handwriting-tokenizer-training.v1",
+  "selected_piece_count": 145,
+  "split": "train",
+  "trainer_repository": "TVA"
+}

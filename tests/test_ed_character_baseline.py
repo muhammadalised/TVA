@@ -7,7 +7,7 @@ import yaml
 from main import load_configured_tokenizer
 from tva.handwriting.ed import ED_ALPHABET
 from tva.model import BaseModel
-from tva.handwriting_tokenizers import CharacterTokenizer
+from tva.tokenizer_factory import CharacterTokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

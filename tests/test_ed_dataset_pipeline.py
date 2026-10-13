@@ -11,7 +11,7 @@ from main import build_dataset
 from tva.dataset import EdZipDataset, fn_collate, get_ed_num_folds
 from tva.handwriting.ed import ED_ALPHABET
 from tva.model import BaseModel
-from tva.handwriting_tokenizers import get_tokenizer
+from tva.tokenizer_factory import get_tokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

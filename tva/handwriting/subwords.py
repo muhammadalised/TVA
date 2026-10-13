@@ -6,7 +6,7 @@ DTLR training, evidence generation and ED annotation reading live elsewhere.
 import json
 from pathlib import Path
 
-from .common import canonical_json_bytes, require, sha256_bytes
+from .common import canonical_json_bytes, require, resolve_artifact_path, sha256_bytes
 from .ed import ED_ALPHABET
 
 SOURCE_FILES = {
@@ -91,7 +91,7 @@ def build_ed_subword_adapter(source_path, kind):
 
 def load_ed_subword_adapter(path, kind):
     """Authenticate a derived file by exact reconstruction from its pinned source."""
-    path = Path(path)
+    path = resolve_artifact_path(path)
     raw = path.read_bytes()
     source_path = path.parent / 'source' / SOURCE_FILES[kind]
     expected = build_ed_subword_adapter(source_path, kind)

@@ -1390,3 +1390,513 @@ The existing audit CLI can also recheck either adapter:
 python -m tva.handwriting.audit --tokenizer-kind bpe --adapter artifacts/tokenizers/ed_iam_handwriting_bpe_v1.json
 python -m tva.handwriting.audit --tokenizer-kind unigram --adapter artifacts/tokenizers/ed_iam_handwriting_unigram_v1.json
 ```
+
+## 2026-10-08 — Handwriting BPE ED WD fold 0 completed
+
+The user manually ran `python main.py -c configs/thesis/ed/bpe_handwriting_wd.yaml`.
+Verified the supplied best metrics against the saved 300-epoch run (indices
+0–299), run tag `20261008183405`, under
+`results/thesis/ed/handwriting_bpe_wd/0/`. The log records CUDA mixed precision,
+ED `gold_wd.zip` from `/mnt/c/Users/Ali/Downloads/fau-english-dataset/`,
+and `HandwritingBPETokenizer` loading the frozen ED BPE adapter. The saved
+configuration exactly matches the declared fold-0 config. Model and training
+settings match the completed handwriting bigram run; its saved config retains
+historical FAU dataset/tokenizer/output names from before the ED rename. Both
+logs identify the same WD ZIP archive. All 300 prediction epochs are present,
+with 503 validation labels per epoch.
+
+The source release and derived adapter remain the versions frozen before the
+run: IAM BPE SHA-256
+`a504c2306200faf6eab98f3feef6f98b81e6e6c6c7f707cf31aa3399a660be47`,
+ED adapter SHA-256
+`fcf244d112f55fc7e30edde4eaaabda70d282ea193b7834acbdcdac6cbc4c4ea`.
+No vocabulary or inference policy was changed after seeing recognition results.
+
+### Independent best validation metrics
+
+| WD fold-0 method | Best CER (%) | CER epoch | Best WER (%) | WER epoch |
+| --- | --- | --- | --- | --- |
+| Character | 15.83313693 | 241 | 54.64803869 | 199 |
+| Handwriting bigram | 24.27056328 | 206 | 64.80386889 | 245 |
+| Handwriting BPE | 24.45439547 | 185 | 63.40677055 | 261 |
+| Original TVA linguistic bigram | 35.95569173 | 191 | 79.23159592 | 224 |
+
+Epochs are zero-based saved indices. Each metric is its own minimum over the
+300 epochs; these columns do not describe one common checkpoint. For BPE,
+best CER is 0.24454395474899834 at epoch 185, while best WER is
+0.6340677055346587 at epoch 261. WER at the best-CER checkpoint is
+64.88447071%; CER at the best-WER checkpoint is 24.62408673%. Use the
+independent minima when comparing with previous tables; evaluating
+`best_cer.pth` will not reproduce the independent minimum WER.
+
+BPE has 0.18383219 percentage points higher CER and 1.39709833 points lower WER
+than handwriting bigram. The character baseline still has lower CER and WER.
+These are one fold and seed; neither the small CER difference nor the WER
+improvement establishes a general ranking. BPE WI and Unigram WD/WI remain
+pending in this result report; their manual runs are the next comparison step.
+
+### Saved evidence hashes
+
+All paths below are relative to `results/thesis/ed/handwriting_bpe_wd/0/`.
+
+| File | SHA-256 |
+| --- | --- |
+| `train_20261008183405.yaml` | `d67db550f66c34f65c6b40de50270e9c5d5f3a74b8b026b878c06bebccc29100` |
+| `train_20261008183405.json` | `0b18d45c9d388f4d48d54aa05d9e0f0125797f608381c88b69e1b204a0ba0284` |
+| `train_20261008183405.log` | `4b0bb6e8f2a46ac1820a870a6f9231b969e65142c285e85f482fde32ee7f2d4d` |
+| `train_preds_20261008183405.json` | `d95fd65bf64f76ef010f0b4bd73321855ba3db2bff09dcb76e8bbab0afc5169c` |
+| `checkpoints/best_cer.pth` | `a7ef4e1845f50b39028287d7fd8d6dcacbedb1ba33f54ce91f7c4da89680403f` |
+| `checkpoints/best_wer.pth` | `a4e8ab5e32be3bf63e5351e2787293824c1faf1b524edf390671cf255b5663a8` |
+
+## 2026-10-08 — Handwriting BPE ED WI fold 0 completed
+
+Verified the user's reported result against run `20261008194420` under
+`results/thesis/ed/handwriting_bpe_wi/0/`. All 300 epochs (0–299) and their
+prediction entries are present, with 525 WI validation labels per epoch.
+The saved YAML exactly matches `configs/thesis/ed/bpe_handwriting_wi.yaml`.
+Model/training hyperparameters match the completed handwriting bigram WI run;
+its saved dataset names predate the ED metadata rename. The BPE log confirms
+CUDA mixed precision, the frozen ED BPE tokenizer and `gold_wi.zip` from
+`/mnt/c/Users/Ali/Downloads/fau-english-dataset/`.
+
+The ED BPE adapter remains byte-identical to its pre-evaluation freeze
+(SHA-256 `fcf244d112f55fc7e30edde4eaaabda70d282ea193b7834acbdcdac6cbc4c4ea`).
+No tokenizer selection or fitting used these recognition results.
+
+### Independent best validation metrics
+
+| WI fold-0 method | Best CER (%) | CER epoch | Best WER (%) | WER epoch |
+| --- | --- | --- | --- | --- |
+| Character | 13.77171782 | 276 | 42.30576441 | 285 |
+| Handwriting bigram | 16.42117744 | 264 | 44.83709273 | 265 |
+| Handwriting BPE | 17.17816590 | 248 | 44.73684211 | 257 |
+| Original TVA linguistic bigram | 20.93118701 | 250 | 52.43107769 | 258 |
+
+Epochs are zero-based saved indices. BPE's best CER is
+0.17178165899037803, first recorded at epoch 248; best WER is
+0.4473684210526316 at epoch 257. WER at the saved best-CER epoch is
+45.11278195%. Unlike BPE WD, the best-WER epoch also ties the minimum CER
+(17.17816590%), so epoch 257 achieves both reported minima.
+
+Relative to handwriting bigram WI fold 0, BPE has 0.75698846 percentage
+points higher CER and 0.10025063 points lower WER. Both WD and WI fold-0
+results show higher BPE CER and lower BPE WER than handwriting bigram; the
+WI WER difference is only 0.10 points. Character remains lower on both metrics.
+These are descriptive one-fold/one-seed comparisons, not an established
+cross-fold ranking. Handwriting BPE fold 0 is now complete for WD and WI;
+Unigram WD/WI is the next planned comparison.
+
+### Saved evidence hashes
+
+Paths are relative to `results/thesis/ed/handwriting_bpe_wi/0/`.
+
+| File | SHA-256 |
+| --- | --- |
+| `train_20261008194420.yaml` | `cc5ad8c2efa032a6b6480532e4171667a8b8330d1278f4add12e50128fca287d` |
+| `train_20261008194420.json` | `c8274e380950002537ba5abc0a7a3703696efc452500feaa31661f3edad7afd9` |
+| `train_20261008194420.log` | `25d09a908a3d96be86e0090c9930c265bba6aec4424ef22712dc0d12ba4eb853` |
+| `train_preds_20261008194420.json` | `9cef0c114f51959002efdc530acc1fada2c53cf10655b53fb4ced64fd8830151` |
+| `checkpoints/best_cer.pth` | `334ba257df029a043fd3bc13caad34e026edeaf71767d43e041b5e95516a4c79` |
+| `checkpoints/best_wer.pth` | `4eb407159482ac5c65530a6cffd53dd4fceac9a3877c6a9076b70a1da2c72b2e` |
+
+## 2026-10-08 — Handwriting Unigram ED WD fold 0 completed
+
+Verified the user's reported best values against run `20261008210048` under
+`results/thesis/ed/handwriting_unigram_wd/0/`. All 300 epochs (0–299) and
+prediction entries are present, with 503 WD validation labels per epoch.
+The saved config exactly matches `configs/thesis/ed/unigram_handwriting_wd.yaml`
+and matches the completed handwriting BPE WD model/training settings except
+for tokenizer/artifact/output paths. The log confirms CUDA mixed precision,
+`HandwritingUnigramTokenizer` and ED `gold_wd.zip` from
+`/mnt/c/Users/Ali/Downloads/fau-english-dataset/`.
+
+The ED Unigram adapter remains byte-identical to its pre-evaluation freeze:
+SHA-256 `e1628c0d2c30cdc9d05898a848c80bfb055d282cf78d39aa27d6d1a3cf8471f0`.
+Its 145 IAM pieces, learned scores and declared forced-symbol policy were
+not changed after recognition evaluation.
+
+### Independent best validation metrics
+
+| WD fold-0 method | Best CER (%) | CER epoch | Best WER (%) | WER epoch |
+| --- | --- | --- | --- | --- |
+| Character | 15.83313693 | 241 | 54.64803869 | 199 |
+| Handwriting bigram | 24.27056328 | 206 | 64.80386889 | 245 |
+| Handwriting BPE | 24.45439547 | 185 | 63.40677055 | 261 |
+| Handwriting Unigram | 24.06787650 | 265 | 63.78291241 | 229 |
+| Original TVA linguistic bigram | 35.95569173 | 191 | 79.23159592 | 224 |
+
+Epochs are zero-based saved indices. Unigram's minimum CER is
+0.24067876502474664 at epoch 265 and minimum WER is
+0.6378291241268136 at epoch 229. These are separate selected checkpoints.
+WER at the best-CER epoch is 64.13218700%;
+CER at the best-WER epoch is 24.27056328%.
+
+Against handwriting bigram, Unigram has 0.20268678
+percentage points lower CER and 1.02095648 points
+lower WER. Against handwriting BPE, its CER is
+0.38651897 points lower and WER is
+0.37614186 points higher. Among the three
+handwriting methods, Unigram has the lowest CER and BPE the lowest WER on this
+fold; character has lower error on both metrics. These are one-fold/one-seed
+results, not an established cross-fold ranking. Unigram WI is next, followed
+by freezing and integrating the matched text-only controls discussed with the user.
+
+### Saved evidence hashes
+
+Paths are relative to `results/thesis/ed/handwriting_unigram_wd/0/`.
+
+| File | SHA-256 |
+| --- | --- |
+| `train_20261008210048.yaml` | `bf2f97f98cd5b552db58bcf40631fa6a5370063f909f922c399f76a1e3af9ff7` |
+| `train_20261008210048.json` | `982301735479486e71727b3615c9db1c5c39c16731b0d142fb9de063b4bd497e` |
+| `train_20261008210048.log` | `28d878228d48f79b3c34dac489c3c2f1239789ccf67c1300c2daea8ed5da1f73` |
+| `train_preds_20261008210048.json` | `4755fddb5a72822a49151f16b813e94afb864361e17ce7a049fe356f47cebce2` |
+| `checkpoints/best_cer.pth` | `a73137e379214bd50ba423b98c8e16f50caf73eacc24bc6c70799861df4795bf` |
+| `checkpoints/best_wer.pth` | `7579b498c555a3598954e792c6b26027461b935a1bda37ee4dd01746fa0133e8` |
+
+## 2026-10-08 — Handwriting Unigram ED WI fold 0 completed
+
+Verified the user's reported best values against run `20261008221323` under
+`results/thesis/ed/handwriting_unigram_wi/0/`. All 300 epochs (0–299) and their
+prediction entries are present, with 525 WI validation labels per epoch.
+The saved YAML exactly matches `configs/thesis/ed/unigram_handwriting_wi.yaml`
+and matches the completed BPE WI model/training settings except tokenizer,
+artifact and output paths. The log confirms CUDA mixed precision,
+`HandwritingUnigramTokenizer` and ED `gold_wi.zip` from
+`/mnt/c/Users/Ali/Downloads/fau-english-dataset/`.
+
+The Unigram adapter remains the pre-evaluation frozen artifact, SHA-256
+`e1628c0d2c30cdc9d05898a848c80bfb055d282cf78d39aa27d6d1a3cf8471f0`.
+No pieces, learned scores or forced-symbol policy changed after evaluation.
+
+### Independent best WI validation metrics
+
+| WI fold-0 method | Best CER (%) | CER epoch | Best WER (%) | WER epoch |
+| --- | --- | --- | --- | --- |
+| Character | 13.77171782 | 276 | 42.30576441 | 285 |
+| Handwriting bigram | 16.42117744 | 264 | 44.83709273 | 265 |
+| Handwriting BPE | 17.17816590 | 248 | 44.73684211 | 257 |
+| Handwriting Unigram | 16.84071321 | 277 | 45.41353383 | 261 |
+| Original TVA linguistic bigram | 20.93118701 | 250 | 52.43107769 | 258 |
+
+Epochs are zero-based saved indices. Unigram's best CER is
+0.16840713210816727 at epoch 277 and best WER is
+0.45413533834586467 at epoch 261, from separate selected checkpoints.
+WER at the best-CER epoch is 45.96491228%;
+CER at the best-WER epoch is 16.95471750%.
+
+Compared with handwriting bigram WI, Unigram CER is
+0.41953577 percentage points higher and WER is
+0.57644110 points higher. Compared with handwriting
+BPE WI, Unigram CER is 0.33745269 points lower
+and WER is 0.67669173 points higher.
+
+### Complete current fold-0 comparison
+
+| Method | WD CER (%) | WD WER (%) | WI CER (%) | WI WER (%) |
+| --- | --- | --- | --- | --- |
+| Character | 15.83313693 | 54.64803869 | 13.77171782 | 42.30576441 |
+| Handwriting bigram | 24.27056328 | 64.80386889 | 16.42117744 | 44.83709273 |
+| Handwriting BPE | 24.45439547 | 63.40677055 | 17.17816590 | 44.73684211 |
+| Handwriting Unigram | 24.06787650 | 63.78291241 | 16.84071321 | 45.41353383 |
+| Original TVA linguistic bigram | 35.95569173 | 79.23159592 | 20.93118701 | 52.43107769 |
+
+Character has the lowest CER and WER in both distributions among these current
+conditions. Among handwriting methods, Unigram has lowest WD CER, bigram has
+lowest WI CER, and BPE has lowest WER in both. These are independent minima
+on one fold and one seed, not a cross-fold or statistical ranking. Original TVA
+linguistic bigram is an existing implementation baseline; it is not the matched
+text-only BPE/Unigram control discussed with the user. All four new handwriting
+BPE/Unigram WD/WI fold-0 runs are complete. Next planned work is to freeze and
+integrate the IAM text-only BPE/Unigram controls for the matched comparison.
+
+### Saved evidence hashes
+
+Paths are relative to `results/thesis/ed/handwriting_unigram_wi/0/`.
+
+| File | SHA-256 |
+| --- | --- |
+| `train_20261008221323.yaml` | `b844cb38dc2847fb15a31f40b0c39338836e7223b3f2506abce83d1e28f7a9ea` |
+| `train_20261008221323.json` | `163bf0ffb94a823fa63f6f4e90bc9eba9241cc4af224ffee1cceffaa20d3292a` |
+| `train_20261008221323.log` | `eba1613c8c95359cb1666b46f422e9df0f35bd4ef6f0f8f31b562f22acfcaeef` |
+| `train_preds_20261008221323.json` | `d02fb41fbda62e33ec248eeb07a0cecabc056ef413a179f58ffad9172a25eff8` |
+| `checkpoints/best_cer.pth` | `5a6f503afced4f4ef6974ce28a529eb6502e4df1efa8f117abaa84e64f7a27e2` |
+| `checkpoints/best_wer.pth` | `e35eaded1f414b56ecead62f3697d7d692c56dc747f5c7f7469bc35ce5913016` |
+
+
+## 2026-10-10 — Tokenizer artifact directories organized
+
+Current ED handwriting vocabularies and their bundled IAM sources are now under
+`artifacts/tokenizers/ed/handwriting/`; the original TVA IAM linguistic bigram
+and its supporting reports are under `artifacts/tokenizers/ed/linguistic/`.
+Historical custom ED and OnHW vocabularies are retained under
+`artifacts/tokenizers/archive/`. See `artifacts/tokenizers/README.md` for the index.
+
+All 17 frozen artifact files were moved without changing their bytes or hashes.
+Active configurations, preparation notebooks, and audit defaults use the new
+paths. The tokenizer resolver supports previous repository paths recorded in
+saved recognition configurations. Historical experiment entries and frozen
+reports retain their original paths. Recognition results and running character
+baseline outputs are not moved; no recognition training is launched.
+
+Validation: the CPU unittest suite ran 71 tests (64 passed, 7 optional skips).
+Saved-path regression checks load every tokenizer condition with identical
+encodings, and unrelated missing files still fail. All ED preparation notebook
+code cells reproduced their existing files at the new locations; all 17
+artifact hashes remained unchanged. Artifact index links were checked.
+
+
+## 2026-10-10 — Handwriting tokenizer training moved into TVA
+
+DTLR now supplies a compact, authenticated IAM training connectivity export.
+TVA owns the selection/fitting algorithms and the current ED tokenizer training
+APIs. `GreedyHandwritingBigramTokenizer.train()` selects from aggregate scores;
+`HandwritingBPETokenizer.train()` collects eligible spans and learns supported
+ordered merges; `HandwritingUnigramTokenizer.train()` collects candidates,
+initializes from connected counts, and runs exact EM/removal-loss pruning.
+The original DTLR algorithms, thresholds, length cap, 145-piece budget,
+deterministic ordering, EM settings, and greedy/BPE/Viterbi ED inference policies
+are preserved. Shared text-only trainer functions moved with this code, but
+matched text-only ED artifacts/configs are not added by this migration.
+
+The evidence input is `artifacts/evidence/iam/iam_connectivity_v1.json.gz`:
+5,694 IAM train transcriptions, 160,536 non-whitespace pair observations, and
+1,259 aggregate score rows. It retains exact usable component IDs and explicit
+abstentions, without detector boxes/images or vocabulary selection. Compressed
+SHA-256: `815304d2591bc187a2eea7dd76593499905c11645c8b9a146e7f1699c0e636fa`;
+decompressed SHA-256:
+`1b44fddd0fa76dbb4ed14517f4361c522a4415139d16307b3468e14d122b8d0c`.
+DTLR authenticates all five original input exports and reconstructs aggregate
+scores; TVA validates bundle hashes, split/line identities, transcription
+hashes, text offsets, coverage, component semantics, and aggregate agreement.
+
+`train_ed_tokenizers.ipynb` retains the categories/imports/`.train()` structure
+and supplies this evidence path to all three handwriting methods. `.train()`
+now actually recomputes candidates and learned parameters. `.prepare()` names
+the previous frozen IAM-to-ED projection operation; `.load()` reuses a saved
+file. No ED transcription labels enter selection or fitting. No recognition
+training is launched, and recognition configs/checkpoints/results are unchanged.
+
+The current v1 training wrapper checks recomputed learned fields against the
+existing frozen experiment and retains its historical release metadata only
+after exact reproduction. New `.training.json` reports alongside the three
+ED handwriting vocabularies record TVA implementation/evidence hashes and
+reproduction checks separately from the historical DTLR provenance. Different
+corpora/policies/results require a separate version rather than replacing v1.
+Original `tva/tokenizers.py` remains byte-identical to the upstream initial
+commit; the linguistic IAM bigram trainer still calls its original algorithm.
+
+Validation: the complete TVA suite ran 93 tests (86 passed, 7 optional skips),
+including mathematical EM/Viterbi/removal-loss checks, connectivity-dependent
+selection, text-only training without image edges, input corruption/leakage
+rejection, all three full public fitting APIs, and saved-config compatibility.
+All three newly fitted native models and ED projections reproduce their frozen
+files byte for byte, including BPE merge order, Unigram scores/training curve,
+vocabulary evidence, and IDs. Every ED notebook code cell executed successfully;
+all 17 pre-existing artifact checksums stayed unchanged. DTLR's 78 tests pass,
+and its exporter independently regenerated identical bundle bytes without
+importing TVA. DTLR's former training CLIs point to TVA; historical Python APIs
+use lazy compatibility wrappers rather than duplicate trainer implementations.
+Frozen DTLR inference, prior snapshots, provenance, and evidence generation
+remain available. Neither repository is committed or pushed by this change.
+
+### 2026-10-10 — Separate linguistic helpers from handwriting tokenizers
+
+Moved authenticated IAM input preparation and `IAMBigramTokenizer` to
+`tva/iam_tokenizers.py`. It still delegates vocabulary selection and text
+encoding to the unchanged original `tva/tokenizers.py` implementation.
+Moved the load-only historical OnHW and ED custom linguistic classes and their
+frozen identities to `tva/tokenizer_compatibility.py`; saved experiment keys
+and artifacts remain supported. `tva/tokenizer_factory.py` now supplies the
+shared factory, artifact path resolution, and explicit character alphabet
+initialization for recognition and analysis. Updated entry points, tests, ED
+notebooks, and README imports. `tva/handwriting_tokenizers.py` now contains only
+handwriting-aware tokenizer classes. Tokenizer files and training algorithms
+are unchanged; no recognition experiments were launched.
+
+Validation: TVA unittest suite passed (93 tests: 86 passed, 7 optional checks
+skipped). Verified all 17 frozen tokenizer artifacts remain byte-identical
+and `tva/tokenizers.py` matches the original TVA commit `cff221c`. Updated
+Python modules and ED notebook cells parse successfully.
+
+## 2026-10-11 — OnHW WI/RH character baseline: all five folds completed
+
+Verified the user's completed fresh workstation run under
+`results/thesis/baselines/B0_char_wi_rh_cv_workstation/`. These are the
+OnHW-Words500 right-handed writer-independent character baselines, separate
+from the ED experiments. Each fold completed all 300 epochs (0–299), with
+300 complete saved prediction sets and retained best-CER, best-WER and latest
+checkpoints. Independently recomputed the selected-epoch CER/WER from saved
+predictions and confirmed validation labels exactly match dataset annotations.
+
+All five saved configs differ only in `idx_fold`: BLConv-B + BiLSTM-B,
+13 channels at 100 Hz, 60 character classes including blank, batch 64,
+300 epochs, learning rate 0.001, 30-epoch warmup, augmentation enabled,
+no concatenation, seed 42, full datasets, and CUDA mixed precision. Each starts
+with `checkpoint: null`; the CV launcher runs a fresh Python process per fold.
+Train/validation writer sets are disjoint in every fold. Core saved settings
+also match the earlier OnHW WI fold-0 baseline.
+
+### Independent best validation metrics
+
+| Fold | Run ID | Train samples | Validation samples | Best CER (%) | CER epoch | Best WER (%) | WER epoch |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | `20261010155328` | 19907 | 5292 | 15.60411400 | 244 | 27.94784580 | 269 |
+| 1 | `20261010173703` | 20078 | 5121 | 1.80383719 | 271 | 6.95176723 | 260 |
+| 2 | `20261010192827` | 20202 | 4997 | 2.10158263 | 268 | 7.10426256 | 270 |
+| 3 | `20261010211425` | 20520 | 4679 | 13.90545397 | 251 | 24.42829664 | 251 |
+| 4 | `20261010230222` | 20089 | 5110 | 3.11972109 | 241 | 9.80430528 | 237 |
+| **Unweighted mean** | — | — | — | **7.30694178** | — | **15.24729550** | — |
+| **Fold standard deviation (population, ddof=0)** | — | — | — | 6.12039494 | — | 9.05920170 | — |
+
+Epochs are zero-based. Best CER and best WER are independent validation minima;
+they generally correspond to different checkpoints. Using the best-CER
+checkpoint for both metrics instead gives mean CER 7.30694178% and mean
+WER 15.38229305%. The final-epoch means are CER
+7.49877830% and WER
+15.56679715%.
+
+### Paper comparison
+
+[TVA paper, Appendix B Table 3](https://arxiv.org/html/2603.16883v1)
+reports the WI character/no-concatenation baseline at **7.41% CER / 15.40% WER**.
+Our unweighted fold means are lower by 0.10305822 CER percentage points
+and 0.15270450 WER points. WER averaged at the best-CER checkpoint is
+15.38229305%, also close to the reported 15.40%.
+
+This is a close aggregate reproduction and supports consistency of the WI
+baseline setup. It does not establish byte-identical runs or environment
+identity; the paper does not provide its per-fold results or exact checkpoint
+selection rule here. Large fold variability is retained in the report rather
+than inferred to be a pipeline failure. Complete the corresponding five-fold
+WD character baseline to assess that protocol separately. No new recognition
+training was launched and no tokenizer files were changed during verification.
+
+### Saved evidence hashes
+
+Hashes cover saved configs, epoch metrics, logs and complete prediction files;
+paths are repository-relative. Checkpoint files were confirmed present but
+were not reserialized or modified.
+
+| File | SHA-256 |
+| --- | --- |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/0/train_20261010155328.json` | `1524751085ec78526d4309d42b0d4e79cc56274e86c0ef63e88c2972abda3aff` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/0/train_20261010155328.log` | `ecbf881ba387f5332b4e2eb1ec42c68124d5c65780cb7dd584bf63ef7d8238a9` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/0/train_20261010155328.yaml` | `268c94be26222e8b4e605734fa0f764a9816d4c9d7f7994f9d13fd68babfe7c4` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/0/train_preds_20261010155328.json` | `0106bb57a1c03a227ba0836edf2517172644a92f340bf2bdbc6d37710db85f5f` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/1/train_20261010173703.json` | `60ad42438f862d76da108e9076d84416eb594cf5efde1709d13edfffe517020b` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/1/train_20261010173703.log` | `26b94cf70f78246f79fe41f0b69c2ff24344556e2ea8bdaacce9b8d33d0c6b09` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/1/train_20261010173703.yaml` | `aade00e5709eb4a11ab9cd31dddf4b71ca54658eace31e6a483e209d23186b9c` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/1/train_preds_20261010173703.json` | `e0699dbb473e5bb9a7f75b19e3f33319300b8a3d5d6ea36989744fb42a97f30a` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/2/train_20261010192827.json` | `48921c0e868d08dc5dad8ed444a83dfabf8aceacdb3e5b279510941b5e46b093` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/2/train_20261010192827.log` | `11a09ce945a062fc0666863cedef48a4479ba6ce0eab352766fcb5290606275e` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/2/train_20261010192827.yaml` | `3e37a3d0ce4d50142e765e3826fb90cf30bb0d83a10aa3a4b8ae1c832274fd1f` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/2/train_preds_20261010192827.json` | `5e0960096cedb9ea07d8a446125ec6df977da42cd741d57839b8d8addb50075b` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/3/train_20261010211425.json` | `640079e1e150b3eaa566719c99e642ae59bd2b64f43b0a94ae138f1b23ddfac9` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/3/train_20261010211425.log` | `2d7304d82dd14910a893cf7553b9ba709041404ead691e06be1710e08a537b02` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/3/train_20261010211425.yaml` | `9138e7c323a4445f65e321586adc2dea2faa8664376894c819a3bae32159aa70` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/3/train_preds_20261010211425.json` | `1fa8ce646ee483425ae5b65b4960314d517def633aa0c9e2f0944c80ad259f08` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/4/train_20261010230222.json` | `6ea609f78c4029494e796f1f8460acf9c40bdb21fcf73f03dcddfb7b8934d7b9` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/4/train_20261010230222.log` | `fb97f611f3c57fbfb8252eea9db7d1d90a195a18a1438668124c85551514fb61` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/4/train_20261010230222.yaml` | `d0ddc54ce3c8e03638a60545b7b7a40548b1369aebf09af180af4602220e0016` |
+| `results/thesis/baselines/B0_char_wi_rh_cv_workstation/4/train_preds_20261010230222.json` | `2df9a35eb50e23b0e7217d8b6f03af48c2bc53a5d54e83e12ae795034d8a0510` |
+
+## 2026-10-11 — OnHW WD/WI character baseline: combined five-fold results
+
+Both right-handed OnHW-Words500 character-baseline CV runs are complete under
+`results/thesis/baselines/B0_char_wi_rh_cv_workstation/` and
+`results/thesis/baselines/B0_char_wd_rh_cv_workstation/`. All ten folds contain
+300 consecutive epochs (0–299). Each saved configuration matches its CV YAML
+after substituting the fold index. Best-CER and latest checkpoints are present
+for every fold. These results are separate from the ED experiments.
+
+The launch configs are `configs/thesis/b0_char_wi_rh_cv.yaml` and
+`configs/thesis/b0_char_wd_rh_cv.yaml`. Shared settings are BLConv-B + BiLSTM-B,
+13 input channels, 60 character classes including CTC blank, batch size 64,
+300 epochs, learning rate 0.001, 30-epoch warmup, standard augmentation enabled,
+no concatenation (`num_concat: 0`), seed 42, and fresh initialization
+(`checkpoint: null`). The configs differ only in dataset/tokenizer/output paths.
+
+### Paired metrics at the best-CER epoch
+
+For each fold, select the lowest validation CER and report both CER and WER
+from that same epoch, following `evaluate.py:get_mean_std_cv`. Epoch indices
+are zero-based. Aggregate values are equal-weight means over five folds;
+standard deviations use the population convention (`ddof=0`). This convention
+is explicit and does not assume the paper disclosed the same selection rule.
+
+| Split | Fold | Run ID | Selected epoch | Validation samples | CER (%) | WER (%) |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| WI | 0 | `20261010155328` | 244 | 5292 | 15.60411400 | 28.28798186 |
+| WI | 1 | `20261010173703` | 271 | 5121 | 1.80383719 | 6.97129467 |
+| WI | 2 | `20261010192827` | 268 | 4997 | 2.10158263 | 7.20432259 |
+| WI | 3 | `20261010211425` | 251 | 4679 | 13.90545397 | 24.42829664 |
+| WI | 4 | `20261010230222` | 241 | 5110 | 3.11972109 | 10.01956947 |
+| WD | 0 | `20261011113536` | 259 | 5036 | 12.48992183 | 35.56393963 |
+| WD | 1 | `20261011131746` | 271 | 5039 | 13.03032340 | 45.24707283 |
+| WD | 2 | `20261011145904` | 233 | 5039 | 21.29301274 | 57.43203016 |
+| WD | 3 | `20261011164301` | 258 | 5041 | 14.34185472 | 41.73775045 |
+| WD | 4 | `20261011182730` | 286 | 5038 | 12.54794328 | 41.98094482 |
+
+### Aggregate comparison with the paper
+
+[TVA paper, Appendix B Table 3](https://arxiv.org/html/2603.16883v1)
+reports the character baseline without concatenation (C0). Values below are
+percentages; differences are ours minus paper in percentage points.
+
+| Split | Our CER mean ± SD | Paper CER | CER difference | Our WER mean ± SD | Paper WER | WER difference |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| WI | 7.30694178 ± 6.12039494 | 7.41 | -0.10305822 | 15.38229305 ± 9.10790737 | 15.40 | -0.01770695 |
+| WD | 14.74061119 ± 3.34339505 | 14.86 | -0.11938881 | 44.39234758 ± 7.23279217 | 45.10 | -0.70765242 |
+
+The initial WI fold-0 discrepancy is resolved at the five-fold aggregate:
+WI folds 0 and 3 have substantially higher errors than folds 1, 2 and 4.
+Our WI mean is 7.31% CER / 15.38% WER versus 7.41% / 15.40% in the paper;
+WD is 14.74% / 44.39% versus 14.86% / 45.10%. This supports a close aggregate
+reproduction of both character baselines; it does not establish identical
+dataset bytes, runtime environments, or per-fold paper results. The earlier
+WI-only entry remains a historical record; its request to complete WD is now
+satisfied by this entry.
+
+Independent best-WER minima remain separate: their five-fold means are
+15.24729550% for WI and 44.26136447% for WD. In WI fold 0, the independent
+27.94784580% WER occurs at epoch 269, whereas the paired best-CER result is
+28.28798186% WER at epoch 244. Do not mix these selection conventions.
+
+### Verification and saved evidence
+
+All ten paired CER/WER values were independently recalculated using `jiwer`
+from the saved validation labels and selected-epoch predictions and matched
+the recorded metrics within 1e-12 (fractional error rates). Original configs,
+logs, prediction files and checkpoints were preserved. No recognition training
+was launched and no tokenizer or training configuration was changed.
+
+The machine-readable summary is
+`results/thesis/baselines/onhw_char_cv_summary_20261011.json`. It records
+selected epochs, sample counts, independent WER minima, aggregate statistics,
+paper differences, and the original metrics paths and SHA-256 hashes.
+WI evidence hashes are retained in the preceding WI-only section. Additional
+WD evidence hashes are recorded below; all paths are repository-relative.
+
+| File | SHA-256 |
+| --- | --- |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/0/train_20261011113536.json` | `f7a43fbe9ce981bcddab9f2338731aa72e3ccdeb42362a665a17eea26dd56213` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/0/train_20261011113536.log` | `2d2de3dd3703456cc399137794cdcbed2fc404db52e6289233d50a62e23d6f03` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/0/train_20261011113536.yaml` | `55195b4733736079adef2620f8ca8bb2be5fdac240b2be2cefcc9bcd78d9c795` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/0/train_preds_20261011113536.json` | `29d259436c08288da3e3216ef7002738bca78b856416b5926708d561d296fc52` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/1/train_20261011131746.json` | `20f2ce04abc69c5d0c3c82fbc33715f5a94ee875736e15ed8f34ac3322388dbd` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/1/train_20261011131746.log` | `89906eec182d7f59dd3a6f518868dd4b8f25a8a50cf7bce0e8e5efd0ecd6bdba` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/1/train_20261011131746.yaml` | `d779dcb59d6ec4e20592b76d86377486a4b5893b9882b4beb83b9876cd1fbd4b` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/1/train_preds_20261011131746.json` | `5adaf192aba8dd7ce5d06f1a0046b51591d64090fdf45c3adeb286f17c7012ec` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/2/train_20261011145904.json` | `0f8c8f347f9782e3babefc0f09d1d75a0f8b0d739fc1c0d237faf17e65a5abd6` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/2/train_20261011145904.log` | `bc2f42d59abcd8d3bf902469f0acf304aaf62aaff89fbd45bf10568cfdb958a8` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/2/train_20261011145904.yaml` | `9cc619fd58ccd4ffa5967bd6449fc8c542de8495422a5dc7ab7c7a3d536ab8fd` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/2/train_preds_20261011145904.json` | `de19df31f0fbf7c0dd690814186ea2e6fdc8b342e9cecd5121bc2b280427eef4` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/3/train_20261011164301.json` | `eb63a4b471ea6aa0301c3f5a1b94167ee2e3be9fe64d47d30f47d6f95c464e25` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/3/train_20261011164301.log` | `4706b31df5e627de38517f4e985275fad58494e251c9516c3c506828cb04b903` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/3/train_20261011164301.yaml` | `28c9a9786dd297a7667d78ec07ccf7bef832d4ed0f2a26c92d0566158264316b` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/3/train_preds_20261011164301.json` | `b04ffe14d892e4844e032cd4ea35b52f90039d0c8fcc89a9fd328783b65d2e5f` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/4/train_20261011182730.json` | `9099defc7d6c1d193a9d0e7e9c928eeb841f9a3b3bd031a3b99bf70ef414217d` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/4/train_20261011182730.log` | `1a3851d77584fdee09e511ac4f79c359ac54aa218bc63f1e456558c08fd106e1` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/4/train_20261011182730.yaml` | `50879d55b65ea4402fa90c65ea8ead19963c644404c4bdb94249aef38d4a2553` |
+| `results/thesis/baselines/B0_char_wd_rh_cv_workstation/4/train_preds_20261011182730.json` | `d501401c720b75f18bc6d885130440e40446bd60892c54f3b67dda09b7d2b613` |

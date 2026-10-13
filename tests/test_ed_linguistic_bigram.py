@@ -6,25 +6,18 @@ import unittest
 from tva.handwriting.audit import audit
 from tva.handwriting.ed import ADAPTER_SHA256 as HANDWRITING_SHA256
 from tva.handwriting.common import canonical_json_bytes, sha256_bytes
-from tva.handwriting_tokenizers import (
-    ED_LINGUISTIC_BIGRAM_COUNT as ADAPTER_BIGRAM_COUNT,
-    ED_LINGUISTIC_POLICY_ID as ADAPTER_POLICY_ID,
-    ED_LINGUISTIC_SHA256 as ADAPTER_SHA256,
-    ED_LINGUISTIC_SIZE as ADAPTER_SIZE,
-    IAM_FREQUENCY_EVIDENCE_SHA256 as EVIDENCE_SHA256,
-    GreedyLinguisticBigramTokenizer,
-)
-from tva.handwriting_tokenizers import get_tokenizer
+from tva.tokenizer_compatibility import ED_LINGUISTIC_BIGRAM_COUNT as ADAPTER_BIGRAM_COUNT, ED_LINGUISTIC_POLICY_ID as ADAPTER_POLICY_ID, ED_LINGUISTIC_SHA256 as ADAPTER_SHA256, ED_LINGUISTIC_SIZE as ADAPTER_SIZE, IAM_FREQUENCY_EVIDENCE_SHA256 as EVIDENCE_SHA256, GreedyLinguisticBigramTokenizer
+from tva.tokenizer_factory import get_tokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LINGUISTIC_PATH = (
     REPO_ROOT
-    / 'artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json'
+    / 'artifacts/tokenizers/archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'
 )
 HANDWRITING_PATH = (
     REPO_ROOT
-    / 'artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json'
+    / 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
 )
 ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
 

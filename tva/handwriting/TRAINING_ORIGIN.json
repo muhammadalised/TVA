@@ -1,0 +1,9 @@
+{
+  "source_repository": "DTLR",
+  "source_files": {
+    "poc/dtlr_poc/handwriting_subwords.py": "480c7504f24512cc531a1a82ec3182b815d032810cf0ae54f20c37e5ddbb26d3",
+    "poc/dtlr_poc/tokenizer.py": "5dcc479f4ed4adf75800e2bff386a0844a14e7216410d089c674fc6b98cfec03"
+  },
+  "migration_date": "2026-10-10",
+  "algorithms": "unchanged functions; imports replaced with TVA-local helpers"
+}

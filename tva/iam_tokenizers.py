@@ -1,4 +1,5 @@
 """Authenticate IAM input and train using the unchanged original TVA algorithm."""
+
 from pathlib import Path
 import inspect
 import json
@@ -10,8 +11,10 @@ import sys
 import tempfile
 import textwrap
 
-from .common import canonical_json_bytes as json_bytes, require, save_frozen, sha256_bytes as sha256
-from .ed import ED_ALPHABET
+from tva.tokenizers import BigramTokenizer
+
+from tva.handwriting.common import canonical_json_bytes as json_bytes, require, save_frozen, sha256_bytes as sha256
+from tva.handwriting.ed import ED_ALPHABET
 
 LABELS_SHA256 = '5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab'
 SELECTION_SHA256 = '7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2'
@@ -62,9 +65,7 @@ def read_iam_training(labels_path, selection_path):
 
 def train_iam_bigram(labels_path, selection_path, categories, size, output_path):
     """Run BigramTokenizer.train in a fresh, hash-seeded Python process."""
-    from tva.tokenizers import BigramTokenizer
-
-    REPO_ROOT = Path(__file__).resolve().parents[2]
+    REPO_ROOT = Path(__file__).resolve().parents[1]
     CATEGORIES = list(categories)
     require(
         CATEGORIES == ['', *ED_ALPHABET] and size == 224,
@@ -159,3 +160,19 @@ def train_iam_bigram(labels_path, selection_path, categories, size, output_path)
     save_frozen(PROVENANCE, json_bytes(provenance))
 
     return OUTPUT
+
+
+class IAMBigramTokenizer(BigramTokenizer):
+    """Original TVA algorithm with authenticated IAM training input.
+
+    Input validation and a fixed subprocess hash seed are handled internally.
+    BigramTokenizer supplies vocabulary selection, encoding, and decoding.
+    """
+
+    def train(
+        self, labels_path, categories, size=224, *, selection_path, output_path,
+    ) -> None:
+        output = train_iam_bigram(
+            labels_path, selection_path, categories, size, output_path,
+        )
+        self.load(str(output))

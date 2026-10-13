@@ -234,7 +234,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--output',
         type=Path,
-        default=Path('artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json'),
+        default=Path('artifacts/tokenizers/archive/onhw/handwriting/onhw_words500_rh_iam_read_v1.json'),
         help='Canonical adapter output path.',
     )
     parser.add_argument(
