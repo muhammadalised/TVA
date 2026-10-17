@@ -108,7 +108,15 @@ all using batch 32. Preview the linguistic recognition runs without training:
 python run_ed_matrix.py --conditions tva_original_wd tva_original_wi --folds 0 1 2 3 4 --dry-run
 ```
 
-Completed experiments retain their exact saved configs under results/.
+Character configuration selection:
+
+- `character_wd.yaml` / `character_wi.yaml`: single-fold ZIP-backed templates.
+- `character_wd_extracted_cv.yaml` / `character_wi_extracted_cv.yaml`:
+  all-five-fold character runs using the extracted dataset (see docs/SETUP.md).
+
+Superseded character CV/rerun launch templates were removed. Completed
+experiments retain their exact saved configs under results/; analysis reads
+those snapshots rather than requiring historical launch templates.
 
 ### ED handwriting BPE and Unigram — fold 0
 

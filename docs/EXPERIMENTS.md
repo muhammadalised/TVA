@@ -1900,3 +1900,199 @@ WD evidence hashes are recorded below; all paths are repository-relative.
 | `results/thesis/baselines/B0_char_wd_rh_cv_workstation/4/train_20261011182730.log` | `1a3851d77584fdee09e511ac4f79c359ac54aa218bc63f1e456558c08fd106e1` |
 | `results/thesis/baselines/B0_char_wd_rh_cv_workstation/4/train_20261011182730.yaml` | `50879d55b65ea4402fa90c65ea8ead19963c644404c4bdb94249aef38d4a2553` |
 | `results/thesis/baselines/B0_char_wd_rh_cv_workstation/4/train_preds_20261011182730.json` | `d501401c720b75f18bc6d885130440e40446bd60892c54f3b67dda09b7d2b613` |
+
+## 2026-10-17 — English ED character baseline: fresh WD/WI five-fold reruns completed
+
+All ten fresh character-baseline rerun folds completed 300 consecutive epochs
+(0–299). These results use only `character_wi_cv_rerun` and
+`character_wd_cv_rerun` under `results/thesis/ed/`; the historical ED fold-0
+runs and the OnHW experiments remain separate.
+
+Launch configs: `configs/thesis/ed/character_wi_cv_rerun.yaml` and
+`configs/thesis/ed/character_wd_cv_rerun.yaml`. Every saved fold config matches
+its launch config after substituting the fold index. Protocol: BLConv-B +
+BiLSTM-B, seven input channels, fixed ED alphabet (79 classes including blank),
+batch 32, eight DataLoader workers, 300 epochs, 30 warmup epochs, learning rate
+0.001, standard augmentation enabled, no concatenation, cache enabled, seed 42,
+CUDA, and fresh initialization (`checkpoint: null`).
+
+### Validation results at each fold's best-CER epoch
+
+Both metrics in each row come from the same selected epoch, following
+`evaluate.py:get_mean_std_cv`. Epochs are zero-based. Means give equal weight
+to each fold; standard deviations use the population convention (`ddof=0`).
+
+| Split | Fold | Run ID | Selected epoch | Train samples | Validation samples | CER (%) | WER (%) |
+| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| WI | 0 | `20261015232734` | 266 | 2025 | 525 | 13.70787542 | 42.73182957 |
+| WI | 1 | `20261016003749` | 287 | 2025 | 525 | 15.50582751 | 45.19083969 |
+| WI | 2 | `20261016025635` | 291 | 2050 | 500 | 10.87687716 | 40.18858308 |
+| WI | 3 | `20261016131221` | 299 | 2050 | 500 | 9.72188516 | 35.87301587 |
+| WI | 4 | `20261016141958` | 255 | 2050 | 500 | 16.04115070 | 46.04519774 |
+| WD | 0 | `20261016152921` | 247 | 2047 | 503 | 15.84727787 | 55.40032241 |
+| WD | 1 | `20261016164333` | 254 | 2039 | 511 | 15.57899784 | 52.47944181 |
+| WD | 2 | `20261016175116` | 264 | 2036 | 514 | 15.74721818 | 53.21009243 |
+| WD | 3 | `20261016185730` | 205 | 2019 | 531 | 16.74362308 | 56.37960478 |
+| WD | 4 | `20261016200528` | 233 | 2059 | 491 | 16.04037039 | 55.55555556 |
+
+| Split | CER mean ± SD (%) | WER mean ± SD (%) |
+| --- | ---: | ---: |
+| WI | **13.17072319 ± 2.49546838** | **42.00589319 ± 3.68514991** |
+| WD | **15.99149747 ± 0.40465024** | **54.60500340 ± 1.49325687** |
+
+Independent best-WER minima are a separate selection convention: their means
+are 41.90490906% for WI and 54.27923472% for WD. They must not replace the
+paired WER values in the table above without relabeling the comparison.
+
+WI has lower five-fold error than WD in this character-baseline experiment.
+WI CER varies more across folds (population SD 2.50 percentage points) than
+WD CER (0.40 points). The OnHW paper scores concern a different dataset and
+are not direct benchmarks for these English sentence-level results.
+
+### WI fold-2 slowdown and recovery
+
+On 2026-10-16 the user reported a stall near epoch 231. During inspection,
+WSL commands timed out and Windows committed-memory usage reached 97%; memory
+pressure was a suspected contributor, not a proven root cause. Training
+recovered in the same process without a checkpoint restart. The epoch-232
+training log records an elapsed 2:37:31, followed by roughly 9–10 second
+epochs. The completed record now contains all epochs through 299; its selected
+epoch is 291 (CER 10.87687716%, WER 40.18858308%). The interruption affected
+elapsed runtime; no missing epoch or selected-prediction mismatch was found.
+
+### Verification and evidence
+
+For all ten runs, independently recalculated the selected CER/WER using
+`jiwer` and matched saved metrics within 1e-12 fractional error rate. Verified
+all 300 prediction sets have the expected sample count and stored labels
+exactly match the ordered validation annotations for the corresponding fold.
+Best-CER, best-WER, and latest checkpoint files are present for every fold.
+Both source archives match their authenticated SHA-256 values. No training
+was launched and original run files were not modified during this check.
+
+Machine-readable summary:
+`results/thesis/ed/ed_char_cv_rerun_summary_20261017.json`.
+It includes all fold scores, selection epochs, independent WER minima, sample
+counts, dataset hashes, and SHA-256 hashes for every saved config, metrics,
+log, and complete prediction file.
+
+Summary SHA-256: `49933bfe4584e3f0ca97566dd0771c014d38b88170bdb03d96b57a50b19907bf`.
+
+## 2026-10-17 — English ED extracted-file dataset preparation
+
+Extracted the authenticated English ED archives into `data/tva/ed/gold_wd/`
+and `data/tva/ed/gold_wi/` for use with the standard OnHW-style `HRDataset`
+loader. Source archives remain unchanged. This changes storage access only:
+no resampling, channel selection, label normalization, split regeneration,
+or signal conversion was applied. Original filenames, CSV bytes, annotations,
+statistics and fold order were preserved.
+
+Each distribution contains 2,550 recordings and 2,561 archived files, about
+933.5 MiB uncompressed (about 1.82 GiB combined). All 5,122 extracted archive
+files passed SHA-256 comparison against their decompressed source bytes.
+Parsed all 5,100 CSV files as float32 and verified nonempty, finite,
+seven-channel sequences. Both annotation files in each distribution retain
+the original five-fold metadata and every referenced recording exists.
+
+| Distribution | Source archive SHA-256 | Extraction manifest SHA-256 |
+| --- | --- | --- |
+| WD | `edaf78b0f422f719bbb13153249a5a6667a814d6f5a8d7d0d2ba02535ae55a3e` | `397677f2d5a03e31b3c6a7154ccd44bc3a689b77a0b902a6b5eb4aa4f7c6fca1` |
+| WI | `0ba1b8e5d53c7208bbdc4a43cfb701ed6a1d27be382a23ba0aaade8cb3283304` | `3f91aa7b2cf1dfd4afbada8d4d72f884a7ea6db323d66801d875db8170905ca0` |
+
+The per-distribution `extraction_manifest.json` records every archived file's
+relative path, byte count, and SHA-256. Combined verification is recorded in
+`data/tva/ed/extraction_verification.json`. Data and manifests remain under the
+Git-ignored dataset directory.
+
+Added `configs/thesis/ed/character_wi_extracted_cv.yaml` and
+`configs/thesis/ed/character_wd_extracted_cv.yaml`. Compared with the respective
+completed rerun protocol, only `dataset_format`, `dir_dataset`, and `dir_work`
+differ: `json-directory`, the extracted distribution directory, and a new
+`character_wi_extracted_cv` or `character_wd_extracted_cv` results directory.
+All training hyperparameters and token vocabularies remain identical. These
+new configurations do not use the ZIP-only `TVA_ED_DATASET_DIR` override.
+
+Validation through `main.build_dataset`: 120 exact comparisons across WD/WI,
+all five folds, train/validation, cache on/off, using three samples per
+combination. Raw signal arrays, encoded labels and normalized/padded tensors
+matched the ZIP loader exactly; annotations matched and batch collation
+returned seven-channel inputs. Both full five-fold CV dry runs passed without
+creating recognition results. No model training was launched. Existing run
+configs, checkpoints, scores, tokenizer files and ZIP loader code were not
+changed. Extraction and configuration usage are documented in `docs/SETUP.md`.
+
+## 2026-10-17 — ED analysis notebook updated for extracted data
+
+Updated `analyze_ed.ipynb` to read `data/tva/ed/gold_wd/` and `gold_wi/`
+through normal files rather than opening the source ZIP archives. Removed the
+stale Windows Downloads ZIP default and stale tokenizer artifact paths. The
+optional `TVA_ED_EXTRACTED_DIR` override points to the extracted root;
+`TVA_ED_DATASET_DIR` remains specific to ZIP-backed training.
+
+The notebook now verifies all 5,122 extracted archived files against their
+extraction manifests, dataset metadata and canonical raw-record identity,
+all five train/validation partitions, sample disjointness, WI writer separation,
+and exactly-once validation coverage. It reports shared label prompts
+separately from writer/sample leakage and keeps raw labels unchanged.
+
+Added WD/WI train/validation character-frequency plots for the configurable
+fold (default 0), plus all-fold total variation, base-2 Jensen–Shannon
+divergence and missing-character tables. Retained label-length, global
+sequence-length and deterministic 128-recording channel analyses, reading all
+inputs from the extracted dataset. Channel estimates remain labelled as
+sampled statistics.
+
+Updated coverage comparisons to the configured 79-class character tokenizer,
+current IAM handwriting-aware Bigram and original TVA-on-IAM linguistic
+Bigram. All 2,550 raw labels round-trip without blank IDs for each tokenizer.
+No tokenizer is fitted or selected using ED labels. The retired custom
+linguistic condition is not substituted for the active original-TVA condition.
+
+Added the completed `character_wi_cv_rerun` and `character_wd_cv_rerun`
+results, explicitly retaining their historical ZIP-backed provenance. Reads
+original metrics, checks 300 epochs and saved configs, verifies validation
+label order, and recomputes paired CER/WER at the minimum-CER epoch. The means
+and population standard deviations match the independently verified
+`ed_char_cv_rerun_summary_20261017.json` within 1e-12 percentage points.
+Missing recognition files skip that entire split rather than producing an
+incomplete-fold aggregate, so dataset-only analysis remains usable on another
+machine.
+
+Executed all ten code cells successfully in the TVA Jupyter kernel, saved
+outputs inline, and inspected the new distribution and recognition plots.
+Six PNG figures and `analysis_summary.json` are exported under the Git-ignored
+`results/ed_analysis/` directory, including input/artifact/result provenance
+hashes and computed values. No model training, extraction, signal rewriting,
+or tokenizer fitting occurs in the notebook. Dataset manifests, tokenizer
+artifacts and completed training results remain unchanged.
+
+## 2026-10-17 — Remove superseded ED character launch templates
+
+Removed four redundant YAML files from `configs/thesis/ed/`:
+`character_wd_cv.yaml`, `character_wi_cv.yaml`,
+`character_wd_cv_rerun.yaml`, and `character_wi_cv_rerun.yaml`.
+The first pair differed from the character fold-0 templates only in fold
+selection; the second pair additionally selected the completed rerun output
+directories. Their launch role is superseded by the extracted-data CV configs.
+
+Retained 12 configs: WD/WI pairs for single-fold ZIP-backed character,
+all-fold extracted character, handwriting Bigram, original TVA/IAM text
+Bigram, handwriting BPE, and handwriting Unigram. Existing methods and
+scientific settings were not changed.
+
+Before removal, verified all ten completed rerun YAML snapshots exactly
+match their corresponding historical launch protocol and fold index.
+`analyze_ed.ipynb` now uses the saved fold-0 snapshot as its historical
+reference, checks all other fold snapshots against it, and checks shared
+scientific settings against the current extracted-character protocol. Thus
+historical score verification does not require obsolete launch templates.
+Historical paths in earlier experiment-log entries remain the paths recorded
+at the time of those experiments; the exact effective configs remain with
+their original results.
+
+Validation: all four ED character-baseline tests and all six ED matrix-launcher
+tests passed. Re-executed all ten notebook code cells successfully after
+removing the files; aggregate CER/WER still match the verified result summary.
+Remaining tokenizer artifact references and extracted dataset paths resolve.
+No active source references to the removed templates remain. Updated README
+configuration guidance; saved results, datasets and tokenizers were preserved.
