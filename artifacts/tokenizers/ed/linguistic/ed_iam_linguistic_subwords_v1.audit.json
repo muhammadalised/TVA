@@ -1,0 +1,35 @@
+{
+  "algorithms": {
+    "bpe": {
+      "common_alphabet_iam_lines_round_tripped": 5612,
+      "ed_adapter_sha256": "c757f01c98f9756b190cc82140a3d454b11fe78bcb707a8924ca72634fba16ea",
+      "ed_classes": 224,
+      "ed_encodings_round_tripped": 5100,
+      "handwriting_candidate_count": 303,
+      "native_sha256": "b378e1e93b86d3483f15d5bbe5865c31c9581112f75ded56f45589f130b6c1d3",
+      "pieces": 145,
+      "same_segmentation_function": true,
+      "shared_selected_pieces": 59,
+      "text_candidate_count": 3325,
+      "unigram_initial_piece_count": null
+    },
+    "unigram": {
+      "common_alphabet_iam_lines_round_tripped": 5612,
+      "ed_adapter_sha256": "b475f4d8fde5320eba2a0b302c97dfc4efbc0f7246f375a35ff4298062776cab",
+      "ed_classes": 224,
+      "ed_encodings_round_tripped": 5100,
+      "handwriting_candidate_count": 303,
+      "native_sha256": "cce6b18818a71b43d74c98e5e2ae334698b8c491c704539aed04e8a02edba0b3",
+      "pieces": 145,
+      "same_segmentation_function": true,
+      "shared_selected_pieces": 50,
+      "text_candidate_count": 3325,
+      "unigram_initial_piece_count": 580
+    }
+  },
+  "ed_labels_read_only_after_fitting": true,
+  "iam_training_lines": 5694,
+  "ordered_corpus_sha256": "eaa5e6f3118675a0134e3bac82bedd6bc544973c06ad02d8600171486d33c0d2",
+  "ordered_iam_corpus_identical_to_handwriting": true,
+  "schema_version": "tva.matched-text-subword-audit.v1"
+}

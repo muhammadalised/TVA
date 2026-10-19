@@ -28,11 +28,16 @@ warnings.filterwarnings('ignore', category=UserWarning)
 
 
 def load_configured_tokenizer(cfgs: argparse.Namespace) -> object:
-    """Load a frozen artifact or an explicit character vocabulary."""
+    """Load original TVA or extension tokenizers from frozen artifacts."""
     tokenizer = get_tokenizer(cfgs.tokenizer)
     path_config = getattr(cfgs, 'dir_tokenizer', None)
     if cfgs.tokenizer == 'char' and path_config is None:
-        tokenizer.load_categories(cfgs.categories)
+        # Keep completed ED configs loadable through TVA's original class.
+        path_config = 'artifacts/tokenizers/ed/character/ed_characters_v1.json'
+        tokenizer.load(resolve_tokenizer_path(path_config, cfgs.idx_fold))
+        loaded_categories = [tokenizer.idx_char[i] for i in range(tokenizer.size)]
+        if loaded_categories != cfgs.categories:
+            raise ValueError('Configured character categories differ from the frozen ED character IDs')
         return tokenizer
     if path_config is None:
         raise ValueError(

@@ -72,3 +72,33 @@ new version rather than silently replacing artifacts used in completed runs.
 The current fitting reports are [bigram](ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.training.json),
 [BPE](ed/handwriting/ed_iam_handwriting_bpe_v1.training.json), and
 [Unigram](ed/handwriting/ed_iam_handwriting_unigram_v1.training.json).
+
+
+## Matched text-only BPE and Unigram (2026-10-18)
+
+These linguistic controls use the shared custom trainers and segmentation,
+with handwriting evidence disabled. They are separate from original TVA's
+Hugging Face implementations. Both have 145 learned pieces and 224 ED classes.
+
+| Method | Ready ED tokenizer | Training report | Native IAM model |
+| --- | --- | --- | --- |
+| BPE | [ED text BPE](ed/linguistic/ed_iam_linguistic_bpe_v1.json) | [Report](ed/linguistic/ed_iam_linguistic_bpe_v1.training.json) | [IAM text BPE](ed/linguistic/source/iam-english-text-bpe-v1.json) |
+| Unigram | [ED text Unigram](ed/linguistic/ed_iam_linguistic_unigram_v1.json) | [Report](ed/linguistic/ed_iam_linguistic_unigram_v1.training.json) | [IAM text Unigram](ed/linguistic/source/iam-english-text-unigram-v1.json) |
+
+Reproduce with the linguistic BPE/Unigram cells in `train_ed_tokenizers.ipynb`.
+Native models and ED projections are frozen and checked on load. Training
+reports record authenticated IAM inputs and implementation hashes. The combined
+[compatibility audit](ed/linguistic/ed_iam_linguistic_subwords_v1.audit.json)
+checks both ED distributions after tokenizer construction.
+
+
+## Original TVA character tokenizer
+
+[ED character JSON](ed/character/ed_characters_v1.json) is the standard file
+produced by the unchanged `tva.tokenizers.CharacterTokenizer.train()` method.
+It contains 78 declared characters plus CTC blank, with identical IDs for all
+folds and WD/WI. [The comparison report](ed/character/ed_characters_v1.comparison.json)
+records exact equality to the previous ED subclass on all 79 IDs and all 5,100
+ED label encodings. No vocabulary is selected from ED labels. The explicit
+`character_tva_wd.yaml` / `character_tva_wi.yaml` configs load this file directly;
+old configs remain compatible. No character subclass is used.

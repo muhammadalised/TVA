@@ -41,6 +41,30 @@ We use a MSCOCO-like structure for the training and evaluation of our dataset. A
 
 ## Usage
 
+### Inspect encoding and prediction decoding
+
+Open `inspect_handwriting_tokenizers.ipynb` for a small CPU-only playground.
+Edit `TEXT` and `TOKENIZER_NAME` to see token pieces, IDs, character spans,
+and round-trip decoding. It supports ED handwriting Bigram, BPE and Unigram,
+plus the historical OnHW Bigram. The prediction cell accepts frame IDs or
+`[T, C]` scores and uses the real TVA `BestPath` CTC decoder; included examples
+show why repeated frames collapse and blank-separated repeated tokens survive.
+Frozen tokenizer files are loaded only; no dataset, GPU or training is needed.
+
+For a simple ED linguistic Bigram frequency analysis, open
+`analyze_ed_linguistic_bigrams.ipynb`. Its four code cells count emitted
+bigrams from the frozen original-TVA/IAM vocabulary, display a frequency
+table, and plot train/validation frequencies and the vocabulary-count
+distribution. WD and WI are shown together by default; choose `SPLITS`, `FOLD`, and `TOP_N` in the first cell.
+
+To inspect actual model predictions one recording at a time, open
+`analyze_handwriting_predictions.ipynb`. Select Bigram/BPE/Unigram, WD/WI,
+fold and validation index. Its five code cells load the saved recognizer,
+run one extracted ED recording, show actual predicted token IDs and CTC frame
+decisions, and compare decoded text with the reference and saved training
+prediction. It performs inference only and requires local saved checkpoints.
+Fresh single-record results are labelled separately from saved batched scores.
+
 ### Thesis ED tokenizers
 
 Start with **train_ed_tokenizers.ipynb** in the WSL TVA Python environment.
@@ -64,7 +88,7 @@ transcripts. The handwriting tokenizer selects its vocabulary in TVA from the
 portable IAM connectivity evidence exported by DTLR. Both have 145 bigrams,
 78 ED characters, and
 CTC blank (224 classes). Neither selects bigrams from ED labels. The character
-baseline uses the configured alphabet directly (79 classes).
+baseline uses the original TVA class with a fixed character JSON file (79 classes).
 
 ```text
 train_ed_tokenizers.ipynb            ED categories, imports, train, example
@@ -117,6 +141,59 @@ Character configuration selection:
 Superseded character CV/rerun launch templates were removed. Completed
 experiments retain their exact saved configs under results/; analysis reads
 those snapshots rather than requiring historical launch templates.
+
+### Original TVA character tokenizer — ED
+
+`tokenizer_factory.py` delegates `char` directly to TVA's unchanged
+`CharacterTokenizer`; there is no character subclass. The standard artifact
+`artifacts/tokenizers/ed/character/ed_characters_v1.json` was generated with
+TVA's own `.train()` from the declared ED alphabet and is shared across folds.
+All 79 IDs and all 5,100 WD/WI label encodings match the earlier ED tokenizer.
+Existing completed configs with `dir_tokenizer: null` remain compatible by
+loading this same file through `main.load_configured_tokenizer`.
+
+Explicit original-TVA comparison configs are available for fold 0:
+
+```bash
+python main.py -c configs/thesis/ed/character_tva_wd.yaml
+python main.py -c configs/thesis/ed/character_tva_wi.yaml
+```
+
+They use extracted ED data and separate output directories. Existing scores
+remain valid because the mappings and encoding/decoding are identical; these
+extra recognition runs are optional.
+
+### Matched linguistic BPE and Unigram — ED
+
+The trained text-only controls are ready in `artifacts/tokenizers/ed/linguistic/`.
+They use the same 5,694 IAM training lines as handwriting BPE/Unigram, retaining
+repeated transcriptions. Both sides call the same training functions and share
+the exact BPE/Viterbi segmentation implementation in `tva/subword_tokenizers.py`.
+Spaces and punctuation remain explicit tokens; NFC, 2–6-letter pieces, the
+145-piece budget, 78 ED characters and CTC blank are matched (224 classes).
+The text controls use text occurrence counts with handwriting evidence disabled.
+No ED labels or connectivity evidence are read during text-control fitting.
+These are custom matched text-only controls; original TVA Hugging Face `bpe`
+and `unigram` keys remain available separately.
+
+`train_ed_tokenizers.ipynb` contains simple `LinguisticBPETokenizer.train()` and
+`LinguisticUnigramTokenizer.train()` cells. Files already exist, so the notebook
+is optional. Start recognition manually, from the TVA root with the `tva` WSL
+Python environment. These four configs read the extracted files in
+`data/tva/ed/gold_wd` and `data/tva/ed/gold_wi`; ZIP files and
+`TVA_ED_DATASET_DIR` are not required:
+
+```bash
+python main.py -c configs/thesis/ed/bpe_linguistic_wd.yaml
+python main.py -c configs/thesis/ed/bpe_linguistic_wi.yaml
+python main.py -c configs/thesis/ed/unigram_linguistic_wd.yaml
+python main.py -c configs/thesis/ed/unigram_linguistic_wi.yaml
+```
+
+Each config runs fold 0 with the same settings as its handwriting counterpart,
+using a separate results directory. Recognition training is not started by
+preparing the tokenizer files. Existing handwriting models and results remain
+valid.
 
 ### ED handwriting BPE and Unigram — fold 0
 

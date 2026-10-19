@@ -1222,3 +1222,63 @@ for per-fold results, selected epochs, dataset counts, scope and evidence hashes
 Next: complete the five-fold WD baseline for its separate paper comparison.
 No training, tokenizer modification, commit or push was performed while
 recording these results.
+
+## 2026-10-18 — Matched linguistic BPE/Unigram controls prepared
+
+Trained and froze IAM text-only BPE/Unigram controls (145 pieces, 224 ED classes)
+using the shared trainers with handwriting evidence disabled. The complete
+ordered IAM corpus, duplicate handling, NFC, boundaries, budgets and fitting
+parameters match the handwriting setup. Both families now share identical
+segmentation code in `tva/subword_tokenizers.py`; existing handwriting artifacts
+and training rules are unchanged.
+
+Added `LinguisticBPETokenizer`/`LinguisticUnigramTokenizer`, four matched ED
+fold-0 configs, simple ED notebook sections, frozen native/ED artifacts, training
+reports and a compatibility audit. Recognition training is manual and has not
+started. No handwriting retraining is needed.
+
+Validation: 92 tests passed, seven optional skips; the complete ED tokenizer
+notebook executed; each control round-tripped 5,100 ED encodings and 5,612 IAM
+lines; eight production-architecture CPU batches yielded finite CTC loss.
+See the latest entry in `EXPERIMENTS.md` for hashes and the four training commands.
+No commit or push performed.
+
+## 2026-10-19 — Linguistic subword recognition uses extracted ED files
+
+Switched the four new linguistic BPE/Unigram configs to the verified extracted
+ED directories. Their training commands now require no ZIP environment setting.
+Validated annotation byte identity and 160 ZIP/extracted raw-signal, label and
+processed-tensor comparisons across all folds and both cache modes. Six focused
+tests passed. Tokenizers and recognition settings are unchanged; no training
+was started.
+
+## 2026-10-19 — Matched linguistic BPE/Unigram ED fold 0 completed
+
+Verified all four matched text-only BPE/Unigram recognition runs completed
+300 epochs, with full predictions, correct validation labels, unchanged frozen
+tokenizers and matching saved configs. Recomputed selected metrics directly
+from predictions. Independent best CER/WER:
+
+- BPE WD: **28.9748% CER / 67.2757% WER**, at epochs 214 / 280.
+- BPE WI: **18.0081% CER / 45.2130% WER**, at epochs 245 / 278.
+- Unigram WD: **30.1249% CER / 70.0430% WER**, at epochs 260 / 241.
+- Unigram WI: **18.7104% CER / 46.5915% WER**, at epochs 279 / 264.
+
+Handwriting-aware counterparts have lower CER and WER in all four fold-0
+comparisons. These remain single-fold, seed-42 findings. CER/WER minima are
+selected independently, generally from different checkpoints. The failed
+pre-training BPE WD ZIP-path attempt is excluded. See the latest experiment
+entry for checkpoint-specific metrics, differences and saved evidence hashes.
+No recognition training, artifact changes, commit or push performed.
+
+## 2026-10-19 — Original TVA character configs and ED equivalence verified
+
+Generated the standard 79-class character file with TVA's own `.train()` and
+verified exact equality to the previous subclass on all IDs and 5,100 WD/WI
+label encodings/decodings. Added explicit `character_tva_wd.yaml` and
+`character_tva_wi.yaml` configs plus a comparison report. Removed the subclass;
+the factory returns original TVA directly, with old null-path ED configs
+remaining compatible through the same shared JSON. Existing scores remain
+valid. Validation: 94 tests passed, seven optional skips; extracted-data,
+five-fold preflight and notebook syntax checks passed. No recognition training,
+commit or push performed.

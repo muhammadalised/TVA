@@ -310,3 +310,21 @@ both directories. Full manifest verification is enabled by default. Figures
 and JSON summaries are written to `results/ed_analysis/`. Existing character
 rerun results are optional: if available, the notebook verifies and reports
 all five folds; otherwise it still performs dataset and tokenizer analysis.
+
+
+### Linguistic BPE/Unigram on extracted ED
+
+The configs `bpe_linguistic_wd.yaml`, `bpe_linguistic_wi.yaml`,
+`unigram_linguistic_wd.yaml` and `unigram_linguistic_wi.yaml` under
+`configs/thesis/ed/` use `json-directory` loading directly from
+`data/tva/ed/gold_wd` or `gold_wi`. Run their `python main.py -c ...` commands
+from the TVA repository root. They do not require `TVA_ED_DATASET_DIR` or ZIP
+files for recognition training. Their current fold index is 0.
+
+### Original TVA character comparison configs
+
+`configs/thesis/ed/character_tva_wd.yaml` and `character_tva_wi.yaml` use the
+unchanged original TVA character class and share the standard file
+`artifacts/tokenizers/ed/character/ed_characters_v1.json`. Both read extracted
+ED data and default to fold 0. Their IDs match existing ED baselines exactly.
+The factory no longer uses a character subclass.

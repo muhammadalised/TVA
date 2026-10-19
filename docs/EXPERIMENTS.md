@@ -2096,3 +2096,355 @@ removing the files; aggregate CER/WER still match the verified result summary.
 Remaining tokenizer artifact references and extracted dataset paths resolve.
 No active source references to the removed templates remain. Updated README
 configuration guidance; saved results, datasets and tokenizers were preserved.
+
+## 2026-10-17 — Handwriting tokenizer encoding/CTC inspection notebook
+
+Added `inspect_handwriting_tokenizers.ipynb`, a CPU-only interactive notebook
+for manually inspecting frozen handwriting tokenizer encoding and prediction
+decoding. It loads the actual ED greedy Bigram, handwriting BPE, handwriting
+Unigram, and historical OnHW utility-Bigram artifacts through TVA's factory.
+Editable text/model settings display NFC normalization, segmentation pieces,
+character offsets, IDs, metadata where available, and decoded text. A compact
+comparison handles unsupported alphabets explicitly without deleting text.
+
+The prediction example calls the production `BestPath` decoder on simulated
+scores or user-provided frame IDs / [time, vocabulary] tensors, with optional
+valid-length trimming. Intermediate argmax IDs, adjacent-repeat collapse,
+blank removal and final text are visible. It distinguishes target decoding
+from frame-level CTC decoding and warns that token IDs/artifacts must match the
+recognizer checkpoint. Simulated scores demonstrate mechanics and are not
+recognition evidence; no recognizer or tokenizer is trained.
+
+Validation: executed all six code cells and saved outputs inline. Checked
+English sentence/punctuation/digit input under all three ED models, a word
+under the historical OnHW model, and empty input. All 16 all-blank/repeated/
+blank-separated CTC cases passed, repeated target IDs remained intact, and
+invalid IDs were rejected for all four tokenizers. SHA-256 checks confirmed
+frozen artifact files remained unchanged. No dataset or checkpoint is required.
+README links to the new playground.
+
+## 2026-10-17 — Simple ED linguistic Bigram frequency notebook
+
+Added `analyze_ed_linguistic_bigrams.ipynb` with four code cells: select the
+WD/WI protocol and fold, load the original TVA/IAM linguistic Bigram, count
+emitted bigram tokens, and display a table plus frequency plots. It reads the
+extracted ED annotations directly and uses the actual greedy encoder.
+Singleton and CTC blank IDs are excluded; raw case, spaces, punctuation and
+recording multiplicity are retained. Frequencies describe emitted tokens,
+not all overlapping adjacent-character candidates. No vocabulary is fitted.
+
+The table includes token IDs, train/validation/total counts and overall
+relative frequency. Plots compare train/validation frequencies normalized
+by their respective bigram totals and show a count histogram across all
+145 vocabulary bigrams, including zero-count entries if present. `TOP_N`
+controls the displayed rows and rank plot; the histogram always covers the
+full vocabulary. No export framework, recognition loading or extra audit
+pipeline is added to this notebook.
+
+Executed all four code cells and retained outputs inline. Default WD fold 0
+contains 2,047 training and 503 validation recordings, emitting 28,080 and
+7,241 bigram tokens respectively (35,321 total). All 145 vocabulary bigrams
+occur. The five most common emitted tokens are `e ` (1,427), `s ` (942),
+`t ` (877), `th` (739) and `n ` (697), with spaces preserved.
+
+Independent verification outside the notebook confirmed identical pooled
+counts against all 2,550 canonical records for every WD/WI fold. Training
+and validation together therefore count the dataset once. Original data,
+vocabularies and recognizer results remain unchanged. README links to the
+notebook.
+
+Frequency-notebook follow-up: WD and WI are now both displayed by default
+using `SPLITS = ['wd', 'wi']`, retaining the four-code-cell structure. Each
+protocol has its own count table and a side-by-side train/validation frequency
+plot. The pooled histogram is shown once because both protocols contain the
+same recordings and emit the same 35,321 total bigram tokens. Default WI fold 0
+contains 2,025 train and 525 validation records, emitting 27,961 and 7,360
+bigram tokens respectively. Re-executed all four cells and confirmed WD and WI
+tables plus both figures are saved inline.
+
+## 2026-10-17 — Individual handwriting prediction-decoding notebook
+
+Added `analyze_handwriting_predictions.ipynb`, a simple five-code-cell
+notebook for actual per-record inference and decoding. Editable settings select
+ED handwriting Bigram/BPE/Unigram, WD/WI, a completed fold, validation sample,
+checkpoint and device (CPU by default). It loads a saved model configuration
+and checkpoint, uses the matching canonical frozen tokenizer and extracted
+validation recording, and applies standard HRDataset normalization/padding
+with augmentation disabled. Older saved Bigram runs predate the ZIP-loader
+`ed_distribution` field and refer to former artifact names; the notebook uses
+the selected run directory and current matching method config to locate the
+frozen artifact, with tokenizer-key and category agreement checks. Original
+saved configs and artifacts are not rewritten.
+
+Displays the reference text, actual CTC-surviving prediction IDs and pieces,
+reference token IDs/pieces, per-record CER/WER and a short frame-level table.
+The frame table shows argmax IDs, blank tokens, and whether a frame contributes
+after adjacent-repeat collapse. The final text is decoded with production
+`BestPath` and checked against direct decoding of the surviving IDs. Predicted
+IDs come from actual model scores, not re-encoding decoded prediction text.
+
+The final cell reads the existing prediction JSON at the loaded checkpoint
+epoch and same validation index, verifies validation-label order, and displays
+its stored text separately. Existing JSONs contain decoded strings and cannot
+recover original logits or frame IDs. Fresh single-record CPU inference can
+differ from historical batched/mixed-precision results; this is explicitly
+labelled and does not replace experiment scores. The default Bigram WD fold-0
+sample showed such a difference, so exact saved-text reproduction is not
+claimed. No aggregate recognition result is recalculated by this notebook.
+
+Validation: all five cells executed with outputs retained inline. Actual
+checkpoint inference, target-token reconstruction, CTC decoding and stored
+prediction lookup passed for all six method/distribution combinations at
+fold 0. Also tested validation index 1 with the Bigram best-WER checkpoint.
+Default Bigram best-CER checkpoint is epoch 206. No training was launched and
+no checkpoint, dataset, tokenizer artifact or original result was modified.
+
+## 2026-10-18 — Matched linguistic BPE/Unigram controls prepared
+
+Prepared and froze two IAM text-only controls for the existing handwriting
+BPE/Unigram experiments. These use the same custom training functions with
+`handwriting_aware=False`, rather than original TVA's Hugging Face trainers.
+Original TVA `bpe`/`unigram` keys and `tva/tokenizers.py` remain unchanged.
+
+### Matched construction and inference
+
+- Both sides use exactly the same ordered 5,694 IAM training lines, including
+  repeated transcriptions. Verified line IDs and text against the bundled
+  handwriting training corpus. Linguistic fitting reads only authenticated IAM
+  labels/selection, with no connectivity evidence or ED labels.
+- The text controls count letter spans of length 2–6 with at least 20 text
+  occurrences. Their pool has 3,325 candidates; the connectivity-filtered pool
+  has 303. The intentional difference is text-based versus handwriting-based
+  candidate evidence, merge counts and Unigram initialization.
+- BPE learns 145 merges. Unigram uses eight EM iterations per stage, a seed
+  multiplier of four, shrink factor 0.75 and the identical pruning procedure.
+  The same seed-cap rule starts Unigram with 580 text candidates versus 303
+  handwriting candidates, reflecting the different eligible pools.
+- Each ED tokenizer has 145 pieces + 78 declared characters + blank = 224
+  classes. The IAM-to-ED projection removes `#`, `&`, `*` and adds `%`, `=`.
+  Unigram retains learned IAM scores without renormalization and gives added
+  forced singleton symbols zero score, matching the handwriting projection.
+- Both families now inherit the identical segmentation/encode/decode functions
+  from `tva/subword_tokenizers.py`: ordered BPE merges or maximum-score Unigram
+  Viterbi, preserving NFC, spaces and punctuation. Verified extracted methods
+  are AST-identical to the pre-refactor handwriting methods.
+- IAM models are pinned by SHA-256; ED adapters are reconstructed exactly on
+  load. Frozen output preflight prevents partial overwrite of differing files.
+  Separate training reports record source, candidate and implementation hashes.
+
+### Frozen artifacts
+
+| Algorithm | Native IAM SHA-256 | ED adapter SHA-256 | Pieces shared with handwriting |
+| --- | --- | --- | ---: |
+| bpe | `b378e1e93b86d3483f15d5bbe5865c31c9581112f75ded56f45589f130b6c1d3` | `c757f01c98f9756b190cc82140a3d454b11fe78bcb707a8924ca72634fba16ea` | 59/145 |
+| unigram | `cce6b18818a71b43d74c98e5e2ae334698b8c491c704539aed04e8a02edba0b3` | `b475f4d8fde5320eba2a0b302c97dfc4efbc0f7246f375a35ff4298062776cab` | 50/145 |
+
+The ready ED files live at
+`artifacts/tokenizers/ed/linguistic/ed_iam_linguistic_{bpe,unigram}_v1.json`;
+corresponding native models are in `source/`, with `.training.json` reports and
+one combined `.audit.json` beside the adapters. The existing simple
+`train_ed_tokenizers.ipynb` has two added class/import/train sections.
+The complete notebook executed successfully, including a second byte-identical
+text fit and exact reproduction of the prior handwriting artifacts.
+
+### Recognition commands (manual, fold 0)
+
+```bash
+python main.py -c configs/thesis/ed/bpe_linguistic_wd.yaml
+python main.py -c configs/thesis/ed/bpe_linguistic_wi.yaml
+python main.py -c configs/thesis/ed/unigram_linguistic_wd.yaml
+python main.py -c configs/thesis/ed/unigram_linguistic_wi.yaml
+```
+
+The four configs match their respective handwriting configs in every field
+except tokenizer key, tokenizer artifact path and output directory. Models use
+224 output classes, batch 32, seed 42 and 300 epochs. Both distributions use
+the same frozen tokenizer. All five fold inputs/outputs pass CV launch preflight.
+No recognition training was started.
+
+### Validation
+
+Full unittest suite: 99 tests completed successfully (92 passed, seven optional
+skips). New checks cover shared runtime identity, CTC IDs, sentence/symbol
+round-trips, native segmentation parity, config matching, source/adapter
+corruption and immutable output preflight. Each tokenizer round-trips all
+5,100 ED WD/WI label encodings and all 5,612 common-alphabet IAM lines. Eight
+real ED train/validation CPU batches (both methods and distributions) produced
+finite 224-class outputs and CTC loss using the production architectures.
+The combined compatibility audit reads ED labels only after vocabulary fitting.
+
+All pre-existing handwriting artifacts/reports, handwriting training/evidence
+source and original TVA tokenizers retain their exact bytes. No existing
+recognition runs were changed; no handwriting retraining is required. Preserved
+unrelated workspace/editor and inspection-notebook changes. No commit or push
+was performed for this preparation.
+
+## 2026-10-19 — Linguistic subword recognition uses extracted ED files
+
+Corrected the four new `bpe_linguistic_{wd,wi}.yaml` and
+`unigram_linguistic_{wd,wi}.yaml` configs to use `dataset_format: json-directory`
+and `dir_dataset: data/tva/ed/gold_wd` or `gold_wi`. They previously inherited
+the older handwriting configs' ZIP loader, despite verified extracted copies
+being available since 2026-10-17. No ZIP path or `TVA_ED_DATASET_DIR` override
+is needed for these four linguistic recognition runs. Training settings,
+tokenizers, folds and result directories are unchanged.
+
+Verified extracted train/validation annotation files are byte-identical to
+archive members. Across both tokenizers, both distributions, all five folds,
+both partitions and cached/noncached modes, 160 representative comparisons
+matched raw sensor arrays, target token IDs and processed tensors exactly.
+The extracted loader also worked with an intentionally nonexistent ZIP override.
+All four five-fold launch inputs pass preflight; six focused regression tests
+passed. Updated the config comparison to allow the equivalent data-container
+settings while retaining strict matching of recognition hyperparameters.
+No recognition training was launched, and no completed runs were changed.
+
+## 2026-10-19 — Matched linguistic BPE/Unigram ED fold 0 completed
+
+Verified all four manually launched recognition runs completed 300 epochs
+(0–299), with complete epoch metrics and predictions. Each WD epoch contains
+503 validation labels and each WI epoch 525. Saved configs exactly match the
+corresponding `configs/thesis/ed/{bpe,unigram}_linguistic_{wd,wi}.yaml` templates.
+The runs use the verified extracted ED data and frozen IAM text-only tokenizers.
+Their training settings match the completed handwriting counterparts after
+accounting for equivalent ZIP/extracted input settings, tokenizer/artifact and
+output paths. Both tokenizers retain the pre-evaluation frozen identities:
+
+- BPE ED adapter SHA-256:
+  `c757f01c98f9756b190cc82140a3d454b11fe78bcb707a8924ca72634fba16ea`.
+- Unigram ED adapter SHA-256:
+  `b475f4d8fde5320eba2a0b302c97dfc4efbc0f7246f375a35ff4298062776cab`.
+
+Independently recomputed CER, WER, mean Levenshtein distance and mean reference
+length from saved predictions at each selected CER/WER epoch. Validation labels
+match the extracted fold-0 annotations exactly. Best-CER and best-WER checkpoints
+are present, with evidence hashes below. The earlier BPE WD attempt
+`20261019100231` failed during dataset lookup before training and is excluded;
+the completed BPE WD run is `20261019101032`.
+
+### Independent best validation scores
+
+| Method | Split | Run ID | Best CER (%) | CER epoch | Best WER (%) | WER epoch |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| Linguistic BPE | WD | `20261019101032` | 28.97478199 | 214 | 67.27565825 | 280 |
+| Linguistic BPE | WI | `20261019111405` | 18.00811711 | 245 | 45.21303258 | 278 |
+| Linguistic Unigram | WD | `20261019121946` | 30.12491162 | 260 | 70.04298764 | 241 |
+| Linguistic Unigram | WI | `20261019132426` | 18.71038351 | 279 | 46.59147870 | 264 |
+
+Epochs are zero-based indices. CER and WER are independent validation minima;
+they generally come from different checkpoints. They are not a joint score
+pair measured at one common checkpoint.
+
+### Metrics at the selected checkpoints
+
+| Method | Split | WER at best-CER epoch (%) | CER at best-WER epoch (%) |
+| --- | --- | ---: | ---: |
+| bpe | WD | 68.35034927 | 29.39901013 |
+| bpe | WI | 45.41353383 | 18.14036208 |
+| unigram | WD | 70.41912950 | 30.52557153 |
+| unigram | WI | 46.59147870 | 18.92015140 |
+
+### Matched text-only versus handwriting-aware comparison
+
+All values are independent fold-0 validation minima. Improvements are
+linguistic error minus handwriting error, in percentage points; positive values
+favor handwriting. Handwriting reference results were read from their original
+completed run files rather than transcribed from rounded values.
+
+| Method | Split | Linguistic CER (%) | Handwriting CER (%) | CER improvement (pp) | Linguistic WER (%) | Handwriting WER (%) | WER improvement (pp) |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| bpe | WD | 28.97478199 | 24.45439547 | 4.52038652 | 67.27565825 | 63.40677055 | 3.86888769 |
+| bpe | WI | 18.00811711 | 17.17816590 | 0.82995121 | 45.21303258 | 44.73684211 | 0.47619048 |
+| unigram | WD | 30.12491162 | 24.06787650 | 6.05703512 | 70.04298764 | 63.78291241 | 6.26007523 |
+| unigram | WI | 18.71038351 | 16.84071321 | 1.86967030 | 46.59147870 | 45.41353383 | 1.17794486 |
+
+Handwriting-aware BPE and Unigram have lower CER and WER than their matched
+text-only controls on WD and WI fold 0. The gaps are larger on WD. These are
+single-fold, seed-42 results; they do not establish a five-fold or statistical
+ranking. Connectivity filtering, evidence-based ranking/initialization and the
+resulting candidate-pool sizes are combined in the handwriting treatment;
+this comparison does not separate those contributions individually. These
+text-only controls use our shared custom trainers and are distinct from
+original TVA's Hugging Face BPE/Unigram implementations.
+
+### Saved evidence hashes
+
+Paths are repository-relative. Each run's hashes cover its saved configuration,
+metrics, log, full predictions and two selected checkpoints.
+
+| File | SHA-256 |
+| --- | --- |
+| `results/thesis/ed/linguistic_bpe_wd/0/train_20261019101032.yaml` | `c8b2ebc207ae0fe72d44888a56932adeb0bd2124d4c84c20aaee3d1f2f621d4f` |
+| `results/thesis/ed/linguistic_bpe_wd/0/train_20261019101032.json` | `d1d26e1f00673a16c18a19022dbae56287bb8f9b0b5d23356848b10f60e52a46` |
+| `results/thesis/ed/linguistic_bpe_wd/0/train_preds_20261019101032.json` | `104a31fbfde7ffeb0d4d783285e80208092bc029eedf9006ed46b700e5a6a64f` |
+| `results/thesis/ed/linguistic_bpe_wd/0/train_20261019101032.log` | `6bfae4d08328fdc6a362928211a2c9e987a1d2a1e1d79974dae8d5c643e09f69` |
+| `results/thesis/ed/linguistic_bpe_wd/0/checkpoints/best_cer.pth` | `dc3b741c2f88c12c3c696b42e0388b4c1f59bbe593f28176c025bd6793a9dbbf` |
+| `results/thesis/ed/linguistic_bpe_wd/0/checkpoints/best_wer.pth` | `8152617322db2e04f46ad817e1d78d97ebd38501841661479e5ff11460d79a4a` |
+| `results/thesis/ed/linguistic_bpe_wi/0/train_20261019111405.yaml` | `27d5cb448b6fa2fd3f7d69da7d9b771e02c63d820f11c89c56c08f7740a5feaa` |
+| `results/thesis/ed/linguistic_bpe_wi/0/train_20261019111405.json` | `35091bf5df4820590be3b55f81f6546b8a3acbfd17aea15d78ebf15f597383c0` |
+| `results/thesis/ed/linguistic_bpe_wi/0/train_preds_20261019111405.json` | `d57e78a8a6ba5775e9deb93133490d9c80e2633ff9ba49eda7ba54b271ddc563` |
+| `results/thesis/ed/linguistic_bpe_wi/0/train_20261019111405.log` | `41a498c8e88ed4ebc092fc5ef1cf28b65a90ecc9e249536fc36953799ecdd645` |
+| `results/thesis/ed/linguistic_bpe_wi/0/checkpoints/best_cer.pth` | `bdf091a1faee40d1ec7714fb2115f1f62e55aa1d3837bdf113b59717bf2e8c3e` |
+| `results/thesis/ed/linguistic_bpe_wi/0/checkpoints/best_wer.pth` | `764f4ae32ba569eca60449374a409a260612324d85f7e44518f39a96dc8e987d` |
+| `results/thesis/ed/linguistic_unigram_wd/0/train_20261019121946.yaml` | `b38e94b6905cdb64851cfbea21d4ee5b01df0d5f9ec4d9b4b9587e9f627db67f` |
+| `results/thesis/ed/linguistic_unigram_wd/0/train_20261019121946.json` | `6f2c9beb3fdca3398b6e0ce9214fb54f5f7dfed01bb4ba04cc61d34611750d35` |
+| `results/thesis/ed/linguistic_unigram_wd/0/train_preds_20261019121946.json` | `0933d47934c96cb4aa743fc4dd1f2a886d3bfe3f300d9ae7e5b82c4312e757de` |
+| `results/thesis/ed/linguistic_unigram_wd/0/train_20261019121946.log` | `7d56e35591786d02adff82c10dbb619170fc5eefe0f1f8098a2dae0cd98b6721` |
+| `results/thesis/ed/linguistic_unigram_wd/0/checkpoints/best_cer.pth` | `643c55b271339b885407c0cf96e79437c4afd91c165aa0f0b762a34b94822e7d` |
+| `results/thesis/ed/linguistic_unigram_wd/0/checkpoints/best_wer.pth` | `30d14442240b3383fe7c0dfdc2a5b64474a9917b7931c22986c946355ebee905` |
+| `results/thesis/ed/linguistic_unigram_wi/0/train_20261019132426.yaml` | `4932d52b87b37c3c27922842ca0c6dc3c51c1b7ae64769d47b14a615499569dd` |
+| `results/thesis/ed/linguistic_unigram_wi/0/train_20261019132426.json` | `db7acebee06e14084126027ea070c211de1ef6154c8dfdd73dc3888764dfa785` |
+| `results/thesis/ed/linguistic_unigram_wi/0/train_preds_20261019132426.json` | `66034a7f5737bec1bd8cbffd1fa67651848267743db3feabd39ef965c5e3d233` |
+| `results/thesis/ed/linguistic_unigram_wi/0/train_20261019132426.log` | `7fdedae06cc5af4d0f9908c9f3a1ba80e195ef1b8cacb54d88d2199b3963d491` |
+| `results/thesis/ed/linguistic_unigram_wi/0/checkpoints/best_cer.pth` | `3d9662c8830c3d0c16a164d470dc45cb8a17790473c65afb57f53a936c790cfd` |
+| `results/thesis/ed/linguistic_unigram_wi/0/checkpoints/best_wer.pth` | `c397ac194fb78d28bc449b19eb8b1994cd8e90f5f1111d300f0f0b586b7fa50e` |
+
+Recorded the completed results without modifying datasets, tokenizers, models
+or recognition outputs. No recognition training, commit or push was performed
+while verifying these scores. Remaining folds are needed for a full matched
+cross-validation comparison.
+
+## 2026-10-19 — Original TVA character configs and ED equivalence verified
+
+Generated a standard character JSON through the unchanged original
+`tva.tokenizers.CharacterTokenizer.train()` method, using the declared ED
+alphabet and temporary fold-count metadata only. No transcription-derived
+vocabulary selection occurs. The shared file is
+`artifacts/tokenizers/ed/character/ed_characters_v1.json`, SHA-256
+`d83bf465262d65246907518d43ff9b4788a54c82a2209868189aecbecd124751`.
+
+Before removing the previous subclass, compared it with the original TVA
+instance: all 79 forward/inverse IDs (78 characters plus blank ID 0) match
+exactly, as do encodings and decodings for all 5,100 WD/WI label entries,
+the full declared alphabet, empty input and punctuation/symbol examples.
+The machine-readable result is saved beside the artifact as
+`ed_characters_v1.comparison.json`.
+
+Added `configs/thesis/ed/character_tva_wd.yaml` and
+`configs/thesis/ed/character_tva_wi.yaml`. They load the standard file and
+extracted ED folders, use fold 0, and have separate `character_tva_wd` and
+`character_tva_wi` result directories. Their model/training settings match the
+existing extracted character CV configs; only artifact/output paths and fold
+selection differ. Optional manual recognition commands:
+
+```bash
+python main.py -c configs/thesis/ed/character_tva_wd.yaml
+python main.py -c configs/thesis/ed/character_tva_wi.yaml
+```
+
+Removed the character subclass and factory override. `get_tokenizer('char')`
+now returns exactly TVA's original class. Completed ED configs with
+`dir_tokenizer: null` remain compatible: `main.load_configured_tokenizer` loads
+the shared file and verifies its IDs against the saved categories. Updated
+ED preparation/analysis notebooks to use original `.load()`. Existing character
+configs and recognition results were preserved. Identical mappings and
+encoding/decoding mean no baseline retraining is required.
+
+Validation: 101 unittest cases completed successfully (94 passed, seven optional
+skips), including exact class identity, original `.train()` byte reproduction,
+legacy config loading and explicit config matching. New configs loaded real
+seven-channel extracted train/validation samples and passed five-fold input
+preflight. Notebook code parses after normal IPython magic transformation.
+Original TVA source, existing frozen artifacts and subword implementation
+fingerprints are unchanged. Preserved unrelated user changes. No recognition
+training, commit or push was performed.

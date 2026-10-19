@@ -1,0 +1,1940 @@
+{
+  "algorithm": "text-only-bpe",
+  "blank_id": 0,
+  "blank_token": "",
+  "dataset": "IAM",
+  "freeze": {
+    "candidate_count": 3325,
+    "candidate_pool_sha256": "6a61e0da1c1bd14d2f6cf8d0eeac2f2d92006f3180b40de0216e8b25366ec1c5",
+    "duplicate_transcriptions_retained": true,
+    "ed_labels_read": false,
+    "handwriting_evidence_read": false,
+    "labels_sha256": "5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab",
+    "line_count": 5694,
+    "max_piece_length": 6,
+    "minimum_text_occurrences": 20,
+    "ordered_corpus_sha256": "eaa5e6f3118675a0134e3bac82bedd6bc544973c06ad02d8600171486d33c0d2",
+    "selection_sha256": "7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2"
+  },
+  "idx_token": {
+    "0": "",
+    "1": " ",
+    "10": "+",
+    "100": "at",
+    "101": "ate",
+    "102": "ation",
+    "103": "ay",
+    "104": "be",
+    "105": "been",
+    "106": "but",
+    "107": "by",
+    "108": "ce",
+    "109": "ch",
+    "11": ",",
+    "110": "com",
+    "111": "con",
+    "112": "ct",
+    "113": "de",
+    "114": "di",
+    "115": "ear",
+    "116": "ed",
+    "117": "el",
+    "118": "en",
+    "119": "end",
+    "12": "-",
+    "120": "ent",
+    "121": "er",
+    "122": "ere",
+    "123": "ers",
+    "124": "es",
+    "125": "est",
+    "126": "et",
+    "127": "ex",
+    "128": "fe",
+    "129": "for",
+    "13": ".",
+    "130": "fr",
+    "131": "from",
+    "132": "gh",
+    "133": "ght",
+    "134": "go",
+    "135": "ha",
+    "136": "had",
+    "137": "has",
+    "138": "have",
+    "139": "he",
+    "14": "/",
+    "140": "hi",
+    "141": "his",
+    "142": "ic",
+    "143": "ich",
+    "144": "id",
+    "145": "il",
+    "146": "ill",
+    "147": "in",
+    "148": "ing",
+    "149": "ion",
+    "15": "0",
+    "150": "ir",
+    "151": "is",
+    "152": "ish",
+    "153": "ist",
+    "154": "it",
+    "155": "ke",
+    "156": "ld",
+    "157": "le",
+    "158": "les",
+    "159": "li",
+    "16": "1",
+    "160": "lo",
+    "161": "ly",
+    "162": "man",
+    "163": "me",
+    "164": "ment",
+    "165": "mo",
+    "166": "mp",
+    "167": "ne",
+    "168": "no",
+    "169": "not",
+    "17": "2",
+    "170": "od",
+    "171": "of",
+    "172": "ol",
+    "173": "om",
+    "174": "on",
+    "175": "one",
+    "176": "op",
+    "177": "or",
+    "178": "ou",
+    "179": "ould",
+    "18": "3",
+    "180": "oun",
+    "181": "our",
+    "182": "out",
+    "183": "over",
+    "184": "ow",
+    "185": "pe",
+    "186": "per",
+    "187": "pl",
+    "188": "po",
+    "189": "pro",
+    "19": "4",
+    "190": "re",
+    "191": "res",
+    "192": "ri",
+    "193": "rit",
+    "194": "ro",
+    "195": "se",
+    "196": "sh",
+    "197": "si",
+    "198": "so",
+    "199": "st",
+    "2": "!",
+    "20": "5",
+    "200": "su",
+    "201": "te",
+    "202": "ter",
+    "203": "th",
+    "204": "that",
+    "205": "the",
+    "206": "ther",
+    "207": "this",
+    "208": "ti",
+    "209": "to",
+    "21": "6",
+    "210": "tr",
+    "211": "ul",
+    "212": "un",
+    "213": "ur",
+    "214": "us",
+    "215": "ut",
+    "216": "ve",
+    "217": "ver",
+    "218": "was",
+    "219": "we",
+    "22": "7",
+    "220": "wh",
+    "221": "which",
+    "222": "wi",
+    "223": "will",
+    "224": "with",
+    "23": "8",
+    "24": "9",
+    "25": ":",
+    "26": ";",
+    "27": "?",
+    "28": "A",
+    "29": "B",
+    "3": "\"",
+    "30": "C",
+    "31": "D",
+    "32": "E",
+    "33": "F",
+    "34": "G",
+    "35": "H",
+    "36": "I",
+    "37": "J",
+    "38": "K",
+    "39": "L",
+    "4": "#",
+    "40": "M",
+    "41": "N",
+    "42": "O",
+    "43": "P",
+    "44": "Q",
+    "45": "R",
+    "46": "S",
+    "47": "T",
+    "48": "U",
+    "49": "V",
+    "5": "&",
+    "50": "W",
+    "51": "X",
+    "52": "Y",
+    "53": "Z",
+    "54": "a",
+    "55": "b",
+    "56": "c",
+    "57": "d",
+    "58": "e",
+    "59": "f",
+    "6": "'",
+    "60": "g",
+    "61": "h",
+    "62": "i",
+    "63": "j",
+    "64": "k",
+    "65": "l",
+    "66": "m",
+    "67": "n",
+    "68": "o",
+    "69": "p",
+    "7": "(",
+    "70": "q",
+    "71": "r",
+    "72": "s",
+    "73": "t",
+    "74": "u",
+    "75": "v",
+    "76": "w",
+    "77": "x",
+    "78": "y",
+    "79": "z",
+    "8": ")",
+    "80": "It",
+    "81": "Mr",
+    "82": "The",
+    "83": "ab",
+    "84": "ac",
+    "85": "ad",
+    "86": "ag",
+    "87": "ain",
+    "88": "al",
+    "89": "all",
+    "9": "*",
+    "90": "am",
+    "91": "an",
+    "92": "and",
+    "93": "ant",
+    "94": "ap",
+    "95": "ar",
+    "96": "ard",
+    "97": "are",
+    "98": "art",
+    "99": "as"
+  },
+  "merges": [
+    {
+      "left": "t",
+      "right": "h",
+      "text_occurrences_at_merge": 5049,
+      "token": "th"
+    },
+    {
+      "left": "i",
+      "right": "n",
+      "text_occurrences_at_merge": 3479,
+      "token": "in"
+    },
+    {
+      "left": "th",
+      "right": "e",
+      "text_occurrences_at_merge": 3337,
+      "token": "the"
+    },
+    {
+      "left": "e",
+      "right": "r",
+      "text_occurrences_at_merge": 2965,
+      "token": "er"
+    },
+    {
+      "left": "a",
+      "right": "n",
+      "text_occurrences_at_merge": 2793,
+      "token": "an"
+    },
+    {
+      "left": "o",
+      "right": "n",
+      "text_occurrences_at_merge": 2365,
+      "token": "on"
+    },
+    {
+      "left": "e",
+      "right": "n",
+      "text_occurrences_at_merge": 2240,
+      "token": "en"
+    },
+    {
+      "left": "r",
+      "right": "e",
+      "text_occurrences_at_merge": 2133,
+      "token": "re"
+    },
+    {
+      "left": "a",
+      "right": "t",
+      "text_occurrences_at_merge": 1997,
+      "token": "at"
+    },
+    {
+      "left": "i",
+      "right": "s",
+      "text_occurrences_at_merge": 1947,
+      "token": "is"
+    },
+    {
+      "left": "e",
+      "right": "d",
+      "text_occurrences_at_merge": 1775,
+      "token": "ed"
+    },
+    {
+      "left": "t",
+      "right": "o",
+      "text_occurrences_at_merge": 1703,
+      "token": "to"
+    },
+    {
+      "left": "e",
+      "right": "s",
+      "text_occurrences_at_merge": 1520,
+      "token": "es"
+    },
+    {
+      "left": "a",
+      "right": "s",
+      "text_occurrences_at_merge": 1515,
+      "token": "as"
+    },
+    {
+      "left": "o",
+      "right": "f",
+      "text_occurrences_at_merge": 1466,
+      "token": "of"
+    },
+    {
+      "left": "a",
+      "right": "r",
+      "text_occurrences_at_merge": 1425,
+      "token": "ar"
+    },
+    {
+      "left": "o",
+      "right": "u",
+      "text_occurrences_at_merge": 1423,
+      "token": "ou"
+    },
+    {
+      "left": "o",
+      "right": "r",
+      "text_occurrences_at_merge": 1387,
+      "token": "or"
+    },
+    {
+      "left": "a",
+      "right": "l",
+      "text_occurrences_at_merge": 1379,
+      "token": "al"
+    },
+    {
+      "left": "in",
+      "right": "g",
+      "text_occurrences_at_merge": 1225,
+      "token": "ing"
+    },
+    {
+      "left": "i",
+      "right": "t",
+      "text_occurrences_at_merge": 1201,
+      "token": "it"
+    },
+    {
+      "left": "an",
+      "right": "d",
+      "text_occurrences_at_merge": 1158,
+      "token": "and"
+    },
+    {
+      "left": "h",
+      "right": "e",
+      "text_occurrences_at_merge": 1023,
+      "token": "he"
+    },
+    {
+      "left": "i",
+      "right": "c",
+      "text_occurrences_at_merge": 938,
+      "token": "ic"
+    },
+    {
+      "left": "b",
+      "right": "e",
+      "text_occurrences_at_merge": 912,
+      "token": "be"
+    },
+    {
+      "left": "l",
+      "right": "e",
+      "text_occurrences_at_merge": 869,
+      "token": "le"
+    },
+    {
+      "left": "s",
+      "right": "t",
+      "text_occurrences_at_merge": 836,
+      "token": "st"
+    },
+    {
+      "left": "en",
+      "right": "t",
+      "text_occurrences_at_merge": 798,
+      "token": "ent"
+    },
+    {
+      "left": "o",
+      "right": "m",
+      "text_occurrences_at_merge": 791,
+      "token": "om"
+    },
+    {
+      "left": "i",
+      "right": "on",
+      "text_occurrences_at_merge": 759,
+      "token": "ion"
+    },
+    {
+      "left": "a",
+      "right": "d",
+      "text_occurrences_at_merge": 734,
+      "token": "ad"
+    },
+    {
+      "left": "i",
+      "right": "l",
+      "text_occurrences_at_merge": 722,
+      "token": "il"
+    },
+    {
+      "left": "s",
+      "right": "e",
+      "text_occurrences_at_merge": 684,
+      "token": "se"
+    },
+    {
+      "left": "l",
+      "right": "y",
+      "text_occurrences_at_merge": 602,
+      "token": "ly"
+    },
+    {
+      "left": "c",
+      "right": "h",
+      "text_occurrences_at_merge": 601,
+      "token": "ch"
+    },
+    {
+      "left": "w",
+      "right": "h",
+      "text_occurrences_at_merge": 574,
+      "token": "wh"
+    },
+    {
+      "left": "r",
+      "right": "o",
+      "text_occurrences_at_merge": 560,
+      "token": "ro"
+    },
+    {
+      "left": "v",
+      "right": "e",
+      "text_occurrences_at_merge": 548,
+      "token": "ve"
+    },
+    {
+      "left": "a",
+      "right": "c",
+      "text_occurrences_at_merge": 521,
+      "token": "ac"
+    },
+    {
+      "left": "f",
+      "right": "or",
+      "text_occurrences_at_merge": 514,
+      "token": "for"
+    },
+    {
+      "left": "n",
+      "right": "o",
+      "text_occurrences_at_merge": 502,
+      "token": "no"
+    },
+    {
+      "left": "a",
+      "right": "y",
+      "text_occurrences_at_merge": 497,
+      "token": "ay"
+    },
+    {
+      "left": "th",
+      "right": "at",
+      "text_occurrences_at_merge": 488,
+      "token": "that"
+    },
+    {
+      "left": "v",
+      "right": "er",
+      "text_occurrences_at_merge": 464,
+      "token": "ver"
+    },
+    {
+      "left": "t",
+      "right": "er",
+      "text_occurrences_at_merge": 450,
+      "token": "ter"
+    },
+    {
+      "left": "i",
+      "right": "r",
+      "text_occurrences_at_merge": 442,
+      "token": "ir"
+    },
+    {
+      "left": "u",
+      "right": "t",
+      "text_occurrences_at_merge": 432,
+      "token": "ut"
+    },
+    {
+      "left": "o",
+      "right": "l",
+      "text_occurrences_at_merge": 419,
+      "token": "ol"
+    },
+    {
+      "left": "r",
+      "right": "i",
+      "text_occurrences_at_merge": 418,
+      "token": "ri"
+    },
+    {
+      "left": "g",
+      "right": "h",
+      "text_occurrences_at_merge": 405,
+      "token": "gh"
+    },
+    {
+      "left": "w",
+      "right": "as",
+      "text_occurrences_at_merge": 397,
+      "token": "was"
+    },
+    {
+      "left": "d",
+      "right": "e",
+      "text_occurrences_at_merge": 391,
+      "token": "de"
+    },
+    {
+      "left": "c",
+      "right": "e",
+      "text_occurrences_at_merge": 388,
+      "token": "ce"
+    },
+    {
+      "left": "u",
+      "right": "n",
+      "text_occurrences_at_merge": 378,
+      "token": "un"
+    },
+    {
+      "left": "w",
+      "right": "i",
+      "text_occurrences_at_merge": 378,
+      "token": "wi"
+    },
+    {
+      "left": "a",
+      "right": "b",
+      "text_occurrences_at_merge": 373,
+      "token": "ab"
+    },
+    {
+      "left": "l",
+      "right": "i",
+      "text_occurrences_at_merge": 361,
+      "token": "li"
+    },
+    {
+      "left": "s",
+      "right": "u",
+      "text_occurrences_at_merge": 357,
+      "token": "su"
+    },
+    {
+      "left": "h",
+      "right": "is",
+      "text_occurrences_at_merge": 345,
+      "token": "his"
+    },
+    {
+      "left": "e",
+      "right": "l",
+      "text_occurrences_at_merge": 343,
+      "token": "el"
+    },
+    {
+      "left": "n",
+      "right": "e",
+      "text_occurrences_at_merge": 338,
+      "token": "ne"
+    },
+    {
+      "left": "wi",
+      "right": "th",
+      "text_occurrences_at_merge": 337,
+      "token": "with"
+    },
+    {
+      "left": "m",
+      "right": "e",
+      "text_occurrences_at_merge": 332,
+      "token": "me"
+    },
+    {
+      "left": "a",
+      "right": "p",
+      "text_occurrences_at_merge": 323,
+      "token": "ap"
+    },
+    {
+      "left": "o",
+      "right": "w",
+      "text_occurrences_at_merge": 320,
+      "token": "ow"
+    },
+    {
+      "left": "T",
+      "right": "he",
+      "text_occurrences_at_merge": 319,
+      "token": "The"
+    },
+    {
+      "left": "m",
+      "right": "ent",
+      "text_occurrences_at_merge": 315,
+      "token": "ment"
+    },
+    {
+      "left": "at",
+      "right": "ion",
+      "text_occurrences_at_merge": 307,
+      "token": "ation"
+    },
+    {
+      "left": "i",
+      "right": "d",
+      "text_occurrences_at_merge": 305,
+      "token": "id"
+    },
+    {
+      "left": "il",
+      "right": "l",
+      "text_occurrences_at_merge": 302,
+      "token": "ill"
+    },
+    {
+      "left": "a",
+      "right": "in",
+      "text_occurrences_at_merge": 300,
+      "token": "ain"
+    },
+    {
+      "left": "m",
+      "right": "an",
+      "text_occurrences_at_merge": 298,
+      "token": "man"
+    },
+    {
+      "left": "l",
+      "right": "d",
+      "text_occurrences_at_merge": 297,
+      "token": "ld"
+    },
+    {
+      "left": "h",
+      "right": "ad",
+      "text_occurrences_at_merge": 291,
+      "token": "had"
+    },
+    {
+      "left": "a",
+      "right": "re",
+      "text_occurrences_at_merge": 290,
+      "token": "are"
+    },
+    {
+      "left": "o",
+      "right": "p",
+      "text_occurrences_at_merge": 290,
+      "token": "op"
+    },
+    {
+      "left": "o",
+      "right": "d",
+      "text_occurrences_at_merge": 289,
+      "token": "od"
+    },
+    {
+      "left": "a",
+      "right": "g",
+      "text_occurrences_at_merge": 287,
+      "token": "ag"
+    },
+    {
+      "left": "b",
+      "right": "y",
+      "text_occurrences_at_merge": 282,
+      "token": "by"
+    },
+    {
+      "left": "u",
+      "right": "r",
+      "text_occurrences_at_merge": 279,
+      "token": "ur"
+    },
+    {
+      "left": "c",
+      "right": "on",
+      "text_occurrences_at_merge": 277,
+      "token": "con"
+    },
+    {
+      "left": "no",
+      "right": "t",
+      "text_occurrences_at_merge": 274,
+      "token": "not"
+    },
+    {
+      "left": "M",
+      "right": "r",
+      "text_occurrences_at_merge": 273,
+      "token": "Mr"
+    },
+    {
+      "left": "p",
+      "right": "e",
+      "text_occurrences_at_merge": 272,
+      "token": "pe"
+    },
+    {
+      "left": "m",
+      "right": "o",
+      "text_occurrences_at_merge": 265,
+      "token": "mo"
+    },
+    {
+      "left": "u",
+      "right": "l",
+      "text_occurrences_at_merge": 265,
+      "token": "ul"
+    },
+    {
+      "left": "t",
+      "right": "i",
+      "text_occurrences_at_merge": 264,
+      "token": "ti"
+    },
+    {
+      "left": "t",
+      "right": "e",
+      "text_occurrences_at_merge": 262,
+      "token": "te"
+    },
+    {
+      "left": "ou",
+      "right": "r",
+      "text_occurrences_at_merge": 259,
+      "token": "our"
+    },
+    {
+      "left": "m",
+      "right": "p",
+      "text_occurrences_at_merge": 258,
+      "token": "mp"
+    },
+    {
+      "left": "es",
+      "right": "t",
+      "text_occurrences_at_merge": 247,
+      "token": "est"
+    },
+    {
+      "left": "the",
+      "right": "r",
+      "text_occurrences_at_merge": 245,
+      "token": "ther"
+    },
+    {
+      "left": "e",
+      "right": "t",
+      "text_occurrences_at_merge": 244,
+      "token": "et"
+    },
+    {
+      "left": "gh",
+      "right": "t",
+      "text_occurrences_at_merge": 244,
+      "token": "ght"
+    },
+    {
+      "left": "h",
+      "right": "a",
+      "text_occurrences_at_merge": 241,
+      "token": "ha"
+    },
+    {
+      "left": "ou",
+      "right": "n",
+      "text_occurrences_at_merge": 241,
+      "token": "oun"
+    },
+    {
+      "left": "al",
+      "right": "l",
+      "text_occurrences_at_merge": 235,
+      "token": "all"
+    },
+    {
+      "left": "er",
+      "right": "e",
+      "text_occurrences_at_merge": 235,
+      "token": "ere"
+    },
+    {
+      "left": "s",
+      "right": "h",
+      "text_occurrences_at_merge": 233,
+      "token": "sh"
+    },
+    {
+      "left": "f",
+      "right": "r",
+      "text_occurrences_at_merge": 231,
+      "token": "fr"
+    },
+    {
+      "left": "ic",
+      "right": "h",
+      "text_occurrences_at_merge": 226,
+      "token": "ich"
+    },
+    {
+      "left": "p",
+      "right": "l",
+      "text_occurrences_at_merge": 221,
+      "token": "pl"
+    },
+    {
+      "left": "c",
+      "right": "om",
+      "text_occurrences_at_merge": 219,
+      "token": "com"
+    },
+    {
+      "left": "t",
+      "right": "r",
+      "text_occurrences_at_merge": 219,
+      "token": "tr"
+    },
+    {
+      "left": "p",
+      "right": "er",
+      "text_occurrences_at_merge": 214,
+      "token": "per"
+    },
+    {
+      "left": "u",
+      "right": "s",
+      "text_occurrences_at_merge": 212,
+      "token": "us"
+    },
+    {
+      "left": "ou",
+      "right": "ld",
+      "text_occurrences_at_merge": 211,
+      "token": "ould"
+    },
+    {
+      "left": "h",
+      "right": "as",
+      "text_occurrences_at_merge": 210,
+      "token": "has"
+    },
+    {
+      "left": "re",
+      "right": "s",
+      "text_occurrences_at_merge": 210,
+      "token": "res"
+    },
+    {
+      "left": "c",
+      "right": "t",
+      "text_occurrences_at_merge": 206,
+      "token": "ct"
+    },
+    {
+      "left": "e",
+      "right": "ar",
+      "text_occurrences_at_merge": 202,
+      "token": "ear"
+    },
+    {
+      "left": "p",
+      "right": "ro",
+      "text_occurrences_at_merge": 200,
+      "token": "pro"
+    },
+    {
+      "left": "b",
+      "right": "ut",
+      "text_occurrences_at_merge": 195,
+      "token": "but"
+    },
+    {
+      "left": "w",
+      "right": "e",
+      "text_occurrences_at_merge": 194,
+      "token": "we"
+    },
+    {
+      "left": "wh",
+      "right": "ich",
+      "text_occurrences_at_merge": 191,
+      "token": "which"
+    },
+    {
+      "left": "k",
+      "right": "e",
+      "text_occurrences_at_merge": 190,
+      "token": "ke"
+    },
+    {
+      "left": "on",
+      "right": "e",
+      "text_occurrences_at_merge": 190,
+      "token": "one"
+    },
+    {
+      "left": "a",
+      "right": "m",
+      "text_occurrences_at_merge": 187,
+      "token": "am"
+    },
+    {
+      "left": "ha",
+      "right": "ve",
+      "text_occurrences_at_merge": 184,
+      "token": "have"
+    },
+    {
+      "left": "p",
+      "right": "o",
+      "text_occurrences_at_merge": 184,
+      "token": "po"
+    },
+    {
+      "left": "f",
+      "right": "e",
+      "text_occurrences_at_merge": 183,
+      "token": "fe"
+    },
+    {
+      "left": "ou",
+      "right": "t",
+      "text_occurrences_at_merge": 181,
+      "token": "out"
+    },
+    {
+      "left": "er",
+      "right": "s",
+      "text_occurrences_at_merge": 179,
+      "token": "ers"
+    },
+    {
+      "left": "at",
+      "right": "e",
+      "text_occurrences_at_merge": 178,
+      "token": "ate"
+    },
+    {
+      "left": "o",
+      "right": "ver",
+      "text_occurrences_at_merge": 177,
+      "token": "over"
+    },
+    {
+      "left": "l",
+      "right": "es",
+      "text_occurrences_at_merge": 176,
+      "token": "les"
+    },
+    {
+      "left": "en",
+      "right": "d",
+      "text_occurrences_at_merge": 174,
+      "token": "end"
+    },
+    {
+      "left": "e",
+      "right": "x",
+      "text_occurrences_at_merge": 174,
+      "token": "ex"
+    },
+    {
+      "left": "r",
+      "right": "it",
+      "text_occurrences_at_merge": 168,
+      "token": "rit"
+    },
+    {
+      "left": "s",
+      "right": "o",
+      "text_occurrences_at_merge": 168,
+      "token": "so"
+    },
+    {
+      "left": "h",
+      "right": "i",
+      "text_occurrences_at_merge": 166,
+      "token": "hi"
+    },
+    {
+      "left": "be",
+      "right": "en",
+      "text_occurrences_at_merge": 164,
+      "token": "been"
+    },
+    {
+      "left": "ar",
+      "right": "d",
+      "text_occurrences_at_merge": 163,
+      "token": "ard"
+    },
+    {
+      "left": "d",
+      "right": "i",
+      "text_occurrences_at_merge": 160,
+      "token": "di"
+    },
+    {
+      "left": "th",
+      "right": "is",
+      "text_occurrences_at_merge": 159,
+      "token": "this"
+    },
+    {
+      "left": "l",
+      "right": "o",
+      "text_occurrences_at_merge": 157,
+      "token": "lo"
+    },
+    {
+      "left": "an",
+      "right": "t",
+      "text_occurrences_at_merge": 154,
+      "token": "ant"
+    },
+    {
+      "left": "g",
+      "right": "o",
+      "text_occurrences_at_merge": 153,
+      "token": "go"
+    },
+    {
+      "left": "s",
+      "right": "i",
+      "text_occurrences_at_merge": 153,
+      "token": "si"
+    },
+    {
+      "left": "I",
+      "right": "t",
+      "text_occurrences_at_merge": 152,
+      "token": "It"
+    },
+    {
+      "left": "fr",
+      "right": "om",
+      "text_occurrences_at_merge": 152,
+      "token": "from"
+    },
+    {
+      "left": "is",
+      "right": "t",
+      "text_occurrences_at_merge": 152,
+      "token": "ist"
+    },
+    {
+      "left": "ar",
+      "right": "t",
+      "text_occurrences_at_merge": 151,
+      "token": "art"
+    },
+    {
+      "left": "is",
+      "right": "h",
+      "text_occurrences_at_merge": 150,
+      "token": "ish"
+    },
+    {
+      "left": "w",
+      "right": "ill",
+      "text_occurrences_at_merge": 150,
+      "token": "will"
+    }
+  ],
+  "model_version": "iam-english-text-bpe-v1",
+  "policy": {
+    "inference": "ordered-BPE-merges",
+    "merge_application": "all-text-occurrences-left-to-right",
+    "merge_priority": "current-text-occurrence-count",
+    "subword_budget": 145
+  },
+  "schema_version": "dtlr.text-subwords.v1",
+  "size": 225,
+  "status": "frozen-experiment-policy",
+  "trainer_repository": "TVA",
+  "training_split": "train",
+  "unicode_normalization": "NFC",
+  "vocab": {
+    "": 0,
+    " ": 1,
+    "!": 2,
+    "\"": 3,
+    "#": 4,
+    "&": 5,
+    "'": 6,
+    "(": 7,
+    ")": 8,
+    "*": 9,
+    "+": 10,
+    ",": 11,
+    "-": 12,
+    ".": 13,
+    "/": 14,
+    "0": 15,
+    "1": 16,
+    "2": 17,
+    "3": 18,
+    "4": 19,
+    "5": 20,
+    "6": 21,
+    "7": 22,
+    "8": 23,
+    "9": 24,
+    ":": 25,
+    ";": 26,
+    "?": 27,
+    "A": 28,
+    "B": 29,
+    "C": 30,
+    "D": 31,
+    "E": 32,
+    "F": 33,
+    "G": 34,
+    "H": 35,
+    "I": 36,
+    "It": 80,
+    "J": 37,
+    "K": 38,
+    "L": 39,
+    "M": 40,
+    "Mr": 81,
+    "N": 41,
+    "O": 42,
+    "P": 43,
+    "Q": 44,
+    "R": 45,
+    "S": 46,
+    "T": 47,
+    "The": 82,
+    "U": 48,
+    "V": 49,
+    "W": 50,
+    "X": 51,
+    "Y": 52,
+    "Z": 53,
+    "a": 54,
+    "ab": 83,
+    "ac": 84,
+    "ad": 85,
+    "ag": 86,
+    "ain": 87,
+    "al": 88,
+    "all": 89,
+    "am": 90,
+    "an": 91,
+    "and": 92,
+    "ant": 93,
+    "ap": 94,
+    "ar": 95,
+    "ard": 96,
+    "are": 97,
+    "art": 98,
+    "as": 99,
+    "at": 100,
+    "ate": 101,
+    "ation": 102,
+    "ay": 103,
+    "b": 55,
+    "be": 104,
+    "been": 105,
+    "but": 106,
+    "by": 107,
+    "c": 56,
+    "ce": 108,
+    "ch": 109,
+    "com": 110,
+    "con": 111,
+    "ct": 112,
+    "d": 57,
+    "de": 113,
+    "di": 114,
+    "e": 58,
+    "ear": 115,
+    "ed": 116,
+    "el": 117,
+    "en": 118,
+    "end": 119,
+    "ent": 120,
+    "er": 121,
+    "ere": 122,
+    "ers": 123,
+    "es": 124,
+    "est": 125,
+    "et": 126,
+    "ex": 127,
+    "f": 59,
+    "fe": 128,
+    "for": 129,
+    "fr": 130,
+    "from": 131,
+    "g": 60,
+    "gh": 132,
+    "ght": 133,
+    "go": 134,
+    "h": 61,
+    "ha": 135,
+    "had": 136,
+    "has": 137,
+    "have": 138,
+    "he": 139,
+    "hi": 140,
+    "his": 141,
+    "i": 62,
+    "ic": 142,
+    "ich": 143,
+    "id": 144,
+    "il": 145,
+    "ill": 146,
+    "in": 147,
+    "ing": 148,
+    "ion": 149,
+    "ir": 150,
+    "is": 151,
+    "ish": 152,
+    "ist": 153,
+    "it": 154,
+    "j": 63,
+    "k": 64,
+    "ke": 155,
+    "l": 65,
+    "ld": 156,
+    "le": 157,
+    "les": 158,
+    "li": 159,
+    "lo": 160,
+    "ly": 161,
+    "m": 66,
+    "man": 162,
+    "me": 163,
+    "ment": 164,
+    "mo": 165,
+    "mp": 166,
+    "n": 67,
+    "ne": 167,
+    "no": 168,
+    "not": 169,
+    "o": 68,
+    "od": 170,
+    "of": 171,
+    "ol": 172,
+    "om": 173,
+    "on": 174,
+    "one": 175,
+    "op": 176,
+    "or": 177,
+    "ou": 178,
+    "ould": 179,
+    "oun": 180,
+    "our": 181,
+    "out": 182,
+    "over": 183,
+    "ow": 184,
+    "p": 69,
+    "pe": 185,
+    "per": 186,
+    "pl": 187,
+    "po": 188,
+    "pro": 189,
+    "q": 70,
+    "r": 71,
+    "re": 190,
+    "res": 191,
+    "ri": 192,
+    "rit": 193,
+    "ro": 194,
+    "s": 72,
+    "se": 195,
+    "sh": 196,
+    "si": 197,
+    "so": 198,
+    "st": 199,
+    "su": 200,
+    "t": 73,
+    "te": 201,
+    "ter": 202,
+    "th": 203,
+    "that": 204,
+    "the": 205,
+    "ther": 206,
+    "this": 207,
+    "ti": 208,
+    "to": 209,
+    "tr": 210,
+    "u": 74,
+    "ul": 211,
+    "un": 212,
+    "ur": 213,
+    "us": 214,
+    "ut": 215,
+    "v": 75,
+    "ve": 216,
+    "ver": 217,
+    "w": 76,
+    "was": 218,
+    "we": 219,
+    "wh": 220,
+    "which": 221,
+    "wi": 222,
+    "will": 223,
+    "with": 224,
+    "x": 77,
+    "y": 78,
+    "z": 79
+  },
+  "vocabulary": [
+    {
+      "n_total": 152,
+      "token": "It"
+    },
+    {
+      "n_total": 273,
+      "token": "Mr"
+    },
+    {
+      "n_total": 386,
+      "token": "The"
+    },
+    {
+      "n_total": 384,
+      "token": "ab"
+    },
+    {
+      "n_total": 587,
+      "token": "ac"
+    },
+    {
+      "n_total": 734,
+      "token": "ad"
+    },
+    {
+      "n_total": 293,
+      "token": "ag"
+    },
+    {
+      "n_total": 300,
+      "token": "ain"
+    },
+    {
+      "n_total": 1379,
+      "token": "al"
+    },
+    {
+      "n_total": 362,
+      "token": "all"
+    },
+    {
+      "n_total": 329,
+      "token": "am"
+    },
+    {
+      "n_total": 2793,
+      "token": "an"
+    },
+    {
+      "n_total": 1158,
+      "token": "and"
+    },
+    {
+      "n_total": 180,
+      "token": "ant"
+    },
+    {
+      "n_total": 323,
+      "token": "ap"
+    },
+    {
+      "n_total": 1715,
+      "token": "ar"
+    },
+    {
+      "n_total": 163,
+      "token": "ard"
+    },
+    {
+      "n_total": 311,
+      "token": "are"
+    },
+    {
+      "n_total": 194,
+      "token": "art"
+    },
+    {
+      "n_total": 1515,
+      "token": "as"
+    },
+    {
+      "n_total": 2098,
+      "token": "at"
+    },
+    {
+      "n_total": 350,
+      "token": "ate"
+    },
+    {
+      "n_total": 307,
+      "token": "ation"
+    },
+    {
+      "n_total": 497,
+      "token": "ay"
+    },
+    {
+      "n_total": 1112,
+      "token": "be"
+    },
+    {
+      "n_total": 164,
+      "token": "been"
+    },
+    {
+      "n_total": 195,
+      "token": "but"
+    },
+    {
+      "n_total": 285,
+      "token": "by"
+    },
+    {
+      "n_total": 918,
+      "token": "ce"
+    },
+    {
+      "n_total": 893,
+      "token": "ch"
+    },
+    {
+      "n_total": 219,
+      "token": "com"
+    },
+    {
+      "n_total": 278,
+      "token": "con"
+    },
+    {
+      "n_total": 505,
+      "token": "ct"
+    },
+    {
+      "n_total": 1130,
+      "token": "de"
+    },
+    {
+      "n_total": 617,
+      "token": "di"
+    },
+    {
+      "n_total": 393,
+      "token": "ear"
+    },
+    {
+      "n_total": 1901,
+      "token": "ed"
+    },
+    {
+      "n_total": 794,
+      "token": "el"
+    },
+    {
+      "n_total": 2284,
+      "token": "en"
+    },
+    {
+      "n_total": 175,
+      "token": "end"
+    },
+    {
+      "n_total": 808,
+      "token": "ent"
+    },
+    {
+      "n_total": 3302,
+      "token": "er"
+    },
+    {
+      "n_total": 504,
+      "token": "ere"
+    },
+    {
+      "n_total": 318,
+      "token": "ers"
+    },
+    {
+      "n_total": 1827,
+      "token": "es"
+    },
+    {
+      "n_total": 346,
+      "token": "est"
+    },
+    {
+      "n_total": 662,
+      "token": "et"
+    },
+    {
+      "n_total": 226,
+      "token": "ex"
+    },
+    {
+      "n_total": 374,
+      "token": "fe"
+    },
+    {
+      "n_total": 583,
+      "token": "for"
+    },
+    {
+      "n_total": 302,
+      "token": "fr"
+    },
+    {
+      "n_total": 152,
+      "token": "from"
+    },
+    {
+      "n_total": 409,
+      "token": "gh"
+    },
+    {
+      "n_total": 257,
+      "token": "ght"
+    },
+    {
+      "n_total": 209,
+      "token": "go"
+    },
+    {
+      "n_total": 1828,
+      "token": "ha"
+    },
+    {
+      "n_total": 291,
+      "token": "had"
+    },
+    {
+      "n_total": 214,
+      "token": "has"
+    },
+    {
+      "n_total": 186,
+      "token": "have"
+    },
+    {
+      "n_total": 4849,
+      "token": "he"
+    },
+    {
+      "n_total": 1217,
+      "token": "hi"
+    },
+    {
+      "n_total": 506,
+      "token": "his"
+    },
+    {
+      "n_total": 938,
+      "token": "ic"
+    },
+    {
+      "n_total": 232,
+      "token": "ich"
+    },
+    {
+      "n_total": 393,
+      "token": "id"
+    },
+    {
+      "n_total": 791,
+      "token": "il"
+    },
+    {
+      "n_total": 323,
+      "token": "ill"
+    },
+    {
+      "n_total": 3479,
+      "token": "in"
+    },
+    {
+      "n_total": 1225,
+      "token": "ing"
+    },
+    {
+      "n_total": 759,
+      "token": "ion"
+    },
+    {
+      "n_total": 540,
+      "token": "ir"
+    },
+    {
+      "n_total": 1947,
+      "token": "is"
+    },
+    {
+      "n_total": 150,
+      "token": "ish"
+    },
+    {
+      "n_total": 248,
+      "token": "ist"
+    },
+    {
+      "n_total": 1584,
+      "token": "it"
+    },
+    {
+      "n_total": 401,
+      "token": "ke"
+    },
+    {
+      "n_total": 463,
+      "token": "ld"
+    },
+    {
+      "n_total": 1328,
+      "token": "le"
+    },
+    {
+      "n_total": 218,
+      "token": "les"
+    },
+    {
+      "n_total": 937,
+      "token": "li"
+    },
+    {
+      "n_total": 450,
+      "token": "lo"
+    },
+    {
+      "n_total": 654,
+      "token": "ly"
+    },
+    {
+      "n_total": 322,
+      "token": "man"
+    },
+    {
+      "n_total": 1160,
+      "token": "me"
+    },
+    {
+      "n_total": 320,
+      "token": "ment"
+    },
+    {
+      "n_total": 523,
+      "token": "mo"
+    },
+    {
+      "n_total": 336,
+      "token": "mp"
+    },
+    {
+      "n_total": 1075,
+      "token": "ne"
+    },
+    {
+      "n_total": 618,
+      "token": "no"
+    },
+    {
+      "n_total": 303,
+      "token": "not"
+    },
+    {
+      "n_total": 356,
+      "token": "od"
+    },
+    {
+      "n_total": 1466,
+      "token": "of"
+    },
+    {
+      "n_total": 527,
+      "token": "ol"
+    },
+    {
+      "n_total": 843,
+      "token": "om"
+    },
+    {
+      "n_total": 2365,
+      "token": "on"
+    },
+    {
+      "n_total": 232,
+      "token": "one"
+    },
+    {
+      "n_total": 398,
+      "token": "op"
+    },
+    {
+      "n_total": 1723,
+      "token": "or"
+    },
+    {
+      "n_total": 1445,
+      "token": "ou"
+    },
+    {
+      "n_total": 211,
+      "token": "ould"
+    },
+    {
+      "n_total": 241,
+      "token": "oun"
+    },
+    {
+      "n_total": 280,
+      "token": "our"
+    },
+    {
+      "n_total": 211,
+      "token": "out"
+    },
+    {
+      "n_total": 178,
+      "token": "over"
+    },
+    {
+      "n_total": 526,
+      "token": "ow"
+    },
+    {
+      "n_total": 776,
+      "token": "pe"
+    },
+    {
+      "n_total": 280,
+      "token": "per"
+    },
+    {
+      "n_total": 438,
+      "token": "pl"
+    },
+    {
+      "n_total": 489,
+      "token": "po"
+    },
+    {
+      "n_total": 228,
+      "token": "pro"
+    },
+    {
+      "n_total": 2638,
+      "token": "re"
+    },
+    {
+      "n_total": 288,
+      "token": "res"
+    },
+    {
+      "n_total": 1114,
+      "token": "ri"
+    },
+    {
+      "n_total": 209,
+      "token": "rit"
+    },
+    {
+      "n_total": 1009,
+      "token": "ro"
+    },
+    {
+      "n_total": 1274,
+      "token": "se"
+    },
+    {
+      "n_total": 508,
+      "token": "sh"
+    },
+    {
+      "n_total": 681,
+      "token": "si"
+    },
+    {
+      "n_total": 502,
+      "token": "so"
+    },
+    {
+      "n_total": 1646,
+      "token": "st"
+    },
+    {
+      "n_total": 402,
+      "token": "su"
+    },
+    {
+      "n_total": 1679,
+      "token": "te"
+    },
+    {
+      "n_total": 528,
+      "token": "ter"
+    },
+    {
+      "n_total": 5049,
+      "token": "th"
+    },
+    {
+      "n_total": 488,
+      "token": "that"
+    },
+    {
+      "n_total": 3337,
+      "token": "the"
+    },
+    {
+      "n_total": 337,
+      "token": "ther"
+    },
+    {
+      "n_total": 159,
+      "token": "this"
+    },
+    {
+      "n_total": 1562,
+      "token": "ti"
+    },
+    {
+      "n_total": 1846,
+      "token": "to"
+    },
+    {
+      "n_total": 620,
+      "token": "tr"
+    },
+    {
+      "n_total": 546,
+      "token": "ul"
+    },
+    {
+      "n_total": 622,
+      "token": "un"
+    },
+    {
+      "n_total": 789,
+      "token": "ur"
+    },
+    {
+      "n_total": 635,
+      "token": "us"
+    },
+    {
+      "n_total": 676,
+      "token": "ut"
+    },
+    {
+      "n_total": 1395,
+      "token": "ve"
+    },
+    {
+      "n_total": 464,
+      "token": "ver"
+    },
+    {
+      "n_total": 397,
+      "token": "was"
+    },
+    {
+      "n_total": 574,
+      "token": "we"
+    },
+    {
+      "n_total": 593,
+      "token": "wh"
+    },
+    {
+      "n_total": 191,
+      "token": "which"
+    },
+    {
+      "n_total": 617,
+      "token": "wi"
+    },
+    {
+      "n_total": 150,
+      "token": "will"
+    },
+    {
+      "n_total": 337,
+      "token": "with"
+    }
+  ]
+}

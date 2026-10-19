@@ -1,0 +1,29 @@
+{
+  "algorithm": "unigram",
+  "candidate_count": 3325,
+  "candidate_pool_sha256": "6a61e0da1c1bd14d2f6cf8d0eeac2f2d92006f3180b40de0216e8b25366ec1c5",
+  "dataset": "IAM",
+  "duplicate_transcriptions_retained": true,
+  "ed_adapter_sha256": "b475f4d8fde5320eba2a0b302c97dfc4efbc0f7246f375a35ff4298062776cab",
+  "ed_ctc_classes": 224,
+  "ed_labels_read": false,
+  "handwriting_aware": false,
+  "handwriting_evidence_read": false,
+  "implementation_sha256": {
+    "handwriting/training.py": "bd1e65682596b57ed9cc7230571a2ab42b5349b46ae06841b2a74b1ce38b1f80",
+    "linguistic_tokenizers.py": "52d4aea64e3194177c4372b4c7a063c94b939414a9a81424d0bc668182d34946",
+    "subword_tokenizers.py": "cafd858a69813aa5c9958aa285083393584890518b3d93eb7f9c1b49ae596cd8"
+  },
+  "labels_sha256": "5ac34ad37ba0b125308fe1a2bc97095985e25dfa76495628c3bb3895c0b446ab",
+  "line_count": 5694,
+  "matched_handwriting_model_version": "ed-iam-handwriting-unigram-v1",
+  "max_piece_length": 6,
+  "minimum_text_occurrences": 20,
+  "native_sha256": "cce6b18818a71b43d74c98e5e2ae334698b8c491c704539aed04e8a02edba0b3",
+  "ordered_corpus_sha256": "eaa5e6f3118675a0134e3bac82bedd6bc544973c06ad02d8600171486d33c0d2",
+  "schema_version": "tva.matched-text-tokenizer-training.v1",
+  "selected_piece_count": 145,
+  "selection_sha256": "7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2",
+  "split": "train",
+  "trainer_repository": "TVA"
+}
