@@ -199,6 +199,37 @@ using a separate results directory. Recognition training is not started by
 preparing the tokenizer files. Existing handwriting models and results remain
 valid.
 
+### Compression-matched text-only controls — ED
+
+Handwriting tokenizers merge less than their 145-piece text-only partners
+(about 1.34 vs 1.47–1.55 characters per token on IAM), and on ED fewer merges
+go with lower error. These controls remove that difference: each keeps only the
+first *k* pieces of a text-only tokenizer, with *k* chosen so that it covers as
+many characters per token on IAM training text as its handwriting partner.
+
+| Control | Pieces kept | CTC classes | IAM characters per token (handwriting partner) |
+| --- | --- | --- | --- |
+| `linguistic_bigram_matched` | top 62 IAM-count bigrams | 141 | 1.335 (1.335) |
+| `linguistic_bpe_matched` | first 59 text BPE merges | 138 | 1.379 (1.378) |
+
+Files are in `artifacts/tokenizers/ed/linguistic/{bigram,bpe}_matched/`; they
+were built by `tva/compression_matched_tokenizers.py` (`build_fold_tokenizers`)
+without reading ED labels. Run fold 0 from the TVA root:
+
+```bash
+python main.py -c configs/thesis/ed/bigram_linguistic_matched_wd.yaml
+python main.py -c configs/thesis/ed/bigram_linguistic_matched_wi.yaml
+python main.py -c configs/thesis/ed/bpe_linguistic_matched_wd.yaml
+python main.py -c configs/thesis/ed/bpe_linguistic_matched_wi.yaml
+```
+
+Settings equal the other ED configs; set `idx_fold` to 1–4 for further folds,
+or to -1 for `train_cv.py`. Results go to
+`results/thesis/ed/linguistic_{bigram,bpe}_matched_{wd,wi}`, which
+`analyze_ed_compression.ipynb` picks up automatically. Compare each control with
+its handwriting partner: if the handwriting tokenizer still has lower error, the
+connectivity evidence helps beyond compression.
+
 ### ED handwriting BPE and Unigram — fold 0
 
 The frozen IAM sources and ED tokenizer files are already bundled; no notebook

@@ -15,6 +15,9 @@ from tva.handwriting_tokenizers import (
     HandwritingBPETokenizer, HandwritingUnigramTokenizer,
 )
 from tva.linguistic_tokenizers import LinguisticBPETokenizer, LinguisticUnigramTokenizer
+from tva.compression_matched_tokenizers import (
+    CompressionMatchedBigramTokenizer, CompressionMatchedBPETokenizer,
+)
 from tva.tokenizer_compatibility import (
     LinguisticBigramTokenizer, GreedyLinguisticBigramTokenizer,
 )
@@ -25,6 +28,8 @@ def get_tokenizer(tokenizer: str) -> Any:
     extensions = {
         'linguistic_bpe': LinguisticBPETokenizer,
         'linguistic_unigram': LinguisticUnigramTokenizer,
+        'linguistic_bigram_matched': CompressionMatchedBigramTokenizer,
+        'linguistic_bpe_matched': CompressionMatchedBPETokenizer,
         'handwriting_bpe': HandwritingBPETokenizer,
         'handwriting_unigram': HandwritingUnigramTokenizer,
         'handwriting_bigram': HandwritingBigramTokenizer,

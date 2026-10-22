@@ -16,6 +16,10 @@ import yaml
 from IPython.display import Markdown, display
 from torch.utils.data import DataLoader
 
+from tva.compression_matched_tokenizers import (  # noqa: F401  (re-exported for the notebooks)
+    bigram_compression_curve, bpe_compression_curve, bpe_split, characters_per_token,
+    greedy_bigram_split, iam_training_texts,
+)
 from tva.dataset import HRDataset, fn_collate
 from tva.model import BaseModel
 from tva.tokenizer_factory import get_tokenizer, resolve_tokenizer_path
@@ -42,6 +46,8 @@ CONDITIONS = {
     'linguistic_bigram_iam_frequency': 'linguistic_{split}',
     'linguistic_bpe': 'linguistic_bpe_{split}',
     'linguistic_unigram': 'linguistic_unigram_{split}',
+    'linguistic_bigram_matched': 'linguistic_bigram_matched_{split}',
+    'linguistic_bpe_matched': 'linguistic_bpe_matched_{split}',
 }
 
 # Frozen tokenizer files, for analyses that need no trained model.
@@ -54,6 +60,8 @@ TOKENIZERS = {
     'linguistic_bigram_iam_frequency': ('linguistic_bigram_greedy', 'artifacts/tokenizers/archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'),
     'linguistic_bpe': ('linguistic_bpe', 'artifacts/tokenizers/ed/linguistic/bpe/0.json'),
     'linguistic_unigram': ('linguistic_unigram', 'artifacts/tokenizers/ed/linguistic/unigram/0.json'),
+    'linguistic_bigram_matched': ('linguistic_bigram_matched', 'artifacts/tokenizers/ed/linguistic/bigram_matched/0.json'),
+    'linguistic_bpe_matched': ('linguistic_bpe_matched', 'artifacts/tokenizers/ed/linguistic/bpe_matched/0.json'),
 }
 
 
@@ -170,78 +178,6 @@ def saved_scores(condition: str, split: str, fold: int) -> dict | None:
     return {'epoch': epoch, 'epochs': len(epochs),
             'cer': epochs[epoch]['character_error_rate'],
             'wer': epochs[epoch]['word_error_rate']}
-
-
-def iam_training_texts() -> list[str]:
-    """The 5,694 IAM training lines every ED tokenizer learned from.
-
-    Read from the bundled, hash-checked connectivity evidence. Lines with
-    characters outside the ED alphabet (#, &, *) are left out.
-    """
-    from tva.handwriting.ed import ED_ALPHABET
-    from tva.handwriting.evidence import load_evidence
-
-    corpus, _ = load_evidence()
-    allowed = set(ED_ALPHABET)
-    return [line['text'] for line in corpus if set(line['text']) <= allowed]
-
-
-def characters_per_token(tokenizer, texts) -> float:
-    """Compression: characters divided by tokens (1.00 = plain characters)."""
-    texts = list(texts)
-    return sum(map(len, texts)) / sum(len(tokenizer.encode(t)) for t in texts)
-
-
-def greedy_bigram_split(text: str, bigrams: set[str]) -> list[str]:
-    """Split like TVA's greedy bigram encoder, using only the given bigrams."""
-    tokens, i = [], 0
-    while i < len(text):
-        step = 2 if text[i:i + 2] in bigrams else 1
-        tokens.append(text[i:i + step])
-        i += step
-    return tokens
-
-
-def _apply_merge(tokens: list[str], merge: dict) -> list[str]:
-    merged, i = [], 0
-    while i < len(tokens):
-        if i + 1 < len(tokens) and (tokens[i], tokens[i + 1]) == (merge['left'], merge['right']):
-            merged.append(merge['token'])
-            i += 2
-        else:
-            merged.append(tokens[i])
-            i += 1
-    return merged
-
-
-def bpe_split(text: str, merges: list[dict]) -> list[str]:
-    """Apply BPE merges in learned order, exactly like the frozen tokenizers."""
-    tokens = list(text)
-    for merge in merges:
-        tokens = _apply_merge(tokens, merge)
-    return tokens
-
-
-def bpe_compression_curve(texts: list[str], merges: list[dict]) -> list[float]:
-    """Characters per token when only the first k merges are kept, for k = 0..len(merges).
-
-    BPE learns merges one at a time, so keeping the first k merges equals
-    training with a budget of k.
-    """
-    sequences = [list(text) for text in texts]
-    characters = sum(map(len, texts))
-    curve = [characters / sum(map(len, sequences))]
-    for merge in merges:
-        sequences = [_apply_merge(tokens, merge) for tokens in sequences]
-        curve.append(characters / sum(map(len, sequences)))
-    return curve
-
-
-def bigram_compression_curve(texts: list[str], ranked_bigrams: list[str]) -> list[float]:
-    """Characters per token when only the top k bigrams are kept, for k = 0..len."""
-    characters = sum(map(len, texts))
-    return [characters / sum(len(greedy_bigram_split(t, set(ranked_bigrams[:k]))) for t in texts)
-            for k in range(len(ranked_bigrams) + 1)]
 
 
 def token_counts(tokenizer, id_lists) -> Counter:

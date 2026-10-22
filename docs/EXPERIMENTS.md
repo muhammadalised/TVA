@@ -2486,3 +2486,31 @@ and preservation of conflicting fold destinations. Executed every code cell of
 recognition configs passed five-fold launcher input validation (70 fold inputs),
 without launching recognizer training. Changed notebooks passed syntax checks
 with normal IPython transformation. No commit or push performed.
+
+## 2026-10-22 — Compression-matched text-only controls prepared for ED
+
+On ED fold 0, CER rises almost linearly with characters per token (r = +0.97 WD,
++0.98 WI across eight tokenizers, `analyze_ed_compression.ipynb`). Handwriting
+tokenizers merge less than their 145-piece text-only partners, so their lower
+error may come from compression rather than connectivity evidence.
+
+Two controls keep a prefix of an existing text-only vocabulary, sized so that
+their IAM characters per token match the handwriting partner:
+
+| Control | Source prefix | Classes | IAM chars/token (partner) |
+| --- | --- | --- | --- |
+| `linguistic_bigram_matched` | top 62 IAM-count bigrams | 141 | 1.335 (1.335) |
+| `linguistic_bpe_matched` | first 59 text BPE merges | 138 | 1.379 (1.378) |
+
+k minimizes the IAM compression gap (ties to smaller k) on the 5,612 IAM training
+lines within the ED alphabet. Truncating BPE merges equals training with budget k;
+a full-length prefix segments identically to the source tokenizers. No ED labels
+or recognition results were read. Unigram has no such prefix and is not matched.
+The controls also have fewer CTC classes than their partners (141/138 vs 224).
+
+Added `tva/compression_matched_tokenizers.py`, fold files under
+`artifacts/tokenizers/ed/linguistic/{bigram,bpe}_matched/`, and fold-0 configs
+`configs/thesis/ed/{bigram,bpe}_linguistic_matched_{wd,wi}.yaml` (settings equal
+`bpe_linguistic_*`). Validation: new unit tests pass (exact rebuild, prefix
+equality, compression match, round trip, config loading); both configs completed a
+2-epoch CPU smoke run on a synthetic fixture. Recognition training on ED is pending.
