@@ -41,23 +41,23 @@ We use a MSCOCO-like structure for the training and evaluation of our dataset. A
 
 ## Usage
 
-### Inspect encoding and prediction decoding
+### ED analysis notebooks
 
-Open `inspect_handwriting_tokenizers.ipynb` for a small CPU-only playground.
-Edit `TEXT` and `TOKENIZER_NAME` to see token pieces, IDs, character spans,
-and round-trip decoding. It supports ED handwriting Bigram, BPE and Unigram,
-plus the historical OnHW Bigram. The prediction cell accepts frame IDs or
-`[T, C]` scores and uses the real TVA `BestPath` CTC decoder; included examples
-show why repeated frames collapse and blank-separated repeated tokens survive.
-Frozen tokenizer files are loaded only; no dataset, GPU or training is needed.
+Each notebook has one settings cell at the top and ends with a short
+plain-language summary generated from its numbers. Shared loading code is in
+`tva/ed_analysis.py`. None of them trains anything.
 
-For a simple ED linguistic Bigram frequency analysis, open
-`analyze_ed_linguistic_bigrams.ipynb`. Its four code cells count emitted
-bigrams from the frozen original-TVA/IAM vocabulary, display a frequency
-table, and plot train/validation frequencies and the vocabulary-count
-distribution. WD and WI are shown together by default; choose `SPLITS`, `FOLD`, and `TOP_N` in the first cell.
+| Notebook | What it shows | Needs |
+| --- | --- | --- |
+| `analyze_ed_token_distribution.ipynb` | Token frequencies of training labels, validation labels and model predictions; over- and under-predicted tokens; optional comparison across tokenizers | Extracted ED data and a saved run |
+| `analyze_ed_linguistic_bigrams.ipynb` | How often each linguistic bigram is used in ED, how concentrated use is, unused bigrams, train vs validation | Extracted ED data |
+| `inspect_handwriting_tokenizers.ipynb` | Encoding and decoding of one ED sentence (or your own text) with the handwriting Bigram, BPE and Unigram tokenizers | Frozen tokenizer files; ED data for real samples |
 
-To inspect actual model predictions one recording at a time, open
+Predicted tokens are the IDs the model actually emits (best CTC path), not
+re-encoded predicted text. `TVA_ED_EXTRACTED_DIR` and `TVA_ED_RESULTS_DIR`
+override the default `data/tva/ed` and `results/thesis/ed` locations.
+
+To inspect actual handwriting-model predictions one recording at a time, open
 `analyze_handwriting_predictions.ipynb`. Select Bigram/BPE/Unigram, WD/WI,
 fold and validation index. Its five code cells load the saved recognizer,
 run one extracted ED recording, show actual predicted token IDs and CTC frame
