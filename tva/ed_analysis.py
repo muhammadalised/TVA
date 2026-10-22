@@ -115,15 +115,17 @@ def load_run(condition: str, split: str, fold: int,
 
 
 def predict_frames(run: dict, indices: list[int] | None = None,
-                   batch_size: int = 16) -> list[list[int]]:
+                   batch_size: int | None = None) -> list[list[int]]:
     """Return the winning token ID of every output frame, per validation sample.
 
     Uses the same preprocessing and valid-frame lengths as validation in main.py.
+    The run's own batch size is the default: padding within a batch changes the
+    encoder's instance normalization, so other sizes give slightly different outputs.
     """
     dataset = run['dataset']
     indices = list(range(len(dataset))) if indices is None else list(indices)
     subset = torch.utils.data.Subset(dataset, indices)
-    loader = DataLoader(subset, batch_size, collate_fn=fn_collate)
+    loader = DataLoader(subset, batch_size or run['config']['size_batch'], collate_fn=fn_collate)
     model, frames = run['model'], []
     with torch.inference_mode():
         for x, _, len_x, _ in loader:
@@ -146,6 +148,100 @@ def saved_predictions(run: dict) -> list[str] | None:
         if str(run['epoch']) in predictions:
             return predictions[str(run['epoch'])]
     return None
+
+
+def saved_scores(condition: str, split: str, fold: int) -> dict | None:
+    """Validation CER/WER saved during training, at the epoch with the lowest CER.
+
+    Both metrics come from the same epoch, as in evaluate.py:get_mean_std_cv.
+    Returns None when the run does not exist on this machine.
+    """
+    run_dir = RESULTS_ROOT / CONDITIONS[condition].format(split=split) / str(fold)
+    files = sorted(run_dir.glob('train_[0-9]*.json'))
+    if not files:
+        return None
+    # The newest file of a resumed run also contains the restored earlier epochs.
+    metrics = json.loads(files[-1].read_text())
+    epochs = {int(e): m['evaluation'] for e, m in metrics.items()
+              if e.isdigit() and 'evaluation' in m}
+    if not epochs:
+        return None
+    epoch = min(epochs, key=lambda e: (epochs[e]['character_error_rate'], e))
+    return {'epoch': epoch, 'epochs': len(epochs),
+            'cer': epochs[epoch]['character_error_rate'],
+            'wer': epochs[epoch]['word_error_rate']}
+
+
+def iam_training_texts() -> list[str]:
+    """The 5,694 IAM training lines every ED tokenizer learned from.
+
+    Read from the bundled, hash-checked connectivity evidence. Lines with
+    characters outside the ED alphabet (#, &, *) are left out.
+    """
+    from tva.handwriting.ed import ED_ALPHABET
+    from tva.handwriting.evidence import load_evidence
+
+    corpus, _ = load_evidence()
+    allowed = set(ED_ALPHABET)
+    return [line['text'] for line in corpus if set(line['text']) <= allowed]
+
+
+def characters_per_token(tokenizer, texts) -> float:
+    """Compression: characters divided by tokens (1.00 = plain characters)."""
+    texts = list(texts)
+    return sum(map(len, texts)) / sum(len(tokenizer.encode(t)) for t in texts)
+
+
+def greedy_bigram_split(text: str, bigrams: set[str]) -> list[str]:
+    """Split like TVA's greedy bigram encoder, using only the given bigrams."""
+    tokens, i = [], 0
+    while i < len(text):
+        step = 2 if text[i:i + 2] in bigrams else 1
+        tokens.append(text[i:i + step])
+        i += step
+    return tokens
+
+
+def _apply_merge(tokens: list[str], merge: dict) -> list[str]:
+    merged, i = [], 0
+    while i < len(tokens):
+        if i + 1 < len(tokens) and (tokens[i], tokens[i + 1]) == (merge['left'], merge['right']):
+            merged.append(merge['token'])
+            i += 2
+        else:
+            merged.append(tokens[i])
+            i += 1
+    return merged
+
+
+def bpe_split(text: str, merges: list[dict]) -> list[str]:
+    """Apply BPE merges in learned order, exactly like the frozen tokenizers."""
+    tokens = list(text)
+    for merge in merges:
+        tokens = _apply_merge(tokens, merge)
+    return tokens
+
+
+def bpe_compression_curve(texts: list[str], merges: list[dict]) -> list[float]:
+    """Characters per token when only the first k merges are kept, for k = 0..len(merges).
+
+    BPE learns merges one at a time, so keeping the first k merges equals
+    training with a budget of k.
+    """
+    sequences = [list(text) for text in texts]
+    characters = sum(map(len, texts))
+    curve = [characters / sum(map(len, sequences))]
+    for merge in merges:
+        sequences = [_apply_merge(tokens, merge) for tokens in sequences]
+        curve.append(characters / sum(map(len, sequences)))
+    return curve
+
+
+def bigram_compression_curve(texts: list[str], ranked_bigrams: list[str]) -> list[float]:
+    """Characters per token when only the top k bigrams are kept, for k = 0..len."""
+    characters = sum(map(len, texts))
+    return [characters / sum(len(greedy_bigram_split(t, set(ranked_bigrams[:k]))) for t in texts)
+            for k in range(len(ranked_bigrams) + 1)]
 
 
 def token_counts(tokenizer, id_lists) -> Counter:

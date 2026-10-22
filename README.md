@@ -52,6 +52,7 @@ plain-language summary generated from its numbers. Shared loading code is in
 | `analyze_ed_token_distribution.ipynb` | Token frequencies of training labels, validation labels and model predictions; over- and under-predicted tokens; optional comparison across tokenizers | Extracted ED data and a saved run |
 | `analyze_ed_linguistic_bigrams.ipynb` | How often each linguistic bigram is used in ED, how concentrated use is, unused bigrams, train vs validation | Extracted ED data |
 | `inspect_handwriting_tokenizers.ipynb` | Encoding and decoding of one ED sentence (or your own text) with the handwriting Bigram, BPE and Unigram tokenizers | Frozen tokenizer files; ED data for real samples |
+| `analyze_ed_compression.ipynb` | Characters per token of every tokenizer, recognition error plotted against compression, and the text-only bigram/BPE sizes that compress like their handwriting partners | Frozen tokenizer files; ED data and saved run scores for sections 1–2 |
 
 Predicted tokens are the IDs the model actually emits (best CTC path), not
 re-encoded predicted text. `TVA_ED_EXTRACTED_DIR` and `TVA_ED_RESULTS_DIR`
