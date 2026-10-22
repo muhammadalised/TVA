@@ -27,7 +27,7 @@ HW_CLASSES = {'bpe': HandwritingBPETokenizer, 'unigram': HandwritingUnigramToken
 class MatchedLinguisticSubwordTests(unittest.TestCase):
     def load(self, kind):
         tokenizer = get_tokenizer(f'linguistic_{kind}')
-        tokenizer.load(DIRECTORY / f'ed_iam_linguistic_{kind}_v1.json')
+        tokenizer.load(DIRECTORY / kind / '0.json')
         return tokenizer
 
     def test_segmentation_is_the_same_function_for_each_matched_pair(self):
@@ -57,7 +57,7 @@ class MatchedLinguisticSubwordTests(unittest.TestCase):
     def test_native_segmentation_and_projection_keep_the_learned_parameters(self):
         for kind in CLASSES:
             tokenizer = self.load(kind)
-            native = json.loads((DIRECTORY / 'source' / SOURCE_FILES[kind]).read_text())
+            native = json.loads((DIRECTORY / kind / 'source' / SOURCE_FILES[kind]).read_text())
             self.assertEqual(native['schema_version'], 'dtlr.text-subwords.v1')
             self.assertFalse(native['freeze']['handwriting_evidence_read'])
             self.assertFalse(native['freeze']['ed_labels_read'])
@@ -90,8 +90,8 @@ class MatchedLinguisticSubwordTests(unittest.TestCase):
 
     def test_tampered_native_or_adapter_is_rejected(self):
         for kind, cls in CLASSES.items():
-            path = DIRECTORY / f'ed_iam_linguistic_{kind}_v1.json'
-            source = DIRECTORY / 'source' / SOURCE_FILES[kind]
+            path = DIRECTORY / kind / '0.json'
+            source = DIRECTORY / kind / 'source' / SOURCE_FILES[kind]
             self.assertEqual(sha256_bytes(source.read_bytes()), SOURCE_SHA256[kind])
             with tempfile.TemporaryDirectory() as directory:
                 out = Path(directory) / path.name

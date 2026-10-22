@@ -2448,3 +2448,41 @@ preflight. Notebook code parses after normal IPython magic transformation.
 Original TVA source, existing frozen artifacts and subword implementation
 fingerprints are unchanged. Preserved unrelated user changes. No recognition
 training, commit or push was performed.
+
+
+## 2026-10-22 — ED tokenizer artifacts use TVA-style fold directories
+
+Reorganized the seven current ED tokenizers under
+`artifacts/tokenizers/ed/{family}/{method}/{fold}.json`:
+`character/char`, `linguistic/{bigram,bpe,unigram}` and
+`handwriting/{bigram,bpe,unigram}`. Each method has real `0.json` through `4.json`
+files. These are byte-identical copies of its existing frozen tokenizer, not
+models fitted separately on ED folds. IAM remains the learned-vocabulary source;
+ED supplies only the declared task alphabet. WD and WI share the files.
+
+Updated 14 recognition configs to point to the method directories, the tokenizer
+notebook to write `0.json` and publish fold copies, and analysis notebooks/helpers
+to resolve the requested fold. Native IAM sources now live inside their method's
+`source/` directory. Shared manifests/audits stay at family level; comparison,
+provenance and fitting reports accompany the canonical `0.json`. Archived OnHW
+and superseded ED tokenizers retain their historical archive layout.
+
+Known paths from both previous artifact layouts redirect to the new locations.
+Completed run configs, metrics, checkpoints and historical experiment entries
+remain unchanged. CV input validation uses the same resolver as recognition.
+No recognition training was started, and no score needs to be replaced.
+
+All existing tokenizer/native-model bytes and their vocabulary IDs, merges,
+probabilities and checksums are unchanged. Of the 29 pre-move JSON artifacts,
+24 remain byte-identical; the five fitting reports differ only in the recorded
+implementation checksum for `training.py`, whose frozen-reference directory
+lookup follows the new method folders. Selection/segmentation code is unchanged,
+and original `tva/tokenizers.py` remains byte-identical to upstream `cff221c`.
+
+Validation: 103 unittest cases completed (96 passed, seven optional skips),
+including all 35 fold files, old saved paths, segmentation/mapping equivalence,
+and preservation of conflicting fold destinations. Executed every code cell of
+`train_ed_tokenizers.ipynb`: every output reproduced byte for byte. All 14 updated
+recognition configs passed five-fold launcher input validation (70 fold inputs),
+without launching recognizer training. Changed notebooks passed syntax checks
+with normal IPython transformation. No commit or push performed.

@@ -460,7 +460,7 @@ def fit_ed_tokenizer(evidence_path, kind):
 
     require(kind in ('bigram', 'bpe', 'unigram'), 'Unsupported handwriting training algorithm')
     corpus, bundle = load_evidence(evidence_path)
-    source_directory = Path(__file__).resolve().parents[2] / 'artifacts/tokenizers/ed/handwriting/source'
+    source_directory = Path(__file__).resolve().parents[2] / 'artifacts/tokenizers/ed/handwriting' / kind / 'source'
     if kind == 'bigram':
         path = source_directory / 'iam-english-handwriting-bigram-v1.json'
         raw = path.read_bytes()

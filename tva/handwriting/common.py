@@ -37,40 +37,57 @@ def save_frozen(path: str | Path, content: bytes) -> None:
 # Only known former repository paths are redirected; other missing files still fail.
 _ARTIFACT_ROOT = Path(__file__).resolve().parents[2] / 'artifacts/tokenizers'
 _LEGACY_ARTIFACT_PATHS = {
-    'onhw_words500_rh_iam_read_v1.json':
-        'archive/onhw/handwriting/onhw_words500_rh_iam_read_v1.json',
-    'ed_iam_handwriting_bigram_greedy_v1.json':
-        'ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json',
-    'ed_iam_linguistic_bigram_greedy_v1.json':
-        'archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json',
-    'ed_iam_tva_original_bigram_greedy_v1.audit.json':
-        'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.audit.json',
-    'ed_iam_handwriting_subwords_v1.audit.json':
-        'ed/handwriting/ed_iam_handwriting_subwords_v1.audit.json',
-    'ed_iam_handwriting_unigram_v1.json':
-        'ed/handwriting/ed_iam_handwriting_unigram_v1.json',
-    'ed_iam_tva_original_bigram_greedy_v1.json':
-        'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json',
-    'ed_iam_handwriting_bpe_v1.json':
-        'ed/handwriting/ed_iam_handwriting_bpe_v1.json',
-    'ed_iam_tva_original_bigram_greedy_v1.provenance.json':
-        'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.provenance.json',
-    'source/iam-english-handwriting-bpe-v1.json':
-        'ed/handwriting/source/iam-english-handwriting-bpe-v1.json',
-    'source/iam-english-handwriting-bigram-v1.json':
-        'ed/handwriting/source/iam-english-handwriting-bigram-v1.json',
-    'source/iam-english-handwriting-unigram-v1.json':
-        'ed/handwriting/source/iam-english-handwriting-unigram-v1.json',
-    'source/iam-english-handwriting-subwords-v1.manifest.json':
-        'ed/handwriting/source/iam-english-handwriting-subwords-v1.manifest.json',
-    'linguistic_bigram/onhw_words500_wd_word_rh/manifest.json':
-        'archive/onhw/linguistic_bigram/onhw_words500_wd_word_rh/manifest.json',
-    'linguistic_bigram/onhw_words500_wd_word_rh/0.json':
-        'archive/onhw/linguistic_bigram/onhw_words500_wd_word_rh/0.json',
-    'linguistic_bigram/onhw_words500_wi_word_rh/manifest.json':
-        'archive/onhw/linguistic_bigram/onhw_words500_wi_word_rh/manifest.json',
-    'linguistic_bigram/onhw_words500_wi_word_rh/0.json':
-        'archive/onhw/linguistic_bigram/onhw_words500_wi_word_rh/0.json',
+    'fau_english_iam_handwriting_bigram_greedy_v1.json': 'ed/handwriting/bigram/0.json',
+    'fau_english_iam_linguistic_bigram_greedy_v1.json': 'archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json',
+    'ed/character/ed_characters_v1.comparison.json': 'ed/character/char/0.comparison.json',
+    'ed/character/ed_characters_v1.json': 'ed/character/char/0.json',
+    'ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json': 'ed/handwriting/bigram/0.json',
+    'ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.training.json': 'ed/handwriting/bigram/0.training.json',
+    'ed/handwriting/ed_iam_handwriting_bpe_v1.json': 'ed/handwriting/bpe/0.json',
+    'ed/handwriting/ed_iam_handwriting_bpe_v1.training.json': 'ed/handwriting/bpe/0.training.json',
+    'ed/handwriting/ed_iam_handwriting_subwords_v1.audit.json': 'ed/handwriting/subwords.audit.json',
+    'ed/handwriting/ed_iam_handwriting_unigram_v1.json': 'ed/handwriting/unigram/0.json',
+    'ed/handwriting/ed_iam_handwriting_unigram_v1.training.json': 'ed/handwriting/unigram/0.training.json',
+    'ed/handwriting/source/iam-english-handwriting-bigram-v1.json': 'ed/handwriting/bigram/source/iam-english-handwriting-bigram-v1.json',
+    'ed/handwriting/source/iam-english-handwriting-bpe-v1.json': 'ed/handwriting/bpe/source/iam-english-handwriting-bpe-v1.json',
+    'ed/handwriting/source/iam-english-handwriting-unigram-v1.json': 'ed/handwriting/unigram/source/iam-english-handwriting-unigram-v1.json',
+    'ed/linguistic/ed_iam_linguistic_bpe_v1.json': 'ed/linguistic/bpe/0.json',
+    'ed/linguistic/ed_iam_linguistic_bpe_v1.training.json': 'ed/linguistic/bpe/0.training.json',
+    'ed/linguistic/ed_iam_linguistic_subwords_v1.audit.json': 'ed/linguistic/subwords.audit.json',
+    'ed/linguistic/ed_iam_linguistic_unigram_v1.json': 'ed/linguistic/unigram/0.json',
+    'ed/linguistic/ed_iam_linguistic_unigram_v1.training.json': 'ed/linguistic/unigram/0.training.json',
+    'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.audit.json': 'ed/linguistic/bigram/0.audit.json',
+    'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json': 'ed/linguistic/bigram/0.json',
+    'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.provenance.json': 'ed/linguistic/bigram/0.provenance.json',
+    'ed/linguistic/source/iam-english-text-bpe-v1.json': 'ed/linguistic/bpe/source/iam-english-text-bpe-v1.json',
+    'ed/linguistic/source/iam-english-text-unigram-v1.json': 'ed/linguistic/unigram/source/iam-english-text-unigram-v1.json',
+    'ed_characters_v1.comparison.json': 'ed/character/char/0.comparison.json',
+    'ed_characters_v1.json': 'ed/character/char/0.json',
+    'ed_iam_handwriting_bigram_greedy_v1.json': 'ed/handwriting/bigram/0.json',
+    'ed_iam_handwriting_bigram_greedy_v1.training.json': 'ed/handwriting/bigram/0.training.json',
+    'ed_iam_handwriting_bpe_v1.json': 'ed/handwriting/bpe/0.json',
+    'ed_iam_handwriting_bpe_v1.training.json': 'ed/handwriting/bpe/0.training.json',
+    'ed_iam_handwriting_subwords_v1.audit.json': 'ed/handwriting/subwords.audit.json',
+    'ed_iam_handwriting_unigram_v1.json': 'ed/handwriting/unigram/0.json',
+    'ed_iam_handwriting_unigram_v1.training.json': 'ed/handwriting/unigram/0.training.json',
+    'ed_iam_linguistic_bigram_greedy_v1.json': 'archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json',
+    'ed_iam_linguistic_bpe_v1.json': 'ed/linguistic/bpe/0.json',
+    'ed_iam_linguistic_bpe_v1.training.json': 'ed/linguistic/bpe/0.training.json',
+    'ed_iam_linguistic_subwords_v1.audit.json': 'ed/linguistic/subwords.audit.json',
+    'ed_iam_linguistic_unigram_v1.json': 'ed/linguistic/unigram/0.json',
+    'ed_iam_linguistic_unigram_v1.training.json': 'ed/linguistic/unigram/0.training.json',
+    'ed_iam_tva_original_bigram_greedy_v1.audit.json': 'ed/linguistic/bigram/0.audit.json',
+    'ed_iam_tva_original_bigram_greedy_v1.json': 'ed/linguistic/bigram/0.json',
+    'ed_iam_tva_original_bigram_greedy_v1.provenance.json': 'ed/linguistic/bigram/0.provenance.json',
+    'linguistic_bigram/onhw_words500_wd_word_rh/0.json': 'archive/onhw/linguistic_bigram/onhw_words500_wd_word_rh/0.json',
+    'linguistic_bigram/onhw_words500_wd_word_rh/manifest.json': 'archive/onhw/linguistic_bigram/onhw_words500_wd_word_rh/manifest.json',
+    'linguistic_bigram/onhw_words500_wi_word_rh/0.json': 'archive/onhw/linguistic_bigram/onhw_words500_wi_word_rh/0.json',
+    'linguistic_bigram/onhw_words500_wi_word_rh/manifest.json': 'archive/onhw/linguistic_bigram/onhw_words500_wi_word_rh/manifest.json',
+    'onhw_words500_rh_iam_read_v1.json': 'archive/onhw/handwriting/onhw_words500_rh_iam_read_v1.json',
+    'source/iam-english-handwriting-bigram-v1.json': 'ed/handwriting/bigram/source/iam-english-handwriting-bigram-v1.json',
+    'source/iam-english-handwriting-bpe-v1.json': 'ed/handwriting/bpe/source/iam-english-handwriting-bpe-v1.json',
+    'source/iam-english-handwriting-subwords-v1.manifest.json': 'ed/handwriting/source/iam-english-handwriting-subwords-v1.manifest.json',
+    'source/iam-english-handwriting-unigram-v1.json': 'ed/handwriting/unigram/source/iam-english-handwriting-unigram-v1.json',
 }
 
 
@@ -85,3 +102,20 @@ def resolve_artifact_path(path: str | Path) -> Path:
         return path
     target = _LEGACY_ARTIFACT_PATHS.get(relative)
     return _ARTIFACT_ROOT / target if target is not None else path
+
+
+def save_fold_tokenizers(directory: str | Path, num_folds: int = 5) -> None:
+    """Publish the same IAM-trained tokenizer for each recognition fold.
+
+    This copies an existing 0.json; it does not fit on any recognition labels.
+    Preflight all destinations before creating files so conflicts are preserved.
+    """
+    directory = Path(directory)
+    require(num_folds > 0, 'Expected at least one fold')
+    content = (directory / '0.json').read_bytes()
+    paths = [directory / f'{fold}.json' for fold in range(num_folds)]
+    for path in paths:
+        require(not path.exists() or path.read_bytes() == content,
+                f'Existing frozen file differs: {path}')
+    for path in paths:
+        save_frozen(path, content)

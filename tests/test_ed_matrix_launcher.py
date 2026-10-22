@@ -48,7 +48,7 @@ class EdMatrixLauncherTests(unittest.TestCase):
                 self.assertEqual(config['tokenizer'], 'bigram')
                 self.assertEqual(
                     config['dir_tokenizer'],
-                    'artifacts/tokenizers/ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json',
+                    'artifacts/tokenizers/ed/linguistic/bigram',
                 )
                 self.assertEqual(output.parent.name, condition)
                 self.assertNotIn('linguistic', str(output))

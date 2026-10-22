@@ -31,7 +31,7 @@ class HandwritingSubwordTests(unittest.TestCase):
         for kind, cls in CLASSES.items():
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / 'tokenizer.json'
-                source = ARTIFACTS / 'source' / SOURCE_FILES[kind]
+                source = ARTIFACTS / kind / 'source' / SOURCE_FILES[kind]
                 tokenizer = cls()
                 tokenizer.prepare(source, ['', *ED_ALPHABET], output_path=output)
                 self.assertEqual(output.read_bytes(), (ARTIFACTS / ADAPTER_FILES[kind]).read_bytes())
@@ -68,7 +68,7 @@ class HandwritingSubwordTests(unittest.TestCase):
     def test_tampering_adapter_or_source_is_rejected(self):
         for kind, cls in CLASSES.items():
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
-                source = ARTIFACTS / 'source' / SOURCE_FILES[kind]
+                source = ARTIFACTS / kind / 'source' / SOURCE_FILES[kind]
                 output = Path(directory) / 'model.json'
                 cls().prepare(source, ['', *ED_ALPHABET], output_path=output)
                 original = output.read_bytes()
@@ -86,7 +86,7 @@ class HandwritingSubwordTests(unittest.TestCase):
     def test_invalid_categories_and_different_outputs_are_preserved(self):
         for kind, cls in CLASSES.items():
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
-                source = ARTIFACTS / 'source' / SOURCE_FILES[kind]
+                source = ARTIFACTS / kind / 'source' / SOURCE_FILES[kind]
                 output = Path(directory) / 'model.json'
                 with self.assertRaises(ValueError):
                     cls().prepare(source, ['', 'a'], output_path=output)

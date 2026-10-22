@@ -23,7 +23,7 @@ DEFAULT_DATASET_DIRECTORY = Path(os.environ.get(
     'TVA_ED_DATASET_DIR', '/mnt/c/Users/Ali/Downloads/fau-english-dataset'
 ))
 DEFAULT_ADAPTER = Path(
-    'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
+    'artifacts/tokenizers/ed/handwriting/bigram/0.json'
 )
 
 
@@ -112,8 +112,8 @@ def compare(dataset_directory, *, labels_path=None, selection_path=None, output_
 
     REPO_ROOT = Path(__file__).resolve().parents[2]
     ED_DIRECTORY = Path(dataset_directory)
-    OUTPUT = REPO_ROOT / 'artifacts/tokenizers/ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json'
-    HANDWRITING = REPO_ROOT / 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
+    OUTPUT = REPO_ROOT / 'artifacts/tokenizers/ed/linguistic/bigram/0.json'
+    HANDWRITING = REPO_ROOT / 'artifacts/tokenizers/ed/handwriting/bigram/0.json'
     CUSTOM_LINGUISTIC = REPO_ROOT / 'artifacts/tokenizers/archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'
     annotations = read_iam_training(labels_path or DEFAULT_LABELS, selection_path or DEFAULT_SELECTION)
     unique_labels = {row['label'] for row in annotations}

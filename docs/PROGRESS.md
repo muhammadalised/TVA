@@ -1282,3 +1282,31 @@ remaining compatible through the same shared JSON. Existing scores remain
 valid. Validation: 94 tests passed, seven optional skips; extracted-data,
 five-fold preflight and notebook syntax checks passed. No recognition training,
 commit or push performed.
+
+
+## 2026-10-22 — TVA-style ED tokenizer folders
+
+Organized character, linguistic and handwriting ED tokenizers into per-method
+folders with `0.json` through `4.json`. Fold copies preserve the existing frozen
+IAM vocabularies and IDs; no ED fold fitting or recognition retraining occurred.
+Updated configs, tokenizer preparation and analysis notebooks, compatibility
+aliases and CV validation. Source models and shared reports remain accessible
+beside the fold files; historical run snapshots and scores are preserved.
+
+Validation: 96 tests passed, seven optional skips; the complete tokenizer
+notebook reproduced its outputs exactly, and 14 configs passed all five fold
+input checks. Original TVA tokenizer code is unchanged. No commit or push.
+
+
+## 2026-10-22 — Token-distribution notebook historical path fix
+
+Reproduced the notebook's default run failing on
+`fau_english_iam_handwriting_bigram_greedy_v1.json`. Added explicit aliases for
+that original filename and the corresponding historical linguistic bigram to
+the current canonical tokenizer files. Saved run snapshots remain unchanged.
+The notebook now documents restarting its kernel after resolver updates.
+
+Validation: five artifact-path tests passed; all 36 saved ED run configs load
+their tokenizers. Executed every analysis cell with headless plotting and all
+503 real WD fold-0 validation predictions, plus one prediction from the
+historical linguistic bigram checkpoint. No training or recorded-score changes.

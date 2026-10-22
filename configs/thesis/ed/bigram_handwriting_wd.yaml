@@ -8,7 +8,7 @@ checkpoint: null
 dataset_format: ed-zip
 device: cuda
 dir_dataset: data/tva/ed
-dir_tokenizer: artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json
+dir_tokenizer: artifacts/tokenizers/ed/handwriting/bigram
 dir_work: results/thesis/ed/handwriting_wd
 epoch: 300
 epoch_warmup: 30

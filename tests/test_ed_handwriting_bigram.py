@@ -24,11 +24,11 @@ from tva.tokenizer_factory import get_tokenizer
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PATH = (
-    REPO_ROOT / 'artifacts/tokenizers/ed/handwriting/source/iam-english-handwriting-bigram-v1.json'
+    REPO_ROOT / 'artifacts/tokenizers/ed/handwriting/bigram/source/iam-english-handwriting-bigram-v1.json'
 )
 ADAPTER_PATH = (
     REPO_ROOT
-    / 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
+    / 'artifacts/tokenizers/ed/handwriting/bigram/0.json'
 )
 ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
 

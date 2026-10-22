@@ -10,7 +10,7 @@ from tva.iam_tokenizers import IAMBigramTokenizer
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ROOT / 'artifacts/tokenizers/ed/handwriting'
-SOURCE = ARTIFACTS / 'source/iam-english-handwriting-bigram-v1.json'
+SOURCE = ARTIFACTS / 'bigram/source/iam-english-handwriting-bigram-v1.json'
 CATEGORIES = ['', *ED_ALPHABET]
 
 
@@ -20,7 +20,7 @@ class NotebookTrainingTests(unittest.TestCase):
             output = Path(directory) / 'handwriting.json'
             tokenizer = GreedyHandwritingBigramTokenizer()
             tokenizer.prepare(SOURCE, CATEGORIES, output_path=output)
-            self.assertEqual(output.read_bytes(), (ARTIFACTS / 'ed_iam_handwriting_bigram_greedy_v1.json').read_bytes())
+            self.assertEqual(output.read_bytes(), (ARTIFACTS / 'bigram/0.json').read_bytes())
             text = 'In short, there will be on TV!'
             self.assertEqual(tokenizer.decode(tokenizer.encode(text)), text)
             self.assertEqual(tokenizer.size, 224)
@@ -46,7 +46,7 @@ class NotebookTrainingTests(unittest.TestCase):
             output = Path(directory) / 'linguistic.json'
             tokenizer = IAMBigramTokenizer()
             tokenizer.train(DEFAULT_LABELS, CATEGORIES, 224, selection_path=DEFAULT_SELECTION, output_path=output)
-            original = ROOT / 'artifacts/tokenizers/ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json'
+            original = ROOT / 'artifacts/tokenizers/ed/linguistic/bigram/0.json'
             self.assertEqual(output.read_bytes(), original.read_bytes())
             self.assertEqual(output.with_suffix('.provenance.json').read_bytes(), original.with_suffix('.provenance.json').read_bytes())
             self.assertEqual(tokenizer.size, 224)

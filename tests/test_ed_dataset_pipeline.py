@@ -11,7 +11,7 @@ from main import build_dataset
 from tva.dataset import EdZipDataset, fn_collate, get_ed_num_folds
 from tva.handwriting.ed import ED_ALPHABET
 from tva.model import BaseModel
-from tva.tokenizer_factory import get_tokenizer
+from tva.tokenizer_factory import get_tokenizer, resolve_tokenizer_path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -91,7 +91,7 @@ class EdSmokeConfigTests(unittest.TestCase):
         for name, config in self.configs.items():
             with self.subTest(config=name):
                 tokenizer = get_tokenizer(config['tokenizer'])
-                tokenizer.load(REPO_ROOT / config['dir_tokenizer'])
+                tokenizer.load(resolve_tokenizer_path(str(REPO_ROOT / config['dir_tokenizer']), config['idx_fold']))
                 model = BaseModel(
                     config['arch_en'],
                     config['arch_de'],
@@ -112,7 +112,8 @@ class EdSmokeConfigTests(unittest.TestCase):
                 else 'bigram'
             )
             self.assertEqual(config['tokenizer'], expected)
-            self.assertIn(name.split('_')[0], config['dir_tokenizer'])
+            family = 'handwriting' if name.startswith('handwriting') else 'linguistic'
+            self.assertEqual(config['dir_tokenizer'], f'artifacts/tokenizers/ed/{family}/bigram')
 
 
 class EdProductionConfigTests(unittest.TestCase):
@@ -159,7 +160,7 @@ class EdProductionConfigTests(unittest.TestCase):
                     else 'bigram'
                 )
                 tokenizer = get_tokenizer(config['tokenizer'])
-                tokenizer.load(REPO_ROOT / config['dir_tokenizer'])
+                tokenizer.load(resolve_tokenizer_path(str(REPO_ROOT / config['dir_tokenizer']), config['idx_fold']))
                 model = BaseModel(
                     config['arch_en'],
                     config['arch_de'],
@@ -198,7 +199,7 @@ class EdZipDatasetTests(unittest.TestCase):
     def test_loader_reads_and_collates_seven_channel_samples(self):
         config = self._load_config('handwriting_wd')
         tokenizer = get_tokenizer(config.tokenizer)
-        tokenizer.load(REPO_ROOT / config.dir_tokenizer)
+        tokenizer.load(resolve_tokenizer_path(str(REPO_ROOT / config.dir_tokenizer), config.idx_fold))
         with patch.dict(os.environ, {'TVA_ED_DATASET_DIR': str(ED_DIRECTORY)}):
             dataset = build_dataset(config, 'train', tokenizer, ratio_ds=8)
         self.assertIsInstance(dataset, EdZipDataset)
@@ -220,7 +221,7 @@ class EdZipDatasetTests(unittest.TestCase):
     def test_validation_split_is_bounded_independently(self):
         config = self._load_config('tva_original_wi')
         tokenizer = get_tokenizer(config.tokenizer)
-        tokenizer.load(REPO_ROOT / config.dir_tokenizer)
+        tokenizer.load(resolve_tokenizer_path(str(REPO_ROOT / config.dir_tokenizer), config.idx_fold))
         with patch.dict(os.environ, {'TVA_ED_DATASET_DIR': str(ED_DIRECTORY)}):
             dataset = build_dataset(config, 'val', tokenizer, ratio_ds=8)
         self.assertEqual(len(dataset), 4)

@@ -111,7 +111,10 @@ tva/
 
 Tokenizer files already exist in `artifacts/tokenizers/ed/handwriting/` and
 `artifacts/tokenizers/ed/linguistic/`. See [the artifact index](artifacts/tokenizers/README.md)
-for current and archived vocabularies. Running the ED notebook
+for current and archived vocabularies. Each ED method now has its own directory
+(for example `ed/handwriting/bpe/`) containing `0.json` through `4.json`.
+Configs point to the directory, and TVA loads the requested fold. The five files
+contain the same frozen IAM vocabulary; WD/WI share them. Running the ED notebook
 relearns the handwriting vocabularies from evidence, verifies exact reproduction,
 and refuses to overwrite a differing frozen file. Detailed
 audits are separate from the training notebook:
@@ -146,7 +149,7 @@ those snapshots rather than requiring historical launch templates.
 
 `tokenizer_factory.py` delegates `char` directly to TVA's unchanged
 `CharacterTokenizer`; there is no character subclass. The standard artifact
-`artifacts/tokenizers/ed/character/ed_characters_v1.json` was generated with
+`artifacts/tokenizers/ed/character/char/0.json` was generated with
 TVA's own `.train()` from the declared ED alphabet and is shared across folds.
 All 79 IDs and all 5,100 WD/WI label encodings match the earlier ED tokenizer.
 Existing completed configs with `dir_tokenizer: null` remain compatible by

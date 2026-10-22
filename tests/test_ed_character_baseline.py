@@ -93,7 +93,7 @@ class EdCharacterBaselineTests(unittest.TestCase):
 
     def test_factory_uses_original_class_and_original_training_reproduces_file(self):
         self.assertIs(type(get_tokenizer('char')), CharacterTokenizer)
-        artifact = REPO_ROOT / 'artifacts/tokenizers/ed/character/ed_characters_v1.json'
+        artifact = REPO_ROOT / 'artifacts/tokenizers/ed/character/char/0.json'
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'train.json').write_text(json.dumps({'info': {'num_fold': 1}}))

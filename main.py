@@ -33,7 +33,7 @@ def load_configured_tokenizer(cfgs: argparse.Namespace) -> object:
     path_config = getattr(cfgs, 'dir_tokenizer', None)
     if cfgs.tokenizer == 'char' and path_config is None:
         # Keep completed ED configs loadable through TVA's original class.
-        path_config = 'artifacts/tokenizers/ed/character/ed_characters_v1.json'
+        path_config = 'artifacts/tokenizers/ed/character/char/0.json'
         tokenizer.load(resolve_tokenizer_path(path_config, cfgs.idx_fold))
         loaded_categories = [tokenizer.idx_char[i] for i in range(tokenizer.size)]
         if loaded_categories != cfgs.categories:

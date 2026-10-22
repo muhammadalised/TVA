@@ -21,7 +21,7 @@ MANIFEST_FILENAME = 'iam-english-handwriting-subwords-v1.manifest.json'
 MANIFEST_SHA256 = 'e8b42352a286dde90d6956ae22e92a33d8a94fcf8d251d2ce1cfe224492b6528'
 ADAPTER_SCHEMA = 'tva.ed-handwriting-subword-adapter.v1'
 ADAPTER_FILES = {
-    kind: f'ed_iam_handwriting_{kind}_v1.json' for kind in SOURCE_FILES
+    kind: f'{kind}/0.json' for kind in SOURCE_FILES
 }
 
 

@@ -17,7 +17,7 @@ LINGUISTIC_PATH = (
 )
 HANDWRITING_PATH = (
     REPO_ROOT
-    / 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'
+    / 'artifacts/tokenizers/ed/handwriting/bigram/0.json'
 )
 ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
 

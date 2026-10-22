@@ -325,6 +325,23 @@ files for recognition training. Their current fold index is 0.
 
 `configs/thesis/ed/character_tva_wd.yaml` and `character_tva_wi.yaml` use the
 unchanged original TVA character class and share the standard file
-`artifacts/tokenizers/ed/character/ed_characters_v1.json`. Both read extracted
+`artifacts/tokenizers/ed/character/char/0.json`. Both read extracted
 ED data and default to fold 0. Their IDs match existing ED baselines exactly.
 The factory no longer uses a character subclass.
+
+
+### Tokenizer directories and fold files
+
+ED tokenizer configs use method directories such as
+`artifacts/tokenizers/ed/character/char`,
+`artifacts/tokenizers/ed/linguistic/bpe` and
+`artifacts/tokenizers/ed/handwriting/bpe`. Each directory already contains
+`0.json` through `4.json`; the training entry point selects the current fold.
+These files contain identical mappings because the frozen IAM vocabularies are
+independent of ED folds. WD and WI use the same tokenizer directories.
+No tokenizer or recognizer retraining is required for this path change.
+
+The final cell of `train_ed_tokenizers.ipynb` publishes all five copies after
+fitting the shared tokenizer. Source models and fitting/provenance records live
+alongside the fold files; see [the artifact index](../artifacts/tokenizers/README.md).
+Known former paths in completed run configs remain loadable through the resolver.

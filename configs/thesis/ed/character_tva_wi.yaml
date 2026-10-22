@@ -8,7 +8,7 @@ checkpoint: null
 dataset_format: json-directory
 device: cuda
 dir_dataset: data/tva/ed/gold_wi
-dir_tokenizer: artifacts/tokenizers/ed/character/ed_characters_v1.json
+dir_tokenizer: artifacts/tokenizers/ed/character/char
 dir_work: results/thesis/ed/character_tva_wi
 epoch: 300
 epoch_warmup: 30

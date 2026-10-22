@@ -46,14 +46,14 @@ CONDITIONS = {
 
 # Frozen tokenizer files, for analyses that need no trained model.
 TOKENIZERS = {
-    'character': ('char', 'artifacts/tokenizers/ed/character/ed_characters_v1.json'),
-    'handwriting_bigram': ('handwriting_bigram_greedy', 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json'),
-    'handwriting_bpe': ('handwriting_bpe', 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_bpe_v1.json'),
-    'handwriting_unigram': ('handwriting_unigram', 'artifacts/tokenizers/ed/handwriting/ed_iam_handwriting_unigram_v1.json'),
-    'linguistic_bigram_tva': ('bigram', 'artifacts/tokenizers/ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json'),
+    'character': ('char', 'artifacts/tokenizers/ed/character/char/0.json'),
+    'handwriting_bigram': ('handwriting_bigram_greedy', 'artifacts/tokenizers/ed/handwriting/bigram/0.json'),
+    'handwriting_bpe': ('handwriting_bpe', 'artifacts/tokenizers/ed/handwriting/bpe/0.json'),
+    'handwriting_unigram': ('handwriting_unigram', 'artifacts/tokenizers/ed/handwriting/unigram/0.json'),
+    'linguistic_bigram_tva': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram/0.json'),
     'linguistic_bigram_iam_frequency': ('linguistic_bigram_greedy', 'artifacts/tokenizers/archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'),
-    'linguistic_bpe': ('linguistic_bpe', 'artifacts/tokenizers/ed/linguistic/ed_iam_linguistic_bpe_v1.json'),
-    'linguistic_unigram': ('linguistic_unigram', 'artifacts/tokenizers/ed/linguistic/ed_iam_linguistic_unigram_v1.json'),
+    'linguistic_bpe': ('linguistic_bpe', 'artifacts/tokenizers/ed/linguistic/bpe/0.json'),
+    'linguistic_unigram': ('linguistic_unigram', 'artifacts/tokenizers/ed/linguistic/unigram/0.json'),
 }
 
 

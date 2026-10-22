@@ -61,9 +61,9 @@ def prepare_runs(cfgs: dict, folds: list[int] | None = None) -> list[dict]:
 
         tokenizer = config.get('dir_tokenizer')
         if tokenizer:
-            path = Path(tokenizer)
-            if not path.is_file():
-                path = path / f'{fold}.json'
+            from tva.tokenizer_factory import resolve_tokenizer_path
+
+            path = Path(resolve_tokenizer_path(tokenizer, fold))
             if not path.is_file():
                 raise FileNotFoundError(
                     f'Missing tokenizer for fold {fold}: {path}'

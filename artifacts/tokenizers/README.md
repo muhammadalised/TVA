@@ -1,104 +1,81 @@
 # Tokenizer artifacts
 
-The tokenizer files are already trained and prepared. Recognition training does not require
-rerunning `train_ed_tokenizers.ipynb`. The current ED vocabulary files are shared
-across WD/WI and all five folds. Calling `.train()` now selects/fits handwriting
-vocabularies in TVA from [the portable IAM evidence](../evidence/README.md).
-Calling `.prepare()` only adapts an already frozen source; `.load()` reuses a
-saved tokenizer directly.
+The ED tokenizers are already prepared. You can train recognizers without running
+`train_ed_tokenizers.ipynb` again.
 
 ```text
 artifacts/tokenizers/
   ed/
-    handwriting/          Current ED handwriting bigram, BPE, and Unigram
-      source/             Exact frozen IAM releases from DTLR and release manifest
-    linguistic/           Original TVA bigram trained on IAM, with audit/provenance
-  archive/
-    ed/linguistic/         Historical custom linguistic bigram
-    onhw/handwriting/     Historical IAM+READ handwriting bigram
-    onhw/linguistic_bigram/ Historical OnHW linguistic fold files and manifests
+    character/
+      char/             0.json, 1.json, 2.json, 3.json, 4.json
+    linguistic/
+      bigram/           0.json, 1.json, 2.json, 3.json, 4.json
+      bpe/              0.json, 1.json, 2.json, 3.json, 4.json
+      unigram/          0.json, 1.json, 2.json, 3.json, 4.json
+    handwriting/
+      bigram/           0.json, 1.json, 2.json, 3.json, 4.json
+      bpe/              0.json, 1.json, 2.json, 3.json, 4.json
+      unigram/          0.json, 1.json, 2.json, 3.json, 4.json
+  archive/              Tokenizers for historical ED and OnHW experiments
 ```
+
+Configs set `dir_tokenizer` to a method directory, for example
+`artifacts/tokenizers/ed/handwriting/bpe`. TVA loads `<idx_fold>.json` from it.
+An explicit JSON path is also supported.
+
+The five fold files within each directory are **byte-identical copies**. Learned
+vocabularies use IAM training data independently of ED folds, and the character
+tokenizer uses the declared alphabet. WD and WI share these files; the file names
+do not imply separate fitting on ED training labels. Existing vocabulary IDs,
+merges, probabilities and recognition results are unchanged.
 
 ## Current ED tokenizers
 
-| Method | Vocabulary file | Supporting files |
-| --- | --- | --- |
-| Handwriting bigram | [Bigram](ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json) | [Frozen IAM source](ed/handwriting/source/iam-english-handwriting-bigram-v1.json) |
-| Handwriting BPE | [BPE](ed/handwriting/ed_iam_handwriting_bpe_v1.json) | [Frozen IAM source](ed/handwriting/source/iam-english-handwriting-bpe-v1.json) |
-| Handwriting Unigram | [Unigram](ed/handwriting/ed_iam_handwriting_unigram_v1.json) | [Frozen IAM source](ed/handwriting/source/iam-english-handwriting-unigram-v1.json) |
-| Original TVA linguistic bigram | [Bigram](ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json) | [Provenance](ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.provenance.json), [audit](ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.audit.json) |
-
-The handwriting BPE and Unigram share a [release manifest](ed/handwriting/source/iam-english-handwriting-subwords-v1.manifest.json)
-and an [ED compatibility audit](ed/handwriting/ed_iam_handwriting_subwords_v1.audit.json).
-Provenance records where a file came from and how it was produced. An audit
-records the checks performed on it.
-
-The character baseline uses the alphabet in its configuration and needs no
-learned tokenizer artifact. Matched text-only BPE/Unigram training functions moved with the shared
-implementation, but their ED artifacts and recognition configs are not yet
-integrated here.
-
-## Historical artifacts
-
-`archive/` retains vocabulary files needed to reproduce or analyze completed
-experiments. The custom ED linguistic bigram and the OnHW utility-based
-conditions are historical and are not the current ED training defaults.
-
-## Compatibility and reproducibility
-
-This directory reorganization preserves every frozen JSON file byte for byte,
-including vocabulary IDs, learned parameters, hashes, and provenance. Frozen
-reports and older experiment notes can therefore mention the previous locations.
-The tokenizer path resolver redirects those former repository paths when loading
-saved experiment configurations. Current configs and preparation notebooks use
-the directories above.
-
-Recognition results remain under `results/thesis/ed/` and the OnHW result paths
-specified by their configs. Completed run configs are preserved as recorded.
-
-## TVA training reports
-
-Each handwriting `.train()` call writes a `.training.json` report alongside its
-ED vocabulary. This records TVA's implementation/evidence hashes and confirms
-that candidates and learned parameters were recomputed from IAM evidence and
-that both the historical native release and the ED projection reproduce exactly.
-The frozen source's original DTLR provenance stays unchanged; the new report
-identifies the TVA fitting implementation separately.
-
-The v1 training interface is deliberately fixed to the existing experimental
-policy. A different corpus, thresholds, budget, or learned result requires a
-new version rather than silently replacing artifacts used in completed runs.
-
-The current fitting reports are [bigram](ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.training.json),
-[BPE](ed/handwriting/ed_iam_handwriting_bpe_v1.training.json), and
-[Unigram](ed/handwriting/ed_iam_handwriting_unigram_v1.training.json).
-
-
-## Matched text-only BPE and Unigram (2026-10-18)
-
-These linguistic controls use the shared custom trainers and segmentation,
-with handwriting evidence disabled. They are separate from original TVA's
-Hugging Face implementations. Both have 145 learned pieces and 224 ED classes.
-
-| Method | Ready ED tokenizer | Training report | Native IAM model |
+| Family | Method | Fold 0 file | Supporting records |
 | --- | --- | --- | --- |
-| BPE | [ED text BPE](ed/linguistic/ed_iam_linguistic_bpe_v1.json) | [Report](ed/linguistic/ed_iam_linguistic_bpe_v1.training.json) | [IAM text BPE](ed/linguistic/source/iam-english-text-bpe-v1.json) |
-| Unigram | [ED text Unigram](ed/linguistic/ed_iam_linguistic_unigram_v1.json) | [Report](ed/linguistic/ed_iam_linguistic_unigram_v1.training.json) | [IAM text Unigram](ed/linguistic/source/iam-english-text-unigram-v1.json) |
+| Character | Original TVA character | [char/0.json](ed/character/char/0.json) | [Comparison](ed/character/char/0.comparison.json) |
+| Linguistic | Original TVA bigram | [bigram/0.json](ed/linguistic/bigram/0.json) | [Provenance](ed/linguistic/bigram/0.provenance.json), [audit](ed/linguistic/bigram/0.audit.json) |
+| Linguistic | Matched BPE | [bpe/0.json](ed/linguistic/bpe/0.json) | [Training](ed/linguistic/bpe/0.training.json) |
+| Linguistic | Matched Unigram | [unigram/0.json](ed/linguistic/unigram/0.json) | [Training](ed/linguistic/unigram/0.training.json) |
+| Handwriting | Bigram | [bigram/0.json](ed/handwriting/bigram/0.json) | [Training](ed/handwriting/bigram/0.training.json) |
+| Handwriting | BPE | [bpe/0.json](ed/handwriting/bpe/0.json) | [Training](ed/handwriting/bpe/0.training.json) |
+| Handwriting | Unigram | [unigram/0.json](ed/handwriting/unigram/0.json) | [Training](ed/handwriting/unigram/0.training.json) |
 
-Reproduce with the linguistic BPE/Unigram cells in `train_ed_tokenizers.ipynb`.
-Native models and ED projections are frozen and checked on load. Training
-reports record authenticated IAM inputs and implementation hashes. The combined
-[compatibility audit](ed/linguistic/ed_iam_linguistic_subwords_v1.audit.json)
-checks both ED distributions after tokenizer construction.
+Reports alongside `0.json` describe the shared tokenizer, so they are not
+replicated for the other four copies. Native IAM sources live in each learned
+method's `source/` directory. Their original versioned release names and JSON
+metadata are retained for authentication and provenance.
 
+The handwriting BPE/Unigram [release manifest](ed/handwriting/source/iam-english-handwriting-subwords-v1.manifest.json)
+is shared. Family-level compatibility audits are
+[handwriting](ed/handwriting/subwords.audit.json) and
+[linguistic](ed/linguistic/subwords.audit.json).
 
-## Original TVA character tokenizer
+## Construction and reuse
 
-[ED character JSON](ed/character/ed_characters_v1.json) is the standard file
-produced by the unchanged `tva.tokenizers.CharacterTokenizer.train()` method.
-It contains 78 declared characters plus CTC blank, with identical IDs for all
-folds and WD/WI. [The comparison report](ed/character/ed_characters_v1.comparison.json)
-records exact equality to the previous ED subclass on all 79 IDs and all 5,100
-ED label encodings. No vocabulary is selected from ED labels. The explicit
-`character_tva_wd.yaml` / `character_tva_wi.yaml` configs load this file directly;
-old configs remain compatible. No character subclass is used.
+`train_ed_tokenizers.ipynb` declares categories, imports tokenizer classes and
+calls `.train()` using IAM transcripts or the bundled
+[IAM connectivity evidence](../evidence/README.md). Its final cell publishes the
+same fitted vocabulary as `0.json` through `4.json` using `save_fold_tokenizers`.
+Calling `.prepare()` adapts a frozen native model; `.load()` reuses a saved file.
+The character file is produced by the unchanged original TVA class, with 79 IDs.
+All learned ED methods have 145 extra pieces and 224 CTC classes.
+
+The linguistic BPE/Unigram controls use the shared custom trainers and segmentation
+with handwriting evidence disabled. Original TVA's Hugging Face implementations
+remain available separately. Training policies and authenticated source models
+retain their existing version identities inside the JSON records.
+
+## Historical runs and compatibility
+
+`archive/` retains the custom ED linguistic bigram, the IAM+READ OnHW handwriting
+bigram and the old OnHW linguistic fold files. They keep their historical layout.
+Completed recognition configs and experiment logs are preserved as recorded.
+The path resolver redirects their known former artifact paths to the current
+locations, including the preceding versioned ED filenames.
+
+This migration preserves all tokenizer and native-model bytes. The handwriting
+trainer's reference-directory lookup changed to follow the new layout; current
+training reports record its updated implementation checksum. Corpus, evidence,
+model and projection checksums are unchanged. Historical report bytes remain in
+Git history.

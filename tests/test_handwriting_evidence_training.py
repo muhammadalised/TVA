@@ -68,7 +68,7 @@ class FullEvidenceTrainingTests(unittest.TestCase):
                 output = Path(directory) / filename
                 tokenizer = cls()
                 tokenizer.train(DEFAULT_EVIDENCE, ['', *ED_ALPHABET], output_path=output)
-                self.assertEqual(output.read_bytes(), (ARTIFACTS / filename).read_bytes())
+                self.assertEqual(output.read_bytes(), (ARTIFACTS / kind / '0.json').read_bytes())
                 self.assertEqual(tokenizer.size, 224)
                 report = json.loads(output.with_suffix('.training.json').read_text())
                 self.assertTrue(report['learned_fields_recomputed_from_evidence'])
@@ -78,7 +78,7 @@ class FullEvidenceTrainingTests(unittest.TestCase):
                 self.assertEqual(report['ed_adapter_sha256'], sha256_bytes(output.read_bytes()))
                 native_name = 'iam-english-handwriting-bigram-v1.json' if kind == 'bigram' else f'iam-english-handwriting-{kind}-v1.json'
                 self.assertEqual((output.parent / 'source' / native_name).read_bytes(),
-                                 (ARTIFACTS / 'source' / native_name).read_bytes())
+                                 (ARTIFACTS / kind / 'source' / native_name).read_bytes())
                 for text in ['the handwriting', 'the%=the', 'In short, there will be on TV!']:
                     ids = tokenizer.encode(text)
                     self.assertNotIn(0, ids)
@@ -89,7 +89,7 @@ class FullEvidenceTrainingTests(unittest.TestCase):
             with self.subTest(cls=cls.__name__), tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / 'model.json'
                 with self.assertRaisesRegex(ValueError, 'evidence SHA-256'):
-                    cls().train(ARTIFACTS / 'ed_iam_handwriting_bigram_greedy_v1.json',
+                    cls().train(ARTIFACTS / 'bigram/0.json',
                                 ['', *ED_ALPHABET], output_path=output)
                 with self.assertRaisesRegex(ValueError, 'declared ED alphabet'):
                     cls().train(DEFAULT_EVIDENCE, ['', 'a'], output_path=output)

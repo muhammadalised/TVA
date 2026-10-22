@@ -10,7 +10,7 @@
   "handwriting_aware": false,
   "handwriting_evidence_read": false,
   "implementation_sha256": {
-    "handwriting/training.py": "bd1e65682596b57ed9cc7230571a2ab42b5349b46ae06841b2a74b1ce38b1f80",
+    "handwriting/training.py": "048651c3d478ad1baa2c00d436449feb67858f827b0ec0ac3ed7e59118d0d3ee",
     "linguistic_tokenizers.py": "52d4aea64e3194177c4372b4c7a063c94b939414a9a81424d0bc668182d34946",
     "subword_tokenizers.py": "cafd858a69813aa5c9958aa285083393584890518b3d93eb7f9c1b49ae596cd8"
   },

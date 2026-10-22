@@ -1,9 +1,9 @@
 {
-  "algorithm": "bpe",
+  "algorithm": "bigram",
   "annotation_label_values_read_from_ed": false,
-  "candidate_count": 303,
+  "candidate_count": 1259,
   "dataset": "IAM",
-  "ed_adapter_sha256": "fcf244d112f55fc7e30edde4eaaabda70d282ea193b7834acbdcdac6cbc4c4ea",
+  "ed_adapter_sha256": "d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7",
   "ed_ctc_classes": 224,
   "evidence_sha256": "815304d2591bc187a2eea7dd76593499905c11645c8b9a146e7f1699c0e636fa",
   "evidence_source_sha256": {
@@ -14,11 +14,11 @@
     "selection": "7893dfba4febe6df99cf0bdb0c74fabe7b736d2a6af05033d8638b90455bc1c2"
   },
   "frozen_native_bytes_reproduced": true,
-  "frozen_native_sha256": "a504c2306200faf6eab98f3feef6f98b81e6e6c6c7f707cf31aa3399a660be47",
+  "frozen_native_sha256": "2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92",
   "historical_source_provenance_preserved": true,
   "implementation_sha256": {
     "evidence.py": "5ac06822bb113a113c8c64d7a08fe918f81eed6b4c4285b22a56a202052d6cd9",
-    "training.py": "bd1e65682596b57ed9cc7230571a2ab42b5349b46ae06841b2a74b1ce38b1f80"
+    "training.py": "048651c3d478ad1baa2c00d436449feb67858f827b0ec0ac3ed7e59118d0d3ee"
   },
   "learned_fields_recomputed_from_evidence": true,
   "line_count": 5694,
