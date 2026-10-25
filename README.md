@@ -271,10 +271,17 @@ many characters per token on IAM training text as its handwriting partner.
 | --- | --- | --- | --- |
 | `linguistic_bigram_matched` | top 62 letters-only TVA bigrams | 141 | 1.336 (1.335) |
 | `linguistic_bpe_matched` | first 59 letters-only TVA BPE merges | 138 | 1.379 (1.379) |
+| `linguistic_unigram_matched` | text-only Unigram EM retrained with 55 pieces | 134 | 1.367 (1.365) |
 
-Files are in `artifacts/tokenizers/ed/linguistic/{bigram,bpe}_matched/`; they
+A Unigram has no learned order to cut, so its control retrains the text-only
+Unigram EM (`UnigramEMTokenizer`, the partner in `unigram_trainer/`) with a
+budget of *k* pieces; every budget is a separate training, and `selection.json`
+keeps the compression for all 146 budgets. Its steps are coarser, so it matches
+less closely (1.367 vs 1.365).
+
+Files are in `artifacts/tokenizers/ed/linguistic/{bigram,bpe,unigram}_matched/`; they
 were built by `tva/compression_matched_tokenizers.py` (`build_fold_tokenizers`)
-without reading ED labels and load with TVA's `BigramTokenizer` / `BPETokenizer`
+without reading ED labels and load with TVA's `BigramTokenizer` / `BPETokenizer` / `UnigramTokenizer`
 (`selection.json` records the choice of *k*). TVA ranks bigrams by frequency, so
 the bigram control is byte-identical to
 `BigramTokenizer.train(..., 141, letters_only=True)`. Both controls were rebuilt
@@ -286,12 +293,15 @@ python main.py -c configs/thesis/ed/compression_matched/bigram_linguistic_matche
 python main.py -c configs/thesis/ed/compression_matched/bigram_linguistic_matched_wi.yaml
 python main.py -c configs/thesis/ed/compression_matched/bpe_linguistic_matched_wd.yaml
 python main.py -c configs/thesis/ed/compression_matched/bpe_linguistic_matched_wi.yaml
+python main.py -c configs/thesis/ed/compression_matched/unigram_linguistic_matched_wd.yaml
+python main.py -c configs/thesis/ed/compression_matched/unigram_linguistic_matched_wi.yaml
 ```
 
 Settings equal the other ED configs; set `idx_fold` to 1–4 for further folds,
 or to -1 for `train_cv.py`. Results go to
 `results/thesis/ed/linguistic_bigram_matched_v2_{wd,wi}` and
-`results/thesis/ed/linguistic_bpe_matched_v2_{wd,wi}`, which
+`results/thesis/ed/linguistic_bpe_matched_v2_{wd,wi}` and
+`results/thesis/ed/linguistic_unigram_matched_{wd,wi}`, which
 `analyze_ed_compression.ipynb` picks up automatically. Compare each control with
 its handwriting partner: if the handwriting tokenizer still has lower error, the
 connectivity evidence helps beyond compression.

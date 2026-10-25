@@ -52,6 +52,7 @@ CONDITIONS = {
     'linguistic_unigram_em': 'linguistic_unigram_em_{split}',
     'linguistic_bigram_matched': 'linguistic_bigram_matched_v2_{split}',
     'linguistic_bpe_matched': 'linguistic_bpe_matched_v2_{split}',
+    'linguistic_unigram_matched': 'linguistic_unigram_matched_{split}',
 }
 
 # Frozen tokenizer files, for analyses that need no trained model.
@@ -68,6 +69,7 @@ TOKENIZERS = {
     'linguistic_unigram_em': ('unigram_em', 'artifacts/tokenizers/ed/linguistic/unigram_em/0.json'),
     'linguistic_bigram_matched': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_matched/0.json'),
     'linguistic_bpe_matched': ('bpe', 'artifacts/tokenizers/ed/linguistic/bpe_matched/0.json'),
+    'linguistic_unigram_matched': ('unigram', 'artifacts/tokenizers/ed/linguistic/unigram_matched/0.json'),
 }
 
 

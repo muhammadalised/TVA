@@ -2623,3 +2623,19 @@ are unchanged.
 `dir_tokenizer` values and load through `tva/tokenizer_factory.py`, so every
 condition can be audited by its own key. The archived bigram stays loadable as
 `linguistic_bigram_greedy`. Commands in earlier entries use the former options.
+
+## 2026-10-25 — Compression-matched Unigram
+
+Added `ed/linguistic/unigram_matched` and
+`compression_matched/unigram_linguistic_matched_{wd,wi}.yaml` (results:
+`linguistic_unigram_matched_{wd,wi}`). A Unigram vocabulary has no learned
+order, so instead of a prefix the control retrains the text-only Unigram EM
+(`UnigramEMTokenizer`: frequency seeds, same EM, pruning and IAM lines as the
+handwriting Unigram) with a budget of k pieces, for every k = 0..145. k = 55
+is closest to the handwriting Unigram on IAM (1.367267 vs 1.364615 characters
+per token; k = 54 gives 1.360622); 134 classes. Compression rises with k in
+uneven steps with a few dips of at most 0.0035, because each budget is a new
+training, so the match is looser than for bigram and BPE. `selection.json`
+keeps the compression for all 146 budgets; k = 145 reproduces the frozen
+`unigram_em` file byte for byte. The control differs from the handwriting
+Unigram only in the connectivity evidence, at equal compression.

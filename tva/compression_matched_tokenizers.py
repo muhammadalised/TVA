@@ -1,13 +1,16 @@
 """Compression-matched IAM text-only controls for ED recognition.
 
 Each control keeps a prefix of a text-only TVA vocabulary: the top k bigrams
-of the letters-only bigram, or the first k BPE merges. k is chosen so that the control covers as
-many characters per token on IAM training text as its handwriting partner.
+of the letters-only bigram, or the first k BPE merges. A Unigram vocabulary has
+no such order, so the Unigram control retrains the text-only Unigram EM with a
+budget of k pieces. k is chosen so that the control covers as many characters
+per token on IAM training text as its handwriting partner.
 Handwriting and text-only tokens then merge equally often, and only the
 evidence that chose the pieces differs.
 
 The controls are saved in TVA's own formats: the bigram control loads with
-BigramTokenizer and the BPE control with BPETokenizer. No ED labels or
+BigramTokenizer, the BPE control with BPETokenizer and the Unigram control
+with UnigramTokenizer. No ED labels or
 recognition results are read.
 """
 
@@ -16,7 +19,8 @@ from pathlib import Path
 
 from tva.dataset.ed import ED_ALPHABET
 from tva.handwriting.common import canonical_json_bytes, save_fold_tokenizers, save_frozen, sha256_bytes
-from tva.handwriting_tokenizers import bpe_from_merges, read_connectivity_lines
+from tva.handwriting.training import frequent_spans, train_unigram
+from tva.handwriting_tokenizers import bpe_from_merges, read_connectivity_lines, unigram_from_log_probs
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_ROOT = ROOT / 'artifacts' / 'tokenizers'
@@ -36,6 +40,12 @@ FAMILIES = {
         'partner': ('handwriting_bpe', 'ed/handwriting/bpe/0.json'),
         'output': 'ed/linguistic/bpe_matched',
         'selection': 'first k text BPE merges (learned order)',
+    },
+    'unigram': {
+        'source': ('unigram_em', 'ed/linguistic/unigram_em/0.json'),
+        'partner': ('handwriting_unigram', 'ed/handwriting/unigram/0.json'),
+        'output': 'ed/linguistic/unigram_matched',
+        'selection': 'text-only Unigram EM (UnigramEMTokenizer) retrained with a budget of k pieces',
     },
 }
 
@@ -94,6 +104,23 @@ def bpe_compression_curve(texts: list[str], merges: list[tuple[str, str]]) -> li
     return curve
 
 
+def unigram_em_model(texts: list[str], budget: int):
+    """The text-only Unigram EM with budget pieces, as UnigramEMTokenizer trains it."""
+    lines = [{'text': text} for text in texts]
+    log_probs = train_unigram(lines, frequent_spans(lines), budget)
+    return unigram_from_log_probs(sorted(ED_ALPHABET), log_probs)
+
+
+def unigram_compression_curve(texts: list[str], budgets) -> list[float]:
+    """Characters per token of the text-only Unigram EM for each budget.
+
+    Unlike bigram and BPE, every budget is a separate EM training.
+    """
+    characters = sum(map(len, texts))
+    return [characters / sum(len(e.ids) for e in unigram_em_model(texts, k).encode_batch(texts))
+            for k in budgets]
+
+
 def ranked_pieces(kind: str, source) -> list:
     """The source's learned pieces in selection order: bigram strings or BPE merges.
 
@@ -129,17 +156,21 @@ def build_matched_model(kind: str) -> tuple[bytes, dict]:
         loaded[role].load(str(ARTIFACT_ROOT / path))
 
     texts = iam_training_texts()
-    pieces = ranked_pieces(kind, loaded['source'])
-    curve = compression_curve(kind, texts, pieces)
+    if kind == 'unigram':
+        source_count = loaded['source'].size - 1 - len(ED_ALPHABET)
+        curve = unigram_compression_curve(texts, range(source_count + 1))
+    else:
+        pieces = ranked_pieces(kind, loaded['source'])
+        source_count = len(pieces)
+        curve = compression_curve(kind, texts, pieces)
     target = characters_per_token(loaded['partner'], texts)
     k = matched_size(curve, target)
-    selected = pieces[:k]
     record = {
         'schema_version': SCHEMA,
         'kind': kind, 'subword_count': k,
         'source': {'path': family['source'][1],
                    'sha256': sha256_bytes((ARTIFACT_ROOT / family['source'][1]).read_bytes()),
-                   'subword_count': len(pieces)},
+                   'subword_count': source_count},
         'handwriting_partner': {'path': family['partner'][1],
                                 'sha256': sha256_bytes((ARTIFACT_ROOT / family['partner'][1]).read_bytes())},
         'selection': {
@@ -153,6 +184,11 @@ def build_matched_model(kind: str) -> tuple[bytes, dict]:
             'ed_labels_read': False,
         },
     }
+    if kind == 'unigram':
+        # Every budget is a separate training, so the whole curve is kept.
+        record['selection']['iam_characters_per_token_by_k'] = [round(c, 6) for c in curve]
+        return unigram_em_model(texts, k).to_str(pretty=True).encode('utf-8'), record
+    selected = pieces[:k]
     if kind == 'bpe':
         content = bpe_from_merges(list(ED_ALPHABET), selected).to_str(pretty=True)
         return content.encode('utf-8'), record

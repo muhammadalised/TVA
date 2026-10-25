@@ -16,6 +16,7 @@ artifacts/tokenizers/
       unigram_em/       0.json, 1.json, 2.json, 3.json, 4.json
       bigram_matched/   0.json, 1.json, 2.json, 3.json, 4.json
       bpe_matched/      0.json, 1.json, 2.json, 3.json, 4.json
+      unigram_matched/  0.json, 1.json, 2.json, 3.json, 4.json
     handwriting/
       bigram/           0.json, 1.json, 2.json, 3.json, 4.json
       bpe/              0.json, 1.json, 2.json, 3.json, 4.json
@@ -45,6 +46,7 @@ merges, probabilities and recognition results are unchanged.
 | Linguistic | Handwriting Unigram's EM on text alone (frequency seeds) | [unigram_em/0.json](ed/linguistic/unigram_em/0.json) | Hugging Face Unigram file; partner of the handwriting Unigram |
 | Linguistic | Compression-matched bigram (top 62 of `bigram_letters`) | [bigram_matched/0.json](ed/linguistic/bigram_matched/0.json) | [Selection](ed/linguistic/bigram_matched/selection.json) |
 | Linguistic | Compression-matched BPE (first 59) | [bpe_matched/0.json](ed/linguistic/bpe_matched/0.json) | [Selection](ed/linguistic/bpe_matched/selection.json) |
+| Linguistic | Compression-matched Unigram (text-only EM, 55 pieces) | [unigram_matched/0.json](ed/linguistic/unigram_matched/0.json) | [Selection](ed/linguistic/unigram_matched/selection.json) |
 | Handwriting | Bigram (most connected IAM letter pairs) | [bigram/0.json](ed/handwriting/bigram/0.json) | Connectivity rate stored as `utility` inside the file |
 | Handwriting | BPE (merges ranked by connected occurrences) | [bpe/0.json](ed/handwriting/bpe/0.json) | Hugging Face BPE file |
 | Handwriting | Unigram (pieces seeded by connected counts) | [unigram/0.json](ed/handwriting/unigram/0.json) | Hugging Face Unigram file |

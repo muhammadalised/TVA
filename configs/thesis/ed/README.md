@@ -15,7 +15,7 @@ python main.py -c configs/thesis/ed/subword_comparison/bigram_handwriting_wd.yam
 | [character/](character) | Baseline without learned pieces | `character` (fold 0), `character_*_cv` (all five folds via `train_cv.py`); both TVA's `CharacterTokenizer` with the standard 79-class file |
 | [subword_comparison/](subword_comparison) | Do handwriting-aware tokenizers beat linguistic (text-only) ones? | `bigram_linguistic` (TVA's original bigram) vs `bigram_handwriting`, `bpe_linguistic` vs `bpe_handwriting`, `unigram_linguistic` vs `unigram_handwriting` |
 | [letters_only/](letters_only) | Does the bigram result hold when spaces and punctuation are left out of training? | `bigram_linguistic_letters` (TVA bigram, `letters_only=True`), compared with `bigram_handwriting` |
-| [compression_matched/](compression_matched) | Is the difference just compression? | `bigram_linguistic_matched` (top 62 letters-only bigrams), `bpe_linguistic_matched` (first 59 BPE merges), each compressing IAM text like its handwriting partner |
+| [compression_matched/](compression_matched) | Is the difference just compression? | `bigram_linguistic_matched` (top 62 letters-only bigrams), `bpe_linguistic_matched` (first 59 BPE merges), `unigram_linguistic_matched` (text-only Unigram EM with 55 pieces), each compressing IAM text like its handwriting partner |
 | [unigram_trainer/](unigram_trainer) | Is the Unigram difference due to the trainer? | `unigram_linguistic_em`: the handwriting Unigram's EM without connectivity, compared with `unigram_handwriting` |
 
 Partners are always the handwriting configs in `subword_comparison/`.
