@@ -1,0 +1,667 @@
+{
+  "blank_id": 0,
+  "blank_token": "",
+  "dataset": "ED",
+  "handwriting_partner": {
+    "path": "ed/handwriting/bpe/0.json",
+    "sha256": "fcf244d112f55fc7e30edde4eaaabda70d282ea193b7834acbdcdac6cbc4c4ea"
+  },
+  "idx_token": {
+    "0": "",
+    "1": " ",
+    "10": "-",
+    "100": "and",
+    "101": "he",
+    "102": "ic",
+    "103": "be",
+    "104": "le",
+    "105": "st",
+    "106": "ent",
+    "107": "om",
+    "108": "ion",
+    "109": "ad",
+    "11": ".",
+    "110": "il",
+    "111": "se",
+    "112": "ly",
+    "113": "ch",
+    "114": "wh",
+    "115": "ro",
+    "116": "ve",
+    "117": "ac",
+    "118": "for",
+    "119": "no",
+    "12": "/",
+    "120": "ay",
+    "121": "that",
+    "122": "ver",
+    "123": "ter",
+    "124": "ir",
+    "125": "ut",
+    "126": "ol",
+    "127": "ri",
+    "128": "gh",
+    "129": "was",
+    "13": "0",
+    "130": "de",
+    "131": "ce",
+    "132": "un",
+    "133": "wi",
+    "134": "ab",
+    "135": "li",
+    "136": "su",
+    "137": "his",
+    "14": "1",
+    "15": "2",
+    "16": "3",
+    "17": "4",
+    "18": "5",
+    "19": "6",
+    "2": "!",
+    "20": "7",
+    "21": "8",
+    "22": "9",
+    "23": ":",
+    "24": ";",
+    "25": "=",
+    "26": "?",
+    "27": "A",
+    "28": "B",
+    "29": "C",
+    "3": "\"",
+    "30": "D",
+    "31": "E",
+    "32": "F",
+    "33": "G",
+    "34": "H",
+    "35": "I",
+    "36": "J",
+    "37": "K",
+    "38": "L",
+    "39": "M",
+    "4": "%",
+    "40": "N",
+    "41": "O",
+    "42": "P",
+    "43": "Q",
+    "44": "R",
+    "45": "S",
+    "46": "T",
+    "47": "U",
+    "48": "V",
+    "49": "W",
+    "5": "'",
+    "50": "X",
+    "51": "Y",
+    "52": "Z",
+    "53": "a",
+    "54": "b",
+    "55": "c",
+    "56": "d",
+    "57": "e",
+    "58": "f",
+    "59": "g",
+    "6": "(",
+    "60": "h",
+    "61": "i",
+    "62": "j",
+    "63": "k",
+    "64": "l",
+    "65": "m",
+    "66": "n",
+    "67": "o",
+    "68": "p",
+    "69": "q",
+    "7": ")",
+    "70": "r",
+    "71": "s",
+    "72": "t",
+    "73": "u",
+    "74": "v",
+    "75": "w",
+    "76": "x",
+    "77": "y",
+    "78": "z",
+    "79": "th",
+    "8": "+",
+    "80": "in",
+    "81": "the",
+    "82": "er",
+    "83": "an",
+    "84": "on",
+    "85": "en",
+    "86": "re",
+    "87": "at",
+    "88": "is",
+    "89": "ed",
+    "9": ",",
+    "90": "to",
+    "91": "es",
+    "92": "as",
+    "93": "of",
+    "94": "ar",
+    "95": "ou",
+    "96": "or",
+    "97": "al",
+    "98": "ing",
+    "99": "it"
+  },
+  "kind": "bpe",
+  "model_version": "ed-iam-linguistic-bpe-compression-matched-v1",
+  "pieces": [
+    {
+      "left": "t",
+      "right": "h",
+      "text_occurrences_at_merge": 5049,
+      "token": "th"
+    },
+    {
+      "left": "i",
+      "right": "n",
+      "text_occurrences_at_merge": 3479,
+      "token": "in"
+    },
+    {
+      "left": "th",
+      "right": "e",
+      "text_occurrences_at_merge": 3337,
+      "token": "the"
+    },
+    {
+      "left": "e",
+      "right": "r",
+      "text_occurrences_at_merge": 2965,
+      "token": "er"
+    },
+    {
+      "left": "a",
+      "right": "n",
+      "text_occurrences_at_merge": 2793,
+      "token": "an"
+    },
+    {
+      "left": "o",
+      "right": "n",
+      "text_occurrences_at_merge": 2365,
+      "token": "on"
+    },
+    {
+      "left": "e",
+      "right": "n",
+      "text_occurrences_at_merge": 2240,
+      "token": "en"
+    },
+    {
+      "left": "r",
+      "right": "e",
+      "text_occurrences_at_merge": 2133,
+      "token": "re"
+    },
+    {
+      "left": "a",
+      "right": "t",
+      "text_occurrences_at_merge": 1997,
+      "token": "at"
+    },
+    {
+      "left": "i",
+      "right": "s",
+      "text_occurrences_at_merge": 1947,
+      "token": "is"
+    },
+    {
+      "left": "e",
+      "right": "d",
+      "text_occurrences_at_merge": 1775,
+      "token": "ed"
+    },
+    {
+      "left": "t",
+      "right": "o",
+      "text_occurrences_at_merge": 1703,
+      "token": "to"
+    },
+    {
+      "left": "e",
+      "right": "s",
+      "text_occurrences_at_merge": 1520,
+      "token": "es"
+    },
+    {
+      "left": "a",
+      "right": "s",
+      "text_occurrences_at_merge": 1515,
+      "token": "as"
+    },
+    {
+      "left": "o",
+      "right": "f",
+      "text_occurrences_at_merge": 1466,
+      "token": "of"
+    },
+    {
+      "left": "a",
+      "right": "r",
+      "text_occurrences_at_merge": 1425,
+      "token": "ar"
+    },
+    {
+      "left": "o",
+      "right": "u",
+      "text_occurrences_at_merge": 1423,
+      "token": "ou"
+    },
+    {
+      "left": "o",
+      "right": "r",
+      "text_occurrences_at_merge": 1387,
+      "token": "or"
+    },
+    {
+      "left": "a",
+      "right": "l",
+      "text_occurrences_at_merge": 1379,
+      "token": "al"
+    },
+    {
+      "left": "in",
+      "right": "g",
+      "text_occurrences_at_merge": 1225,
+      "token": "ing"
+    },
+    {
+      "left": "i",
+      "right": "t",
+      "text_occurrences_at_merge": 1201,
+      "token": "it"
+    },
+    {
+      "left": "an",
+      "right": "d",
+      "text_occurrences_at_merge": 1158,
+      "token": "and"
+    },
+    {
+      "left": "h",
+      "right": "e",
+      "text_occurrences_at_merge": 1023,
+      "token": "he"
+    },
+    {
+      "left": "i",
+      "right": "c",
+      "text_occurrences_at_merge": 938,
+      "token": "ic"
+    },
+    {
+      "left": "b",
+      "right": "e",
+      "text_occurrences_at_merge": 912,
+      "token": "be"
+    },
+    {
+      "left": "l",
+      "right": "e",
+      "text_occurrences_at_merge": 869,
+      "token": "le"
+    },
+    {
+      "left": "s",
+      "right": "t",
+      "text_occurrences_at_merge": 836,
+      "token": "st"
+    },
+    {
+      "left": "en",
+      "right": "t",
+      "text_occurrences_at_merge": 798,
+      "token": "ent"
+    },
+    {
+      "left": "o",
+      "right": "m",
+      "text_occurrences_at_merge": 791,
+      "token": "om"
+    },
+    {
+      "left": "i",
+      "right": "on",
+      "text_occurrences_at_merge": 759,
+      "token": "ion"
+    },
+    {
+      "left": "a",
+      "right": "d",
+      "text_occurrences_at_merge": 734,
+      "token": "ad"
+    },
+    {
+      "left": "i",
+      "right": "l",
+      "text_occurrences_at_merge": 722,
+      "token": "il"
+    },
+    {
+      "left": "s",
+      "right": "e",
+      "text_occurrences_at_merge": 684,
+      "token": "se"
+    },
+    {
+      "left": "l",
+      "right": "y",
+      "text_occurrences_at_merge": 602,
+      "token": "ly"
+    },
+    {
+      "left": "c",
+      "right": "h",
+      "text_occurrences_at_merge": 601,
+      "token": "ch"
+    },
+    {
+      "left": "w",
+      "right": "h",
+      "text_occurrences_at_merge": 574,
+      "token": "wh"
+    },
+    {
+      "left": "r",
+      "right": "o",
+      "text_occurrences_at_merge": 560,
+      "token": "ro"
+    },
+    {
+      "left": "v",
+      "right": "e",
+      "text_occurrences_at_merge": 548,
+      "token": "ve"
+    },
+    {
+      "left": "a",
+      "right": "c",
+      "text_occurrences_at_merge": 521,
+      "token": "ac"
+    },
+    {
+      "left": "f",
+      "right": "or",
+      "text_occurrences_at_merge": 514,
+      "token": "for"
+    },
+    {
+      "left": "n",
+      "right": "o",
+      "text_occurrences_at_merge": 502,
+      "token": "no"
+    },
+    {
+      "left": "a",
+      "right": "y",
+      "text_occurrences_at_merge": 497,
+      "token": "ay"
+    },
+    {
+      "left": "th",
+      "right": "at",
+      "text_occurrences_at_merge": 488,
+      "token": "that"
+    },
+    {
+      "left": "v",
+      "right": "er",
+      "text_occurrences_at_merge": 464,
+      "token": "ver"
+    },
+    {
+      "left": "t",
+      "right": "er",
+      "text_occurrences_at_merge": 450,
+      "token": "ter"
+    },
+    {
+      "left": "i",
+      "right": "r",
+      "text_occurrences_at_merge": 442,
+      "token": "ir"
+    },
+    {
+      "left": "u",
+      "right": "t",
+      "text_occurrences_at_merge": 432,
+      "token": "ut"
+    },
+    {
+      "left": "o",
+      "right": "l",
+      "text_occurrences_at_merge": 419,
+      "token": "ol"
+    },
+    {
+      "left": "r",
+      "right": "i",
+      "text_occurrences_at_merge": 418,
+      "token": "ri"
+    },
+    {
+      "left": "g",
+      "right": "h",
+      "text_occurrences_at_merge": 405,
+      "token": "gh"
+    },
+    {
+      "left": "w",
+      "right": "as",
+      "text_occurrences_at_merge": 397,
+      "token": "was"
+    },
+    {
+      "left": "d",
+      "right": "e",
+      "text_occurrences_at_merge": 391,
+      "token": "de"
+    },
+    {
+      "left": "c",
+      "right": "e",
+      "text_occurrences_at_merge": 388,
+      "token": "ce"
+    },
+    {
+      "left": "u",
+      "right": "n",
+      "text_occurrences_at_merge": 378,
+      "token": "un"
+    },
+    {
+      "left": "w",
+      "right": "i",
+      "text_occurrences_at_merge": 378,
+      "token": "wi"
+    },
+    {
+      "left": "a",
+      "right": "b",
+      "text_occurrences_at_merge": 373,
+      "token": "ab"
+    },
+    {
+      "left": "l",
+      "right": "i",
+      "text_occurrences_at_merge": 361,
+      "token": "li"
+    },
+    {
+      "left": "s",
+      "right": "u",
+      "text_occurrences_at_merge": 357,
+      "token": "su"
+    },
+    {
+      "left": "h",
+      "right": "is",
+      "text_occurrences_at_merge": 345,
+      "token": "his"
+    }
+  ],
+  "schema_version": "tva.ed-compression-matched-text-control.v1",
+  "selection": {
+    "ed_labels_read": false,
+    "iam_characters_per_token": {
+      "full_text_only": 1.552889,
+      "handwriting_partner": 1.378258,
+      "matched": 1.378975
+    },
+    "iam_text_lines": 5612,
+    "rule": "first k text BPE merges (learned order); k minimizes |IAM characters per token - handwriting partner|"
+  },
+  "size": 138,
+  "source": {
+    "path": "ed/linguistic/bpe/0.json",
+    "sha256": "c757f01c98f9756b190cc82140a3d454b11fe78bcb707a8924ca72634fba16ea",
+    "subword_count": 145
+  },
+  "status": "frozen-compression-matched-text-control",
+  "subword_count": 59,
+  "unicode_normalization": "NFC",
+  "vocab": {
+    "": 0,
+    " ": 1,
+    "!": 2,
+    "\"": 3,
+    "%": 4,
+    "'": 5,
+    "(": 6,
+    ")": 7,
+    "+": 8,
+    ",": 9,
+    "-": 10,
+    ".": 11,
+    "/": 12,
+    "0": 13,
+    "1": 14,
+    "2": 15,
+    "3": 16,
+    "4": 17,
+    "5": 18,
+    "6": 19,
+    "7": 20,
+    "8": 21,
+    "9": 22,
+    ":": 23,
+    ";": 24,
+    "=": 25,
+    "?": 26,
+    "A": 27,
+    "B": 28,
+    "C": 29,
+    "D": 30,
+    "E": 31,
+    "F": 32,
+    "G": 33,
+    "H": 34,
+    "I": 35,
+    "J": 36,
+    "K": 37,
+    "L": 38,
+    "M": 39,
+    "N": 40,
+    "O": 41,
+    "P": 42,
+    "Q": 43,
+    "R": 44,
+    "S": 45,
+    "T": 46,
+    "U": 47,
+    "V": 48,
+    "W": 49,
+    "X": 50,
+    "Y": 51,
+    "Z": 52,
+    "a": 53,
+    "ab": 134,
+    "ac": 117,
+    "ad": 109,
+    "al": 97,
+    "an": 83,
+    "and": 100,
+    "ar": 94,
+    "as": 92,
+    "at": 87,
+    "ay": 120,
+    "b": 54,
+    "be": 103,
+    "c": 55,
+    "ce": 131,
+    "ch": 113,
+    "d": 56,
+    "de": 130,
+    "e": 57,
+    "ed": 89,
+    "en": 85,
+    "ent": 106,
+    "er": 82,
+    "es": 91,
+    "f": 58,
+    "for": 118,
+    "g": 59,
+    "gh": 128,
+    "h": 60,
+    "he": 101,
+    "his": 137,
+    "i": 61,
+    "ic": 102,
+    "il": 110,
+    "in": 80,
+    "ing": 98,
+    "ion": 108,
+    "ir": 124,
+    "is": 88,
+    "it": 99,
+    "j": 62,
+    "k": 63,
+    "l": 64,
+    "le": 104,
+    "li": 135,
+    "ly": 112,
+    "m": 65,
+    "n": 66,
+    "no": 119,
+    "o": 67,
+    "of": 93,
+    "ol": 126,
+    "om": 107,
+    "on": 84,
+    "or": 96,
+    "ou": 95,
+    "p": 68,
+    "q": 69,
+    "r": 70,
+    "re": 86,
+    "ri": 127,
+    "ro": 115,
+    "s": 71,
+    "se": 111,
+    "st": 105,
+    "su": 136,
+    "t": 72,
+    "ter": 123,
+    "th": 79,
+    "that": 121,
+    "the": 81,
+    "to": 90,
+    "u": 73,
+    "un": 132,
+    "ut": 125,
+    "v": 74,
+    "ve": 116,
+    "ver": 122,
+    "w": 75,
+    "was": 129,
+    "wh": 114,
+    "wi": 133,
+    "x": 76,
+    "y": 77,
+    "z": 78
+  }
+}

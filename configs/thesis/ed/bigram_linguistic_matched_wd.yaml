@@ -1,0 +1,30 @@
+# ED fold-0 WD run with the compression-matched IAM text-only Bigram (top 62 IAM-count bigrams).
+# Covers as many characters per token on IAM text as the handwriting Bigram; see tva/compression_matched_tokenizers.py.
+# Uses the extracted ED files in data/tva/ed/gold_wd; no ZIP or environment override needed.
+arch_de: bilstm_b
+arch_en: blconv_b
+aug: true
+cache: true
+checkpoint: null
+dataset_format: json-directory
+device: cuda
+dir_dataset: data/tva/ed/gold_wd
+dir_tokenizer: artifacts/tokenizers/ed/linguistic/bigram_matched
+dir_work: results/thesis/ed/linguistic_bigram_matched_wd
+epoch: 300
+epoch_warmup: 30
+ed_distribution: wd
+freq_eval: 1
+freq_log: 100
+freq_save: 25
+idx_fold: 0
+len_seq: 0
+lr: 0.001
+num_channel: 7
+num_concat: 0
+num_worker: 8
+seed: 42
+size_batch: 32
+test: false
+tokenizer: linguistic_bigram_matched
+categories: ["", " ", "!", "\"", "%", "'", "(", ")", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "=", "?", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]

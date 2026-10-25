@@ -12,6 +12,8 @@ artifacts/tokenizers/
       bigram/           0.json, 1.json, 2.json, 3.json, 4.json
       bpe/              0.json, 1.json, 2.json, 3.json, 4.json
       unigram/          0.json, 1.json, 2.json, 3.json, 4.json
+      bigram_matched/   0.json, 1.json, 2.json, 3.json, 4.json
+      bpe_matched/      0.json, 1.json, 2.json, 3.json, 4.json
     handwriting/
       bigram/           0.json, 1.json, 2.json, 3.json, 4.json
       bpe/              0.json, 1.json, 2.json, 3.json, 4.json
@@ -37,6 +39,8 @@ merges, probabilities and recognition results are unchanged.
 | Linguistic | Original TVA bigram | [bigram/0.json](ed/linguistic/bigram/0.json) | [Provenance](ed/linguistic/bigram/0.provenance.json), [audit](ed/linguistic/bigram/0.audit.json) |
 | Linguistic | Matched BPE | [bpe/0.json](ed/linguistic/bpe/0.json) | [Training](ed/linguistic/bpe/0.training.json) |
 | Linguistic | Matched Unigram | [unigram/0.json](ed/linguistic/unigram/0.json) | [Training](ed/linguistic/unigram/0.training.json) |
+| Linguistic | Compression-matched bigram (top 62) | [bigram_matched/0.json](ed/linguistic/bigram_matched/0.json) | Selection recorded inside the file |
+| Linguistic | Compression-matched BPE (first 59) | [bpe_matched/0.json](ed/linguistic/bpe_matched/0.json) | Selection recorded inside the file |
 | Handwriting | Bigram | [bigram/0.json](ed/handwriting/bigram/0.json) | [Training](ed/handwriting/bigram/0.training.json) |
 | Handwriting | BPE | [bpe/0.json](ed/handwriting/bpe/0.json) | [Training](ed/handwriting/bpe/0.training.json) |
 | Handwriting | Unigram | [unigram/0.json](ed/handwriting/unigram/0.json) | [Training](ed/handwriting/unigram/0.training.json) |
@@ -59,7 +63,10 @@ calls `.train()` using IAM transcripts or the bundled
 same fitted vocabulary as `0.json` through `4.json` using `save_fold_tokenizers`.
 Calling `.prepare()` adapts a frozen native model; `.load()` reuses a saved file.
 The character file is produced by the unchanged original TVA class, with 79 IDs.
-All learned ED methods have 145 extra pieces and 224 CTC classes.
+All learned ED methods have 145 extra pieces and 224 CTC classes, except the
+two compression-matched controls. They keep a prefix of a text-only vocabulary
+(62 bigrams, 141 classes; 59 BPE merges, 138 classes) and are built by
+`tva/compression_matched_tokenizers.py`.
 
 The linguistic BPE/Unigram controls use the shared custom trainers and segmentation
 with handwriting evidence disabled. Original TVA's Hugging Face implementations
