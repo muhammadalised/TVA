@@ -303,7 +303,9 @@ python train_cv.py -c configs/thesis/ed/character_wd_extracted_cv.yaml --dry-run
 
 ### Analyze the extracted English dataset
 
-Open `analyze_ed.ipynb` in the TVA Python environment and run all cells. It
+Open [analyze_ed.ipynb](../notebooks/analysis/analyze_ed.ipynb) in the TVA Python
+environment and run all cells. The notebook locates the repository before
+loading data, whether launched from the root or `notebooks/analysis/`. It
 uses `data/tva/ed/gold_wd` and `gold_wi` by default and does not open ZIPs.
 For another location, set `TVA_ED_EXTRACTED_DIR` to the parent containing
 both directories. Full manifest verification is enabled by default. Figures

@@ -11,7 +11,7 @@ from tva.tokenizers import (
 )
 from tva.handwriting.common import resolve_artifact_path
 from tva.handwriting_tokenizers import (
-    HandwritingBigramTokenizer, GreedyHandwritingBigramTokenizer,
+    HandwritingBigramTokenizer,
     HandwritingBPETokenizer, HandwritingUnigramTokenizer,
 )
 from tva.linguistic_tokenizers import LinguisticBPETokenizer, LinguisticUnigramTokenizer
@@ -27,8 +27,8 @@ def get_tokenizer(tokenizer: str) -> Any:
         'linguistic_unigram': LinguisticUnigramTokenizer,
         'handwriting_bpe': HandwritingBPETokenizer,
         'handwriting_unigram': HandwritingUnigramTokenizer,
-        'handwriting_bigram': HandwritingBigramTokenizer,
-        'handwriting_bigram_greedy': GreedyHandwritingBigramTokenizer,
+        'handwriting_bigram': lambda: HandwritingBigramTokenizer(policy='utility-based'),
+        'handwriting_bigram_greedy': lambda: HandwritingBigramTokenizer(policy='greedy'),
         'linguistic_bigram': LinguisticBigramTokenizer,
         'linguistic_bigram_greedy': GreedyLinguisticBigramTokenizer,
     }

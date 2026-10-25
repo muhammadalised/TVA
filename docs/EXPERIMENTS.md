@@ -2486,3 +2486,39 @@ and preservation of conflicting fold destinations. Executed every code cell of
 recognition configs passed five-fold launcher input validation (70 fold inputs),
 without launching recognizer training. Changed notebooks passed syntax checks
 with normal IPython transformation. No commit or push performed.
+
+
+## 2026-10-23 — ED fold-0 linguistic versus handwriting comparison
+
+Consolidated comparison of the completed English Dataset (ED) fold-0 runs.
+All values below are percentages; lower is better. Each CER value links to
+its saved metric file, which also supplies the WER in that row.
+
+| Setting | Tokenizer | Linguistic CER (%) | Handwriting CER (%) | Linguistic WER (%) | Handwriting WER (%) |
+| --- | --- | ---: | ---: | ---: | ---: |
+| WD | Bigram | [35.96](../results/thesis/ed/tva_original_wd/0/train_20261003230725.json) | [**24.27**](../results/thesis/ed/handwriting_wd/0/train_20260923234401.json) | 79.23 | **64.80** |
+| WD | BPE | [28.97](../results/thesis/ed/linguistic_bpe_wd/0/train_20261019101032.json) | [**24.45**](../results/thesis/ed/handwriting_bpe_wd/0/train_20261008183405.json) | 67.28 | **63.41** |
+| WD | Unigram | [30.12](../results/thesis/ed/linguistic_unigram_wd/0/train_20261019121946.json) | [**24.07**](../results/thesis/ed/handwriting_unigram_wd/0/train_20261008210048.json) | 70.04 | **63.78** |
+| WI | Bigram | [20.93](../results/thesis/ed/tva_original_wi/0/train_20261004001614.json) | [**16.42**](../results/thesis/ed/handwriting_wi/0/train_20260924144953.json) | 52.43 | **44.84** |
+| WI | BPE | [18.01](../results/thesis/ed/linguistic_bpe_wi/0/train_20261019111405.json) | [**17.18**](../results/thesis/ed/handwriting_bpe_wi/0/train_20261008194420.json) | 45.21 | **44.74** |
+| WI | Unigram | [18.71](../results/thesis/ed/linguistic_unigram_wi/0/train_20261019132426.json) | [**16.84**](../results/thesis/ed/handwriting_unigram_wi/0/train_20261008221323.json) | 46.59 | **45.41** |
+
+CER and WER are independent validation minima over 300 epochs and may come
+from different checkpoints. These are single-fold results, not five-fold
+averages. A comparison using WER at the minimum-CER epoch will have different
+WER values; the checkpoint-selection conventions should not be mixed.
+
+The linguistic bigram is the original TVA bigram trained on IAM. Linguistic
+BPE and Unigram are the matched text-only controls using shared training and
+segmentation code with handwriting evidence disabled. All learned conditions
+use 145 additional pieces and 224 ED CTC classes, with recognition seed 42
+and batch size 32.
+
+Handwriting-aware tokenizers have lower CER and WER in all six comparisons;
+the absolute improvements are larger in WD than WI. This does not isolate
+connectivity as the cause: the compression analysis shows that handwriting
+vocabularies merge less than their text-only counterparts. Further folds and
+compression-matched controls are needed to assess robustness and explanation.
+The character baseline remains better than these subword conditions on fold 0.
+
+This entry summarizes existing runs. No training or metric files were changed.

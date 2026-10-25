@@ -16,7 +16,6 @@ from tva.handwriting.ed import (
 )
 from tva.handwriting.common import canonical_json_bytes, sha256_bytes
 from tva.handwriting_tokenizers import (
-    GreedyHandwritingBigramTokenizer,
     HandwritingBigramTokenizer,
 )
 from tva.tokenizer_factory import get_tokenizer
@@ -70,12 +69,13 @@ class EdAdapterBuilderTests(unittest.TestCase):
 
 class GreedyEdTokenizerTests(unittest.TestCase):
     def setUp(self):
-        self.tokenizer = GreedyHandwritingBigramTokenizer()
+        self.tokenizer = HandwritingBigramTokenizer(policy='greedy')
         self.tokenizer.load(ADAPTER_PATH)
 
     def test_factory_and_output_size_include_blank(self):
         tokenizer = get_tokenizer('handwriting_bigram_greedy')
-        self.assertIsInstance(tokenizer, GreedyHandwritingBigramTokenizer)
+        self.assertIsInstance(tokenizer, HandwritingBigramTokenizer)
+        self.assertEqual(tokenizer.policy, 'greedy')
         tokenizer.load(ADAPTER_PATH)
         self.assertEqual(tokenizer.size, 224)
         self.assertEqual(tokenizer.vocab[''], 0)
@@ -84,15 +84,9 @@ class GreedyEdTokenizerTests(unittest.TestCase):
         self.assertEqual(
             self.tokenizer.segment('short')['tokens'], ['s', 'ho', 'r', 't']
         )
-        dp = HandwritingBigramTokenizer()
-        dp.load_model({
-            **self.tokenizer.model,
-            'schema_version': 'dtlr.handwriting-bigram-tokenizer.v2',
-            'policy': {
-                **self.tokenizer.model['policy'],
-                'overlap_resolution': 'maximum-total-utility-non-overlapping-v1',
-            },
-        })
+        dp = HandwritingBigramTokenizer(policy='utility-based')
+        dp.load(ADAPTER_PATH)
+        self.assertEqual(dp.vocab, self.tokenizer.vocab)
         self.assertEqual(dp.segment('short')['tokens'], ['s', 'h', 'or', 't'])
 
     def test_punctuation_round_trip_never_emits_blank(self):

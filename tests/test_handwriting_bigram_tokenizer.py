@@ -170,5 +170,62 @@ class HandwritingBigramTokenizerTests(unittest.TestCase):
                 self.assertEqual(self.tokenizer.encode(label), reference.encode(label))
 
 
+class BigramPolicyTests(unittest.TestCase):
+    def test_only_the_two_named_policies_are_supported(self):
+        for policy in ('greedy', 'utility-based'):
+            self.assertEqual(HandwritingBigramTokenizer(policy=policy).policy, policy)
+        for policy in ('dp', 'utility_based', '', None):
+            with self.subTest(policy=policy), self.assertRaisesRegex(ValueError, 'policy must be'):
+                HandwritingBigramTokenizer(policy=policy)
+
+    def test_same_vocabulary_uses_greedy_or_maximum_total_utility(self):
+        greedy = HandwritingBigramTokenizer(policy='greedy')
+        utility = HandwritingBigramTokenizer(policy='utility-based')
+        model = small_model(ab_utility=0.4, bc_utility=0.9)
+        greedy.load_model(model)
+        utility.load_model(model)
+        self.assertEqual(greedy.vocab, utility.vocab)
+        self.assertEqual(greedy.segment('abc')['tokens'], ['ab', 'c'])
+        self.assertEqual(utility.segment('abc')['tokens'], ['a', 'bc'])
+        self.assertAlmostEqual(greedy.segment('abc')['total_utility'], 0.4)
+        self.assertAlmostEqual(utility.segment('abc')['total_utility'], 0.9)
+        self.assertEqual(model['policy']['overlap_resolution'],
+                         'maximum-total-utility-non-overlapping-v1')
+
+    def test_both_policies_load_each_frozen_vocabulary_without_changing_ids(self):
+        paths = [ADAPTER_PATH, REPO_ROOT / 'artifacts/tokenizers/ed/handwriting/bigram/0.json']
+        for path in paths:
+            before = path.read_bytes()
+            tokenizers = [HandwritingBigramTokenizer(policy=p) for p in ('greedy', 'utility-based')]
+            for tokenizer in tokenizers:
+                tokenizer.load(path)
+                self.assertEqual(tokenizer.decode(tokenizer.encode('short')), 'short')
+                self.assertEqual(tokenizer.segment('')['tokens'], [])
+            self.assertEqual(tokenizers[0].vocab, tokenizers[1].vocab)
+            self.assertEqual(tokenizers[0].model, tokenizers[1].model)
+            self.assertEqual(path.read_bytes(), before)
+
+    def test_legacy_factory_keys_select_one_class_with_original_policies(self):
+        for key, policy in [('handwriting_bigram', 'utility-based'),
+                            ('handwriting_bigram_greedy', 'greedy')]:
+            tokenizer = get_tokenizer(key)
+            self.assertIs(type(tokenizer), HandwritingBigramTokenizer)
+            self.assertEqual(tokenizer.policy, policy)
+
+    def test_ed_fitting_is_independent_of_runtime_policy(self):
+        from tva.handwriting.ed import ED_ALPHABET
+        from tva.handwriting.evidence import DEFAULT_EVIDENCE
+        frozen = (REPO_ROOT / 'artifacts/tokenizers/ed/handwriting/bigram/0.json').read_bytes()
+        for policy in ('greedy', 'utility-based'):
+            with self.subTest(policy=policy), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / '0.json'
+                tokenizer = HandwritingBigramTokenizer(policy=policy)
+                tokenizer.train(DEFAULT_EVIDENCE, ['', *ED_ALPHABET], output_path=path)
+                self.assertEqual(path.read_bytes(), frozen)
+                self.assertEqual(tokenizer.policy, policy)
+                expected = ['s', 'ho', 'r', 't'] if policy == 'greedy' else ['s', 'h', 'or', 't']
+                self.assertEqual(tokenizer.segment('short')['tokens'], expected)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -13,8 +13,9 @@ from loguru import logger
 
 from tva.handwriting.common import resolve_artifact_path, sha256_bytes
 from tva.handwriting.onhw import ADAPTER_BIGRAM_COUNT, ADAPTER_SIZE
+from tva.handwriting.ed import GREEDY_POLICY
 from tva.handwriting_tokenizers import (
-    HandwritingBigramTokenizer, GreedyHandwritingBigramTokenizer,
+    HandwritingBigramTokenizer, SUPPORTED_OVERLAP_POLICY,
 )
 
 # Frozen historical artifact identities; no vocabulary construction here.
@@ -44,6 +45,7 @@ class LinguisticBigramTokenizer(HandwritingBigramTokenizer):
     """
 
     supported_schemas = {LINGUISTIC_SCHEMA}
+    supported_overlap_policy = SUPPORTED_OVERLAP_POLICY
     bigram_kind = 'linguistic-bigram'
 
     def train(self, *args, **kwargs) -> None:
@@ -99,14 +101,18 @@ class LinguisticBigramTokenizer(HandwritingBigramTokenizer):
         logger.info(f'LinguisticBigramTokenizer is loaded from {path}.')
 
 
-class GreedyLinguisticBigramTokenizer(GreedyHandwritingBigramTokenizer):
+class GreedyLinguisticBigramTokenizer(HandwritingBigramTokenizer):
     """Compatibility loader for the completed custom IAM-frequency ED runs.
 
     Kept for historical configs and analysis, not new vocabulary training.
     """
 
     supported_schemas = {ED_LINGUISTIC_SCHEMA}
+    supported_overlap_policy = GREEDY_POLICY
     bigram_kind = 'linguistic-bigram'
+
+    def __init__(self) -> None:
+        super().__init__(policy='greedy')
 
     def train(self, *args, **kwargs) -> None:
         """Historical artifacts are load-only."""

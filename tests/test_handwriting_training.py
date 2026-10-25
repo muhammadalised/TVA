@@ -5,7 +5,7 @@ import unittest
 
 from tva.handwriting.ed import ED_ALPHABET
 from tva.iam_tokenizers import DEFAULT_LABELS, DEFAULT_SELECTION
-from tva.handwriting_tokenizers import GreedyHandwritingBigramTokenizer
+from tva.handwriting_tokenizers import HandwritingBigramTokenizer
 from tva.iam_tokenizers import IAMBigramTokenizer
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,7 +18,7 @@ class NotebookTrainingTests(unittest.TestCase):
     def test_handwriting_preparation_reproduces_frozen_vocabulary(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'handwriting.json'
-            tokenizer = GreedyHandwritingBigramTokenizer()
+            tokenizer = HandwritingBigramTokenizer(policy='greedy')
             tokenizer.prepare(SOURCE, CATEGORIES, output_path=output)
             self.assertEqual(output.read_bytes(), (ARTIFACTS / 'bigram/0.json').read_bytes())
             text = 'In short, there will be on TV!'
@@ -30,14 +30,14 @@ class NotebookTrainingTests(unittest.TestCase):
             output = Path(directory) / 'handwriting.json'
             output.write_bytes(b'existing file')
             with self.assertRaises(ValueError):
-                GreedyHandwritingBigramTokenizer().prepare(SOURCE, CATEGORIES, output_path=output)
+                HandwritingBigramTokenizer(policy='greedy').prepare(SOURCE, CATEGORIES, output_path=output)
             self.assertEqual(output.read_bytes(), b'existing file')
 
     def test_wrong_alphabet_fails_before_creating_an_artifact(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'handwriting.json'
             with self.assertRaises(ValueError):
-                GreedyHandwritingBigramTokenizer().prepare(SOURCE, ['', 'a'], output_path=output)
+                HandwritingBigramTokenizer(policy='greedy').prepare(SOURCE, ['', 'a'], output_path=output)
             self.assertFalse(output.exists())
 
     @unittest.skipUnless(DEFAULT_LABELS.is_file() and DEFAULT_SELECTION.is_file(), 'External IAM inputs unavailable')

@@ -9,7 +9,7 @@ import unicodedata
 import zipfile
 
 from .ed import ED_ALPHABET
-from tva.handwriting_tokenizers import GreedyHandwritingBigramTokenizer
+from tva.handwriting_tokenizers import HandwritingBigramTokenizer
 from tva.tokenizer_compatibility import GreedyLinguisticBigramTokenizer
 from tva.handwriting_tokenizers import HandwritingBPETokenizer, HandwritingUnigramTokenizer
 from tva.dataset.ed import ED_ARCHIVE_SHA256
@@ -58,7 +58,7 @@ def audit(
     from tva.tokenizers import BigramTokenizer
 
     tokenizer_classes = {
-        'handwriting': GreedyHandwritingBigramTokenizer,
+        'handwriting': lambda: HandwritingBigramTokenizer(policy='greedy'),
         'linguistic': GreedyLinguisticBigramTokenizer,
         'original': BigramTokenizer,
         'bpe': HandwritingBPETokenizer,

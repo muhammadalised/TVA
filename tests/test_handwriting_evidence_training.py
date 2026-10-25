@@ -10,7 +10,7 @@ from tva.handwriting.common import sha256_bytes
 from tva.handwriting.ed import ED_ALPHABET
 from tva.handwriting.evidence import DEFAULT_EVIDENCE, load_evidence, validate_evidence
 from tva.handwriting_tokenizers import (
-    GreedyHandwritingBigramTokenizer, HandwritingBPETokenizer, HandwritingUnigramTokenizer,
+    HandwritingBigramTokenizer, HandwritingBPETokenizer, HandwritingUnigramTokenizer,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,14 +59,14 @@ class EvidenceGuardTests(unittest.TestCase):
 class FullEvidenceTrainingTests(unittest.TestCase):
     def test_all_public_training_apis_recompute_exact_frozen_artifacts(self):
         conditions = [
-            ('bigram', GreedyHandwritingBigramTokenizer, 'ed_iam_handwriting_bigram_greedy_v1.json'),
+            ('bigram', HandwritingBigramTokenizer, 'ed_iam_handwriting_bigram_greedy_v1.json'),
             ('bpe', HandwritingBPETokenizer, 'ed_iam_handwriting_bpe_v1.json'),
             ('unigram', HandwritingUnigramTokenizer, 'ed_iam_handwriting_unigram_v1.json'),
         ]
         for kind, cls, filename in conditions:
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / filename
-                tokenizer = cls()
+                tokenizer = cls(policy='greedy') if kind == 'bigram' else cls()
                 tokenizer.train(DEFAULT_EVIDENCE, ['', *ED_ALPHABET], output_path=output)
                 self.assertEqual(output.read_bytes(), (ARTIFACTS / kind / '0.json').read_bytes())
                 self.assertEqual(tokenizer.size, 224)
@@ -85,7 +85,7 @@ class FullEvidenceTrainingTests(unittest.TestCase):
                     self.assertEqual(tokenizer.decode(ids), text)
 
     def test_training_rejects_model_file_as_evidence_and_wrong_categories(self):
-        for cls in (GreedyHandwritingBigramTokenizer, HandwritingBPETokenizer, HandwritingUnigramTokenizer):
+        for cls in (HandwritingBigramTokenizer, HandwritingBPETokenizer, HandwritingUnigramTokenizer):
             with self.subTest(cls=cls.__name__), tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / 'model.json'
                 with self.assertRaisesRegex(ValueError, 'evidence SHA-256'):
@@ -101,7 +101,7 @@ class FullEvidenceTrainingTests(unittest.TestCase):
             report = output.with_suffix('.training.json')
             report.write_bytes(b'existing report')
             with self.assertRaisesRegex(ValueError, 'Existing frozen file differs'):
-                GreedyHandwritingBigramTokenizer().train(DEFAULT_EVIDENCE, ['', *ED_ALPHABET], output_path=output)
+                HandwritingBigramTokenizer(policy='greedy').train(DEFAULT_EVIDENCE, ['', *ED_ALPHABET], output_path=output)
             self.assertEqual(report.read_bytes(), b'existing report')
             self.assertFalse(output.exists())
             self.assertFalse((output.parent / 'source').exists())

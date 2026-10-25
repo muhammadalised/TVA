@@ -1310,3 +1310,46 @@ Validation: five artifact-path tests passed; all 36 saved ED run configs load
 their tokenizers. Executed every analysis cell with headless plotting and all
 503 real WD fold-0 validation predictions, plus one prediction from the
 historical linguistic bigram checkpoint. No training or recorded-score changes.
+
+
+## 2026-10-25 — Group analysis notebooks in one directory
+
+Moved all seven analysis/inspection notebooks to `notebooks/analysis/`:
+ED overview, OnHW overview, compression, linguistic bigram usage, token
+distributions, handwriting predictions and tokenizer inspection. Added a
+notebook index and updated README/setup links. Each notebook locates the
+repository before importing TVA, so imports and data paths work from the
+repository root or the notebook folder. Analysis outputs still go to their
+existing `results/` locations.
+
+Validation: all notebook code passes syntax checks; all seven setup cells ran
+successfully in fresh processes from both launch directories (14 checks).
+Saved outputs, settings and every cell after setup were preserved. Tokenizer
+artifacts and training/preparation notebooks are byte-identical to their
+pre-move state, including pre-existing user edits. No training, commit or push.
+
+
+## 2026-10-25 — One handwriting bigram class with two policies
+
+Merged the handwriting bigram implementations into `HandwritingBigramTokenizer`
+with `policy='greedy'` or `policy='utility-based'`. The latter retains the
+maximum-total-utility dynamic program and tie breaking. The historical default
+is utility-based; ED notebook examples explicitly select greedy. Removed the
+separate greedy handwriting class and updated its callers. Saved recognition
+config names still select their original policies through the factory.
+Historical linguistic loaders retain their original behavior.
+
+Both policies can load the same authenticated ED or OnHW vocabulary. Training
+input selection follows the declared task alphabet, independently of runtime
+segmentation policy. Frozen vocabulary files, IDs, evidence and provenance
+remain unchanged; artifact policy metadata describes its original experiment,
+while the constructor selects runtime behavior.
+
+Validation: exact segmentation metadata and token IDs match pre-refactor outputs
+for 2,004 unique-label cases across handwriting and historical linguistic
+conditions. Five new tests cover supported policy names, overlapping pairs,
+both frozen vocabularies, legacy factory defaults and identical ED fitting under
+both policies. The full suite ran 109 tests: 97 passed, seven optional skips and
+the same five pre-existing failures as the baseline. Those failures are strict
+byte comparisons against the independently reformatted linguistic bigram
+`0.json`; that user edit was preserved. No recognition training, commit or push.

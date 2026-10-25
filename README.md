@@ -41,26 +41,32 @@ We use a MSCOCO-like structure for the training and evaluation of our dataset. A
 
 ## Usage
 
-### ED analysis notebooks
+### Analysis notebooks
 
-Each notebook has one settings cell at the top and ends with a short
-plain-language summary generated from its numbers. Shared loading code is in
-`tva/ed_analysis.py`. None of them trains anything.
+All seven analysis and inspection notebooks are in
+[`notebooks/analysis/`](notebooks/analysis/README.md). Select the TVA Python
+kernel, adjust the settings near the top, then run the cells. The first code
+cell locates the repository automatically, whether the kernel starts in the
+repository root or the notebook folder. Shared ED loading code is in
+`tva/ed_analysis.py`. These notebooks perform analysis and inference only.
 
 | Notebook | What it shows | Needs |
 | --- | --- | --- |
-| `analyze_ed_token_distribution.ipynb` | Token frequencies of training labels, validation labels and model predictions; over- and under-predicted tokens; optional comparison across tokenizers | Extracted ED data and a saved run |
-| `analyze_ed_linguistic_bigrams.ipynb` | How often each linguistic bigram is used in ED, how concentrated use is, unused bigrams, train vs validation | Extracted ED data |
-| `inspect_handwriting_tokenizers.ipynb` | Encoding and decoding of one ED sentence (or your own text) with the handwriting Bigram, BPE and Unigram tokenizers | Frozen tokenizer files; ED data for real samples |
-| `analyze_ed_compression.ipynb` | Characters per token of every tokenizer, recognition error plotted against compression, and the text-only bigram/BPE sizes that compress like their handwriting partners | Frozen tokenizer files; ED data and saved run scores for sections 1–2 |
+| [analyze_ed.ipynb](notebooks/analysis/analyze_ed.ipynb) | ED dataset, folds, signals, tokenization and completed character baselines | Extracted ED data; saved results for recognition summaries |
+| [analyze_onhw.ipynb](notebooks/analysis/analyze_onhw.ipynb) | OnHW writer and character distributions and supplied folds | Prepared OnHW datasets |
+| [analyze_handwriting_predictions.ipynb](notebooks/analysis/analyze_handwriting_predictions.ipynb) | One recording's predicted token IDs, CTC decisions and decoded text | Extracted ED data and a saved checkpoint |
+| [analyze_ed_token_distribution.ipynb](notebooks/analysis/analyze_ed_token_distribution.ipynb) | Token frequencies of training labels, validation labels and model predictions; over- and under-predicted tokens; optional comparison across tokenizers | Extracted ED data and a saved run |
+| [analyze_ed_linguistic_bigrams.ipynb](notebooks/analysis/analyze_ed_linguistic_bigrams.ipynb) | How often each linguistic bigram is used in ED, how concentrated use is, unused bigrams, train vs validation | Extracted ED data |
+| [inspect_handwriting_tokenizers.ipynb](notebooks/analysis/inspect_handwriting_tokenizers.ipynb) | Encoding and decoding of one ED sentence (or your own text) with the handwriting Bigram, BPE and Unigram tokenizers | Frozen tokenizer files; ED data for real samples |
+| [analyze_ed_compression.ipynb](notebooks/analysis/analyze_ed_compression.ipynb) | Characters per token of every tokenizer, recognition error plotted against compression, and the text-only bigram/BPE sizes that compress like their handwriting partners | Frozen tokenizer files; ED data and saved run scores for sections 1–2 |
 
 Predicted tokens are the IDs the model actually emits (best CTC path), not
 re-encoded predicted text. `TVA_ED_EXTRACTED_DIR` and `TVA_ED_RESULTS_DIR`
 override the default `data/tva/ed` and `results/thesis/ed` locations.
 
 To inspect actual handwriting-model predictions one recording at a time, open
-`analyze_handwriting_predictions.ipynb`. Select Bigram/BPE/Unigram, WD/WI,
-fold and validation index. Its five code cells load the saved recognizer,
+[analyze_handwriting_predictions.ipynb](notebooks/analysis/analyze_handwriting_predictions.ipynb).
+Select Bigram/BPE/Unigram, WD/WI, fold and validation index. Its five code cells load the saved recognizer,
 run one extracted ED recording, show actual predicted token IDs and CTC frame
 decisions, and compare decoded text with the reference and saved training
 prediction. It performs inference only and requires local saved checkpoints.
@@ -74,15 +80,32 @@ classes, and calls their training methods:
 
 ```python
 from tva.iam_tokenizers import IAMBigramTokenizer
-from tva.handwriting_tokenizers import GreedyHandwritingBigramTokenizer
+from tva.handwriting_tokenizers import HandwritingBigramTokenizer
 
 linguistic = IAMBigramTokenizer()
 linguistic.train(iam_labels, categories, 224,
                  selection_path=iam_selection, output_path=linguistic_output)
 
-handwriting = GreedyHandwritingBigramTokenizer()
+handwriting = HandwritingBigramTokenizer(policy='greedy')
 handwriting.train(iam_evidence, categories, output_path=handwriting_output)
 ```
+
+Handwriting bigrams use one class with an explicit segmentation policy:
+
+```python
+greedy = HandwritingBigramTokenizer(policy='greedy')
+utility_based = HandwritingBigramTokenizer(policy='utility-based')
+```
+
+`greedy` takes an available pair at the leftmost position. `utility-based`
+uses dynamic programming to maximize total bigram utility over the text.
+Both can load the same ED or OnHW vocabulary; this parameter changes text
+segmentation while preserving vocabulary selection, IDs and frozen files.
+The historical constructor default is `utility-based`; ED preparation explicitly
+uses `greedy`. Existing saved config keys retain their previous behavior:
+`handwriting_bigram_greedy` selects greedy, and `handwriting_bigram` selects
+utility-based. Loading a file preserves the constructor's selected policy;
+JSON provenance continues to record the original frozen experiment's policy.
 
 The linguistic tokenizer runs the original TVA bigram algorithm on IAM training
 transcripts. The handwriting tokenizer selects its vocabulary in TVA from the
@@ -125,7 +148,8 @@ python -m tva.handwriting.audit --compare --dataset-directory /mnt/c/Users/Ali/D
 ```
 
 Historical custom linguistic artifacts and loaders in
-`tva/tokenizer_compatibility.py` remain for saved experiments and analyze_ed.ipynb. Their retired builders are not needed for new training.
+`tva/tokenizer_compatibility.py` remain for saved experiments and
+[ED analysis](notebooks/analysis/analyze_ed.ipynb). Their retired builders are not needed for new training.
 See docs/EXPERIMENTS.md for provenance and methodological differences.
 
 Recognition training is a separate manual step. Current ED configs live in
