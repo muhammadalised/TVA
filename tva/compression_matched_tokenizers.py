@@ -1,39 +1,38 @@
 """Compression-matched IAM text-only controls for ED recognition.
 
-Each control keeps a prefix of an existing text-only vocabulary: the top k
-IAM-count bigrams, or the first k text BPE merges. k is chosen so that the
-control covers as many characters per token on IAM training text as its
-handwriting partner. Handwriting and text-only tokens then merge equally often,
-and only the evidence that chose the pieces differs.
+Each control keeps a prefix of a text-only TVA vocabulary: the top k bigrams
+of the letters-only bigram, or the first k BPE merges. k is chosen so that the control covers as
+many characters per token on IAM training text as its handwriting partner.
+Handwriting and text-only tokens then merge equally often, and only the
+evidence that chose the pieces differs.
 
-No ED labels or recognition results are read.
+The controls are saved in TVA's own formats: the bigram control loads with
+BigramTokenizer and the BPE control with BPETokenizer. No ED labels or
+recognition results are read.
 """
 
 import json
 from pathlib import Path
-import unicodedata
 
-from loguru import logger
+from tva.dataset.ed import ED_ALPHABET
+from tva.handwriting.common import canonical_json_bytes, save_fold_tokenizers, save_frozen, sha256_bytes
+from tva.handwriting_tokenizers import bpe_from_merges, read_connectivity_lines
 
-from tva.handwriting.common import (
-    canonical_json_bytes, require, resolve_artifact_path, save_fold_tokenizers, save_frozen, sha256_bytes,
-)
-from tva.handwriting.ed import ED_ALPHABET
-from tva.subword_tokenizers import SubwordTokenizer
-
-ARTIFACT_ROOT = Path(__file__).resolve().parents[1] / 'artifacts' / 'tokenizers'
+ROOT = Path(__file__).resolve().parents[1]
+ARTIFACT_ROOT = ROOT / 'artifacts' / 'tokenizers'
+IAM_EVIDENCE = ROOT / 'artifacts' / 'evidence' / 'iam' / 'iam_connectivity_v1.json.gz'
 SCHEMA = 'tva.ed-compression-matched-text-control.v1'
 
 # kind -> text-only source, handwriting partner and output directory.
 FAMILIES = {
     'bigram': {
-        'source': ('linguistic_bigram_greedy', 'archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'),
+        'source': ('bigram', 'ed/linguistic/bigram_letters/0.json'),
         'partner': ('handwriting_bigram_greedy', 'ed/handwriting/bigram/0.json'),
         'output': 'ed/linguistic/bigram_matched',
-        'selection': 'top-k IAM-count bigrams (source rank order)',
+        'selection': 'top-k letters-only TVA bigrams (TVA rank order = ID order)',
     },
     'bpe': {
-        'source': ('linguistic_bpe', 'ed/linguistic/bpe/0.json'),
+        'source': ('bpe', 'ed/linguistic/bpe/0.json'),
         'partner': ('handwriting_bpe', 'ed/handwriting/bpe/0.json'),
         'output': 'ed/linguistic/bpe_matched',
         'selection': 'first k text BPE merges (learned order)',
@@ -44,14 +43,11 @@ FAMILIES = {
 def iam_training_texts() -> list[str]:
     """The IAM training lines every ED tokenizer learned from.
 
-    Read from the bundled, hash-checked connectivity evidence (text only).
-    Lines with characters outside the ED alphabet (#, &, *) are left out.
+    Read from the bundled connectivity evidence (text only). Lines with
+    characters outside the ED alphabet (#, &, *) are left out.
     """
-    from tva.handwriting.evidence import load_evidence
-
-    corpus, _ = load_evidence()
     allowed = set(ED_ALPHABET)
-    return [line['text'] for line in corpus if set(line['text']) <= allowed]
+    return [line['text'] for line in read_connectivity_lines(IAM_EVIDENCE) if set(line['text']) <= allowed]
 
 
 def characters_per_token(tokenizer, texts) -> float:
@@ -70,41 +66,6 @@ def greedy_bigram_split(text: str, bigrams: set[str]) -> list[str]:
     return tokens
 
 
-def _apply_merge(tokens: list[str], merge: dict) -> list[str]:
-    merged, i = [], 0
-    while i < len(tokens):
-        if i + 1 < len(tokens) and (tokens[i], tokens[i + 1]) == (merge['left'], merge['right']):
-            merged.append(merge['token'])
-            i += 2
-        else:
-            merged.append(tokens[i])
-            i += 1
-    return merged
-
-
-def bpe_split(text: str, merges: list[dict]) -> list[str]:
-    """Apply BPE merges in learned order, exactly like the frozen tokenizers."""
-    tokens = list(text)
-    for merge in merges:
-        tokens = _apply_merge(tokens, merge)
-    return tokens
-
-
-def bpe_compression_curve(texts: list[str], merges: list[dict]) -> list[float]:
-    """Characters per token when only the first k merges are kept, for k = 0..len(merges).
-
-    BPE learns merges one at a time, so keeping the first k merges equals
-    training with a budget of k.
-    """
-    sequences = [list(text) for text in texts]
-    characters = sum(map(len, texts))
-    curve = [characters / sum(map(len, sequences))]
-    for merge in merges:
-        sequences = [_apply_merge(tokens, merge) for tokens in sequences]
-        curve.append(characters / sum(map(len, sequences)))
-    return curve
-
-
 def bigram_compression_curve(texts: list[str], ranked_bigrams: list[str]) -> list[float]:
     """Characters per token when only the top k bigrams are kept, for k = 0..len."""
     characters = sum(map(len, texts))
@@ -112,11 +73,39 @@ def bigram_compression_curve(texts: list[str], ranked_bigrams: list[str]) -> lis
             for k in range(len(ranked_bigrams) + 1)]
 
 
+def bpe_merges(tokenizer) -> list[tuple[str, str]]:
+    """The ordered merges of a loaded BPETokenizer."""
+    merges = json.loads(tokenizer.tokenizer.to_str())['model']['merges']
+    return [tuple(m.split(' ')) if isinstance(m, str) else tuple(m) for m in merges]
+
+
+def bpe_compression_curve(texts: list[str], merges: list[tuple[str, str]]) -> list[float]:
+    """Characters per token when only the first k merges are kept, for k = 0..len(merges).
+
+    BPE learns merges one at a time, so keeping the first k merges equals
+    training with a budget of k.
+    """
+    chars = sorted(set(''.join(texts)))
+    characters = sum(map(len, texts))
+    curve = []
+    for k in range(len(merges) + 1):
+        encodings = bpe_from_merges(chars, merges[:k]).encode_batch(texts)
+        curve.append(characters / sum(len(e.ids) for e in encodings))
+    return curve
+
+
 def ranked_pieces(kind: str, source) -> list:
-    """The source's learned pieces in selection order: bigram strings or BPE merges."""
-    if kind == 'bigram':
-        return [row['token'] for row in sorted(source.model['vocabulary'], key=lambda r: r['rank'])]
-    return list(source.source_model['merges'])
+    """The source's learned pieces in selection order: bigram strings or BPE merges.
+
+    TVA's BigramTokenizer numbers its bigrams by frequency rank; handwriting
+    bigram files rank by their stored utility instead.
+    """
+    if kind == 'bpe':
+        return bpe_merges(source)
+    utility = getattr(source, 'utility', None)
+    if utility:
+        return sorted(utility, key=lambda t: (-utility[t], t))
+    return [source.idx_token[i] for i in sorted(source.idx_token) if len(source.idx_token[i]) == 2]
 
 
 def compression_curve(kind: str, texts: list[str], pieces: list) -> list[float]:
@@ -128,17 +117,16 @@ def matched_size(curve: list[float], target: float) -> int:
     return min(range(len(curve)), key=lambda k: (abs(curve[k] - target), k))
 
 
-def build_matched_model(kind: str) -> dict:
-    """Select k on IAM training text and return the frozen ED tokenizer model."""
+def build_matched_model(kind: str) -> tuple[bytes, dict]:
+    """Select k on IAM training text; return the ED tokenizer file and the choice."""
     from tva.tokenizer_factory import get_tokenizer
 
-    require(kind in FAMILIES, f'Unsupported compression-matched family: {kind!r}')
     family = FAMILIES[kind]
     loaded = {}
     for role in ('source', 'partner'):
         key, path = family[role]
         loaded[role] = get_tokenizer(key)
-        loaded[role].load(ARTIFACT_ROOT / path)
+        loaded[role].load(str(ARTIFACT_ROOT / path))
 
     texts = iam_training_texts()
     pieces = ranked_pieces(kind, loaded['source'])
@@ -146,18 +134,9 @@ def build_matched_model(kind: str) -> dict:
     target = characters_per_token(loaded['partner'], texts)
     k = matched_size(curve, target)
     selected = pieces[:k]
-    tokens = ['', *ED_ALPHABET, *(p if kind == 'bigram' else p['token'] for p in selected)]
-    require(len(tokens) == len(set(tokens)), 'Duplicate token in matched vocabulary')
-    return {
+    record = {
         'schema_version': SCHEMA,
-        'model_version': f'ed-iam-linguistic-{kind}-compression-matched-v1',
-        'status': 'frozen-compression-matched-text-control',
-        'dataset': 'ED', 'kind': kind,
-        'unicode_normalization': 'NFC', 'blank_id': 0, 'blank_token': '',
-        'size': len(tokens), 'subword_count': k,
-        'vocab': {t: i for i, t in enumerate(tokens)},
-        'idx_token': {str(i): t for i, t in enumerate(tokens)},
-        'pieces': selected,
+        'kind': kind, 'subword_count': k,
         'source': {'path': family['source'][1],
                    'sha256': sha256_bytes((ARTIFACT_ROOT / family['source'][1]).read_bytes()),
                    'subword_count': len(pieces)},
@@ -174,54 +153,21 @@ def build_matched_model(kind: str) -> dict:
             'ed_labels_read': False,
         },
     }
+    if kind == 'bpe':
+        content = bpe_from_merges(list(ED_ALPHABET), selected).to_str(pretty=True)
+        return content.encode('utf-8'), record
+
+    # Exactly what TVA's BigramTokenizer.train() writes for this vocabulary.
+    vocab = {t: i for i, t in enumerate(['', *ED_ALPHABET, *selected])}
+    idx_token = {i: t for t, i in vocab.items()}
+    return json.dumps({'vocab': vocab, 'idx_token': idx_token}, ensure_ascii=False).encode('utf-8'), record
 
 
 def build_fold_tokenizers(kind: str, num_folds: int = 5) -> Path:
-    """Write 0.json for a family and copy it to every recognition fold."""
+    """Write 0.json (and the selection record) and copy it to every fold."""
     directory = ARTIFACT_ROOT / FAMILIES[kind]['output']
-    save_frozen(directory / '0.json', canonical_json_bytes(build_matched_model(kind)))
+    content, record = build_matched_model(kind)
+    save_frozen(directory / '0.json', content)
+    save_frozen(directory / 'selection.json', canonical_json_bytes(record))
     save_fold_tokenizers(directory, num_folds)
     return directory
-
-
-class _CompressionMatchedTokenizer(SubwordTokenizer):
-    """Load-and-run tokenizer for a frozen compression-matched control."""
-
-    def load(self, path_config):
-        path = resolve_artifact_path(path_config)
-        model = json.loads(path.read_bytes())
-        require(model.get('schema_version') == SCHEMA and model.get('kind') == self.kind,
-                f'Not a compression-matched {self.kind} tokenizer: {path}')
-        source = ARTIFACT_ROOT / model['source']['path']
-        require(sha256_bytes(source.read_bytes()) == model['source']['sha256'],
-                f'Text-only source changed since the control was built: {source}')
-        tokens = [model['idx_token'][str(i)] for i in range(model['size'])]
-        require(tokens[:len(ED_ALPHABET) + 1] == ['', *ED_ALPHABET], 'Unexpected ED character IDs')
-        require(model['vocab'] == {t: i for i, t in enumerate(tokens)}, 'Inconsistent vocabulary')
-        self.model = model
-        self.vocab = dict(model['vocab'])
-        self.idx_token = dict(enumerate(tokens))
-        if self.kind == 'bpe':
-            self.source_model = {'merges': model['pieces']}
-        logger.info(f'{type(self).__name__} with {model["subword_count"]} pieces is loaded from {path}.')
-
-
-class CompressionMatchedBigramTokenizer(_CompressionMatchedTokenizer):
-    """Top-k IAM-count bigrams, segmented greedily left to right."""
-
-    kind = 'bigram'
-
-    def segment(self, text: str) -> dict:
-        if not self.model:
-            raise ValueError('Tokenizer not trained or loaded.')
-        text = unicodedata.normalize('NFC', text)
-        missing = sorted(set(text) - set(self.vocab))
-        require(not missing, f'characters are absent from tokenizer vocabulary: {missing!r}')
-        tokens = greedy_bigram_split(text, set(self.model['pieces']))
-        return {'text': text, 'tokens': tokens}
-
-
-class CompressionMatchedBPETokenizer(_CompressionMatchedTokenizer):
-    """First k text BPE merges, applied with the shared BPE segmentation."""
-
-    kind = 'bpe'

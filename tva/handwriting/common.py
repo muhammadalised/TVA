@@ -35,6 +35,7 @@ def save_frozen(path: str | Path, content: bytes) -> None:
 
 
 # Only known former repository paths are redirected; other missing files still fail.
+# Former BPE/Unigram files are not redirected: their folders now hold different tokenizers.
 _ARTIFACT_ROOT = Path(__file__).resolve().parents[2] / 'artifacts/tokenizers'
 _LEGACY_ARTIFACT_PATHS = {
     'fau_english_iam_handwriting_bigram_greedy_v1.json': 'ed/handwriting/bigram/0.json',
@@ -42,40 +43,13 @@ _LEGACY_ARTIFACT_PATHS = {
     'ed/character/ed_characters_v1.comparison.json': 'ed/character/char/0.comparison.json',
     'ed/character/ed_characters_v1.json': 'ed/character/char/0.json',
     'ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.json': 'ed/handwriting/bigram/0.json',
-    'ed/handwriting/ed_iam_handwriting_bigram_greedy_v1.training.json': 'ed/handwriting/bigram/0.training.json',
-    'ed/handwriting/ed_iam_handwriting_bpe_v1.json': 'ed/handwriting/bpe/0.json',
-    'ed/handwriting/ed_iam_handwriting_bpe_v1.training.json': 'ed/handwriting/bpe/0.training.json',
-    'ed/handwriting/ed_iam_handwriting_subwords_v1.audit.json': 'ed/handwriting/subwords.audit.json',
-    'ed/handwriting/ed_iam_handwriting_unigram_v1.json': 'ed/handwriting/unigram/0.json',
-    'ed/handwriting/ed_iam_handwriting_unigram_v1.training.json': 'ed/handwriting/unigram/0.training.json',
-    'ed/handwriting/source/iam-english-handwriting-bigram-v1.json': 'ed/handwriting/bigram/source/iam-english-handwriting-bigram-v1.json',
-    'ed/handwriting/source/iam-english-handwriting-bpe-v1.json': 'ed/handwriting/bpe/source/iam-english-handwriting-bpe-v1.json',
-    'ed/handwriting/source/iam-english-handwriting-unigram-v1.json': 'ed/handwriting/unigram/source/iam-english-handwriting-unigram-v1.json',
-    'ed/linguistic/ed_iam_linguistic_bpe_v1.json': 'ed/linguistic/bpe/0.json',
-    'ed/linguistic/ed_iam_linguistic_bpe_v1.training.json': 'ed/linguistic/bpe/0.training.json',
-    'ed/linguistic/ed_iam_linguistic_subwords_v1.audit.json': 'ed/linguistic/subwords.audit.json',
-    'ed/linguistic/ed_iam_linguistic_unigram_v1.json': 'ed/linguistic/unigram/0.json',
-    'ed/linguistic/ed_iam_linguistic_unigram_v1.training.json': 'ed/linguistic/unigram/0.training.json',
     'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.audit.json': 'ed/linguistic/bigram/0.audit.json',
     'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.json': 'ed/linguistic/bigram/0.json',
     'ed/linguistic/ed_iam_tva_original_bigram_greedy_v1.provenance.json': 'ed/linguistic/bigram/0.provenance.json',
-    'ed/linguistic/source/iam-english-text-bpe-v1.json': 'ed/linguistic/bpe/source/iam-english-text-bpe-v1.json',
-    'ed/linguistic/source/iam-english-text-unigram-v1.json': 'ed/linguistic/unigram/source/iam-english-text-unigram-v1.json',
     'ed_characters_v1.comparison.json': 'ed/character/char/0.comparison.json',
     'ed_characters_v1.json': 'ed/character/char/0.json',
     'ed_iam_handwriting_bigram_greedy_v1.json': 'ed/handwriting/bigram/0.json',
-    'ed_iam_handwriting_bigram_greedy_v1.training.json': 'ed/handwriting/bigram/0.training.json',
-    'ed_iam_handwriting_bpe_v1.json': 'ed/handwriting/bpe/0.json',
-    'ed_iam_handwriting_bpe_v1.training.json': 'ed/handwriting/bpe/0.training.json',
-    'ed_iam_handwriting_subwords_v1.audit.json': 'ed/handwriting/subwords.audit.json',
-    'ed_iam_handwriting_unigram_v1.json': 'ed/handwriting/unigram/0.json',
-    'ed_iam_handwriting_unigram_v1.training.json': 'ed/handwriting/unigram/0.training.json',
     'ed_iam_linguistic_bigram_greedy_v1.json': 'archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json',
-    'ed_iam_linguistic_bpe_v1.json': 'ed/linguistic/bpe/0.json',
-    'ed_iam_linguistic_bpe_v1.training.json': 'ed/linguistic/bpe/0.training.json',
-    'ed_iam_linguistic_subwords_v1.audit.json': 'ed/linguistic/subwords.audit.json',
-    'ed_iam_linguistic_unigram_v1.json': 'ed/linguistic/unigram/0.json',
-    'ed_iam_linguistic_unigram_v1.training.json': 'ed/linguistic/unigram/0.training.json',
     'ed_iam_tva_original_bigram_greedy_v1.audit.json': 'ed/linguistic/bigram/0.audit.json',
     'ed_iam_tva_original_bigram_greedy_v1.json': 'ed/linguistic/bigram/0.json',
     'ed_iam_tva_original_bigram_greedy_v1.provenance.json': 'ed/linguistic/bigram/0.provenance.json',
@@ -84,10 +58,6 @@ _LEGACY_ARTIFACT_PATHS = {
     'linguistic_bigram/onhw_words500_wi_word_rh/0.json': 'archive/onhw/linguistic_bigram/onhw_words500_wi_word_rh/0.json',
     'linguistic_bigram/onhw_words500_wi_word_rh/manifest.json': 'archive/onhw/linguistic_bigram/onhw_words500_wi_word_rh/manifest.json',
     'onhw_words500_rh_iam_read_v1.json': 'archive/onhw/handwriting/onhw_words500_rh_iam_read_v1.json',
-    'source/iam-english-handwriting-bigram-v1.json': 'ed/handwriting/bigram/source/iam-english-handwriting-bigram-v1.json',
-    'source/iam-english-handwriting-bpe-v1.json': 'ed/handwriting/bpe/source/iam-english-handwriting-bpe-v1.json',
-    'source/iam-english-handwriting-subwords-v1.manifest.json': 'ed/handwriting/source/iam-english-handwriting-subwords-v1.manifest.json',
-    'source/iam-english-handwriting-unigram-v1.json': 'ed/handwriting/unigram/source/iam-english-handwriting-unigram-v1.json',
 }
 
 

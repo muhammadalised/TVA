@@ -1,482 +1,475 @@
-"""Handwriting-aware tokenizer training and runtime classes."""
+"""Handwriting-aware counterparts of TVA's tokenizers.
 
-from __future__ import annotations
+Each class subclasses the original TVA tokenizer and only replaces train():
+vocabularies are learned from handwriting connectivity evidence instead of
+label frequencies. Files, loading, encoding and decoding stay TVA's.
+UnigramEMTokenizer runs the handwriting Unigram's EM on the labels alone, as
+the linguistic partner that lacks only the connectivity.
+"""
 
-from dataclasses import dataclass
+import gzip
 import json
-import math
-from pathlib import Path
-import unicodedata
-from typing import Any
+import os
 
 from loguru import logger
+from tokenizers import Tokenizer, decoders, models
 
-from tva.subword_tokenizers import SubwordTokenizer
-
-from tva.handwriting.common import canonical_json_bytes, require, resolve_artifact_path, save_frozen, sha256_bytes
-
-from tva.handwriting.onhw import (
-    ADAPTER_BIGRAM_COUNT,
-    ADAPTER_POLICY_ID,
-    ADAPTER_SHA256,
-    ADAPTER_SIZE,
-    SOURCE_SHA256,
+from tva.handwriting.training import (
+    collect_candidates,
+    frequent_spans,
+    train_bpe,
+    train_unigram,
 )
-from tva.handwriting.ed import (
-    ADAPTER_BIGRAM_COUNT as ED_ADAPTER_BIGRAM_COUNT,
-    ADAPTER_POLICY_ID as ED_ADAPTER_POLICY_ID,
-    ADAPTER_SCHEMA as ED_ADAPTER_SCHEMA,
-    ADAPTER_SHA256 as ED_ADAPTER_SHA256,
-    ADAPTER_SIZE as ED_ADAPTER_SIZE,
-    GREEDY_POLICY,
-    SOURCE_SHA256 as ED_SOURCE_SHA256,
+from tva.tokenizers import (
+    BigramTokenizer,
+    BPETokenizer,
+    UnigramTokenizer,
+    letters_only_pre_tokenizer,
 )
 
+__all__ = [
+    'HandwritingBigramTokenizer',
+    'HandwritingBPETokenizer',
+    'HandwritingUnigramTokenizer',
+    'UnigramEMTokenizer',
+    'bpe_from_merges',
+    'read_bigram_scores',
+    'read_connectivity_lines',
+    'unigram_from_log_probs',
+]
 
-HANDWRITING_SCHEMA = 'dtlr.handwriting-bigram-tokenizer.v2'
-SUPPORTED_OVERLAP_POLICY = 'maximum-total-utility-non-overlapping-v1'
-
-
-@dataclass(frozen=True)
-class _Segmentation:
-    utility: float
-    bigram_count: int
-    segments: tuple[dict[str, Any], ...]
-
-
-def _normalize_text(text: str, policy: str) -> str:
-    if policy == 'none':
-        return text
-    if policy == 'NFC':
-        return unicodedata.normalize('NFC', text)
-    raise ValueError(f'unsupported Unicode normalization policy: {policy}')
+POLICIES = ('greedy', 'utility-based')
 
 
-class HandwritingBigramTokenizer:
-    """Handwriting bigrams with greedy or utility-based segmentation.
+def _read_json(path: str):
+    opener = gzip.open if str(path).endswith('.gz') else open
+    with opener(path, 'rt', encoding='utf-8') as f:
+        return json.load(f)
 
-    The historical default is utility-based. Pass policy='greedy' for the
-    existing ED setup. Either policy can use the same frozen vocabulary.
-    """
 
-    supported_schemas = {HANDWRITING_SCHEMA, ED_ADAPTER_SCHEMA}
-    bigram_kind = 'handwriting-bigram'
-    # Historical linguistic subclasses supply their own artifact policy.
-    supported_overlap_policy = None
+def read_bigram_scores(path_evidence: str) -> list[dict]:
+    '''Reads per-bigram connectivity scores from a JSON or JSON.GZ file.
 
-    def __init__(self, policy: str = 'utility-based') -> None:
-        if policy not in ('greedy', 'utility-based'):
-            raise ValueError("policy must be 'greedy' or 'utility-based'")
-        self._policy = policy
-        self.model: dict[str, Any] = {}
-        self.vocab: dict[str, int] = {}
-        self.idx_token: dict[int, str] = {}
-        self._bigram_rows: dict[str, dict[str, Any]] = {}
+    The file is either a list of score rows or an object with a 'scores' list
+    (the DTLR export). Each row needs:
+        pair: The two characters, e.g. 'th'.
+        n_exact_alignment: How often the pair was observed with both
+            characters reliably located in the handwriting.
+        exact_alignment_connected_rate: Fraction of those observations in
+            which the two characters were written connected.
 
-    @property
-    def policy(self) -> str:
-        """The runtime segmentation policy, independent of vocabulary selection."""
-        return self._policy
+    Args:
+        path_evidence: Path to the connectivity evidence.
 
-    @property
-    def size(self) -> int:
-        """Return the vocabulary size, including CTC blank ID 0."""
-        if not self.vocab:
-            raise ValueError('Tokenizer not trained or loaded.')
-        return len(self.vocab)
+    Returns:
+        List of score rows.
+    '''
+    evidence = _read_json(path_evidence)
+    return evidence['scores'] if isinstance(evidence, dict) else evidence
 
-    def train(self, source_path, categories, *, output_path) -> None:
-        """Fit ED pieces from IAM evidence, or prepare the historical OnHW source.
 
-        The declared alphabet selects the input format; segmentation policy
-        never selects a vocabulary or changes the fitted artifact.
-        """
-        from tva.handwriting.ed import ED_ALPHABET
-        from tva.handwriting.onhw import ONHW_ALPHABET
-        from tva.handwriting.training import fit_ed_tokenizer, save_training_outputs
+def read_connectivity_lines(path_evidence: str) -> list[dict]:
+    '''Reads per-line connectivity evidence from a JSON or JSON.GZ file.
 
-        if list(categories) == ['', *ONHW_ALPHABET]:
-            self.prepare(source_path, categories, output_path=output_path)
-            return
-        require(list(categories) == ['', *ED_ALPHABET],
-                'Expected the declared ED alphabet or the declared OnHW alphabet')
-        adapter, native, report = fit_ed_tokenizer(source_path, 'bigram')
-        save_training_outputs(output_path, 'bigram', adapter, native, report)
-        self.load(output_path)
+    The file has a 'lines' list (the DTLR export). Each line needs:
+        text: The transcription.
+        edges: [i, left, right] for adjacent characters i and i + 1, where
+            left/right are the IDs of the connected components (strokes) the
+            two characters belong to, or None if they could not be located.
 
-    def prepare(self, source_path, categories, *, output_path) -> None:
-        """Project an existing frozen vocabulary onto the declared task alphabet."""
-        from tva.handwriting.ed import ED_ALPHABET, build_ed_adapter
-        from tva.handwriting.onhw import ONHW_ALPHABET, build_frozen_onhw_adapter
+    Args:
+        path_evidence: Path to the connectivity evidence.
 
-        if list(categories) == ['', *ED_ALPHABET]:
-            model = build_ed_adapter(source_path)
-        else:
-            require(list(categories) == ['', *ONHW_ALPHABET],
-                    'Expected the declared ED alphabet or the declared OnHW alphabet')
-            model = build_frozen_onhw_adapter(source_path)
-        save_frozen(output_path, canonical_json_bytes(model))
-        self.load(output_path)
+    Returns:
+        Lines as {'text', 'edges': {i: (left, right) or None}}.
+    '''
+    return [
+        {
+            'text': line['text'],
+            'edges': {
+                i: None if left is None else (left, right)
+                for i, left, right in line['edges']
+            },
+        }
+        for line in _read_json(path_evidence)['lines']
+    ]
 
-    def load(self, path_config: str | Path) -> None:
-        """Authenticate a frozen ED or OnHW vocabulary; retain the chosen policy.
 
-        Artifact metadata records its original experimental policy. An explicit
-        constructor policy changes runtime segmentation, not the frozen file.
-        """
-        path = resolve_artifact_path(path_config)
-        content = path.read_bytes()
-        digest = sha256_bytes(content)
-        if digest not in {ADAPTER_SHA256, ED_ADAPTER_SHA256}:
-            raise ValueError(f'frozen adapter SHA-256 mismatch: {digest}')
-        try:
-            model = json.loads(content)
-        except (UnicodeDecodeError, json.JSONDecodeError) as error:
-            raise ValueError('tokenizer model is not valid UTF-8 JSON') from error
-        self.load_model(model, require_frozen_adapter=True)
-        logger.info(f'{type(self).__name__} ({self.policy}) is loaded from {path}.')
+def _letters_only(tokenizer: Tokenizer) -> Tokenizer:
+    '''Gives a built model the pipeline of TVA's letters_only training.'''
+    tokenizer.add_special_tokens(['<PAD>'])
+    tokenizer.pre_tokenizer = letters_only_pre_tokenizer()
+    tokenizer.decoder = decoders.Fuse()
+    return tokenizer
 
-    def load_model(
+
+def bpe_from_merges(chars: list[str], merges: list[tuple[str, str]]) -> Tokenizer:
+    '''Builds a letters-only BPE tokenizer from ordered merges.
+
+    IDs follow TVA's layout: '<PAD>' (CTC blank) is 0, then the characters,
+    then one token per merge in learned order.
+    '''
+    tokens = ['<PAD>', *chars, *(left + right for left, right in merges)]
+    vocab = {t: i for i, t in enumerate(tokens)}
+    return _letters_only(Tokenizer(models.BPE(vocab=vocab, merges=list(merges))))
+
+
+def unigram_from_log_probs(
+    chars: list[str], log_probs: dict[str, float]
+) -> Tokenizer:
+    '''Builds a letters-only Unigram tokenizer from learned log-probabilities.
+
+    IDs follow TVA's layout: '<PAD>' (CTC blank) is 0, then the characters,
+    then the learned pieces in alphabetical order.
+    '''
+    pieces = sorted(t for t in log_probs if len(t) > 1)
+    # rounded so that files are identical across platforms; characters
+    # never seen in training are always single tokens, so 0.0 is unused
+    vocab = [('<PAD>', 0.0)]
+    vocab += [(c, round(log_probs.get(c, 0.0), 10)) for c in chars]
+    vocab += [(t, round(log_probs[t], 10)) for t in pieces]
+    return _letters_only(
+        Tokenizer(models.Unigram(vocab, unk_id=None, byte_fallback=False))
+    )
+
+
+class HandwritingBigramTokenizer(BigramTokenizer):
+    '''Implements a Unigram + Bigram Tokenizer with handwriting-aware bigrams.
+
+    Identical to TVA's BigramTokenizer (vocabulary layout, files, encoding and
+    decoding) except for how bigrams are selected: instead of the most frequent
+    bigrams in the labels, it keeps the letter bigrams most often written
+    connected in a handwriting dataset.
+
+    Segmentation policies:
+        'greedy': Left-to-right bigram matching, exactly as BigramTokenizer.
+        'utility-based': Non-overlapping bigrams with the highest total
+            connectivity rate (ties prefer more bigrams).
+
+    Attributes:
+        vocab: Mapping from token to ID.
+        idx_token: Mapping from ID to token.
+        utility: Connectivity rate of each bigram in the vocabulary.
+        policy: Segmentation policy used by encode().
+        size: Property return of the vocabulary size.
+    '''
+
+    def __init__(self, policy: str = 'greedy') -> None:
+        super().__init__()
+        if policy not in POLICIES:
+            raise ValueError(f'policy must be one of {POLICIES}, got {policy!r}')
+
+        self.policy = policy
+        self.utility: dict[str, float] = {}
+
+    def train(
         self,
-        model: dict[str, Any],
-        *,
-        require_frozen_adapter: bool = False,
+        dir_ds: str,
+        categories: list[str],
+        size: int = 200,
+        path_evidence: str | None = None,
+        min_count: int = 20,
     ) -> None:
-        """Load a structurally valid handwriting bigram model from memory.
+        '''Trains a vocabulary containing characters and top connected bigrams.
 
-        The in-memory path supports small algorithm tests. TVA's training path
-        calls :meth:`load`, which additionally authenticates the frozen bytes.
-        """
-        if not isinstance(model, dict):
-            raise ValueError('tokenizer model root must be a JSON object')
-        if model.get('schema_version') not in self.supported_schemas:
-            raise ValueError('unsupported utility-bigram tokenizer schema')
-        if model.get('blank_token') != '' or model.get('blank_id') != 0:
-            raise ValueError('CTC blank must be the empty token at ID 0')
-        if model.get('text_normalization') not in {'none', 'NFC'}:
-            raise ValueError('tokenizer normalization must be none or NFC')
-        policy = model.get('policy')
-        if not isinstance(policy, dict):
-            raise ValueError('tokenizer model lacks its policy object')
-        expected_overlap = self.supported_overlap_policy
-        if expected_overlap is None:
-            expected_overlap = {
-                HANDWRITING_SCHEMA: SUPPORTED_OVERLAP_POLICY,
-                ED_ADAPTER_SCHEMA: GREEDY_POLICY,
-            }[model['schema_version']]
-        if policy.get('overlap_resolution') != expected_overlap:
-            raise ValueError('tokenizer model has an unsupported overlap policy')
-        if policy.get('single_character_utility') != 0.0:
-            raise ValueError('single-character utility must be zero')
+        Bigrams are ranked by connectivity rate (ties alphabetically) among
+        letter pairs observed at least min_count times. The evidence describes
+        the whole handwriting dataset, so every fold gets the same vocabulary.
 
-        vocab = model.get('vocab')
-        raw_idx_token = model.get('idx_token')
-        if not isinstance(vocab, dict) or not isinstance(raw_idx_token, dict):
-            raise ValueError('tokenizer model lacks vocab or idx_token mappings')
-        if any(
-            not isinstance(token, str) or not isinstance(index, int)
-            for token, index in vocab.items()
-        ):
-            raise ValueError('vocab must map token strings to integer IDs')
-        expected_ids = set(range(len(vocab)))
-        if set(vocab.values()) != expected_ids:
-            raise ValueError('vocabulary IDs must be unique, contiguous, and zero-based')
-        if set(raw_idx_token) != {str(index) for index in expected_ids}:
-            raise ValueError('idx_token keys must cover every vocabulary ID')
-        idx_token = {int(index): token for index, token in raw_idx_token.items()}
-        if any(idx_token[index] != token for token, index in vocab.items()):
-            raise ValueError('vocab and idx_token must be inverse mappings')
-        if model.get('size') != len(vocab):
-            raise ValueError('declared tokenizer size does not match its vocabulary')
-        if vocab.get('') != 0 or idx_token.get(0) != '':
-            raise ValueError('CTC blank mapping must be the empty token at ID 0')
+        Args:
+            dir_ds: Path to the directory containing 'train.json' (used to
+                read fold info). Tokenizers are saved under it.
+            categories: List of allowed characters (unigrams).
+            size: Target vocabulary size. Defaults to 200.
+            path_evidence: Connectivity scores, see read_bigram_scores().
+                Defaults to '<dir_ds>/connectivity.json.gz'.
+            min_count: Minimum observations for a bigram to be ranked.
+                Defaults to 20.
+        '''
+        if path_evidence is None:
+            path_evidence = os.path.join(dir_ds, 'connectivity.json.gz')
 
-        vocabulary = model.get('vocabulary')
-        if not isinstance(vocabulary, list):
-            raise ValueError('tokenizer model lacks its bigram vocabulary rows')
-        bigram_rows: dict[str, dict[str, Any]] = {}
-        for row in vocabulary:
-            if not isinstance(row, dict):
-                raise ValueError('bigram vocabulary rows must be objects')
-            token = row.get('token')
-            utility = row.get('utility')
-            if not isinstance(token, str) or len(token) != 2:
-                raise ValueError(f'invalid bigram token: {token!r}')
-            if token in bigram_rows:
-                raise ValueError(f'duplicate bigram token: {token!r}')
-            if (
-                isinstance(utility, bool)
-                or not isinstance(utility, (int, float))
-                or not math.isfinite(utility)
-            ):
-                raise ValueError(f'bigram utility must be finite: {token!r}')
-            if token not in vocab:
-                raise ValueError(f'bigram row is absent from vocab: {token!r}')
-            bigram_rows[token] = row
-        if model.get('eligible_bigram_count') != len(bigram_rows):
-            raise ValueError('declared bigram count does not match vocabulary rows')
-        mapped_bigrams = {token for token in vocab if len(token) == 2}
-        if set(bigram_rows) != mapped_bigrams:
-            raise ValueError('bigram rows do not match the mapped bigram tokens')
+        dir_tokenizers = os.path.join(
+            dir_ds, 'tokenizers', f'handwriting_bigram{size}'
+        )
+        os.makedirs(dir_tokenizers, exist_ok=True)
 
-        if require_frozen_adapter:
-            if model['schema_version'] == ED_ADAPTER_SCHEMA:
-                self._validate_ed_adapter(model)
-            else:
-                self._validate_frozen_adapter(model)
+        with open(
+            os.path.join(dir_ds, 'train.json'), 'r', encoding='utf-8'
+        ) as f:
+            num_fold = json.load(f)['info']['num_fold']
 
-        self.model = model
-        self.vocab = dict(vocab)
-        self.idx_token = idx_token
-        self._bigram_rows = bigram_rows
+        chars = sorted(list(set(categories)))
+        limit_bigram = size - len(chars)
+        assert limit_bigram > 0, 'size smaller than number of categories.'
 
-    @staticmethod
-    def _validate_frozen_adapter(model: dict[str, Any]) -> None:
-        if model.get('model_version') != ADAPTER_POLICY_ID:
-            raise ValueError('tokenizer is not the frozen OnHW adapter policy')
-        if model.get('size') != ADAPTER_SIZE:
-            raise ValueError('frozen adapter has an unexpected output size')
-        if model.get('eligible_bigram_count') != ADAPTER_BIGRAM_COUNT:
-            raise ValueError('frozen adapter has an unexpected bigram count')
-        if model.get('text_normalization') != 'NFC':
-            raise ValueError('frozen adapter must use NFC normalization')
-        adapter = model.get('adapter')
-        if not isinstance(adapter, dict):
-            raise ValueError('frozen adapter lacks provenance metadata')
-        if adapter.get('policy_id') != ADAPTER_POLICY_ID:
-            raise ValueError('frozen adapter policy metadata does not match')
-        source = adapter.get('source_model')
-        if not isinstance(source, dict) or source.get('sha256') != SOURCE_SHA256:
-            raise ValueError('frozen adapter source provenance does not match')
-        if adapter.get('annotation_files_read') is not False:
-            raise ValueError('frozen adapter does not declare leakage-safe construction')
+        # rank connected letter bigrams
+        rows = [
+            row for row in read_bigram_scores(path_evidence)
+            if row['pair'].isalpha()
+            and set(row['pair']) <= set(chars)
+            and row['n_exact_alignment'] >= min_count
+        ]
+        rows.sort(
+            key=lambda r: (-r['exact_alignment_connected_rate'], r['pair'])
+        )
+        rows_top = rows[:limit_bigram]
 
-    @staticmethod
-    def _validate_ed_adapter(model: dict[str, Any]) -> None:
-        if model.get('model_version') != ED_ADAPTER_POLICY_ID:
-            raise ValueError('tokenizer is not the frozen ED adapter policy')
-        if model.get('size') != ED_ADAPTER_SIZE:
-            raise ValueError('frozen ED adapter has an unexpected output size')
-        if model.get('eligible_bigram_count') != ED_ADAPTER_BIGRAM_COUNT:
-            raise ValueError('frozen ED adapter has an unexpected bigram count')
-        if model.get('text_normalization') != 'NFC':
-            raise ValueError('frozen ED adapter must use NFC normalization')
-        adapter = model.get('adapter')
-        if not isinstance(adapter, dict):
-            raise ValueError('frozen ED adapter lacks provenance metadata')
-        if adapter.get('policy_id') != ED_ADAPTER_POLICY_ID:
-            raise ValueError('frozen ED adapter policy metadata does not match')
-        source = adapter.get('source_model')
-        if not isinstance(source, dict) or source.get('sha256') != ED_SOURCE_SHA256:
-            raise ValueError('frozen ED adapter source provenance does not match')
-        if adapter.get('annotation_label_values_read_by_builder') is not False:
-            raise ValueError(
-                'frozen ED adapter does not declare leakage-safe construction'
-            )
+        # bigram IDs follow alphabetical order, as in the frozen ED vocabulary
+        bigrams_top = sorted(row['pair'] for row in rows_top)
 
-    def segment(self, text: str) -> dict[str, Any]:
-        """Segment with the selected greedy or maximum-total-utility policy."""
-        if not self.model:
-            raise ValueError('Tokenizer not trained or loaded.')
-        if not isinstance(text, str):
-            raise TypeError('text must be a string')
-        normalized = _normalize_text(text, self.model['text_normalization'])
-        if self.policy == 'greedy':
-            output = self._segment_greedy(normalized)
-        else:
-            output = self._segment_utility_based(normalized)
-        if text != normalized:
-            output['input_text'] = text
-        return output
-
-    def _segment_greedy(self, text: str) -> dict[str, Any]:
-        segments: list[dict[str, Any]] = []
-        index = 0
-        total_utility = 0.0
-        while index < len(text):
-            pair = text[index:index + 2]
-            row = self._bigram_rows.get(pair) if len(pair) == 2 else None
-            if row is not None:
-                segment = {
-                    'token': pair,
-                    'start': index,
-                    'end': index + 2,
-                    'kind': self.bigram_kind,
-                    'utility': row['utility'],
-                }
-                for metadata_key in (
-                    'n_exact_alignment',
-                    'exact_alignment_connected_rate',
-                    'iam_training_occurrence_count',
-                    'rank',
-                ):
-                    if metadata_key in row:
-                        segment[metadata_key] = row[metadata_key]
-                segments.append(segment)
-                total_utility += row['utility']
-                index += 2
-                continue
-            segments.append({
-                'token': text[index],
-                'start': index,
-                'end': index + 1,
-                'kind': 'single',
-                'utility': 0.0,
-            })
-            index += 1
-
-        output = {
-            'text': text,
-            'tokens': [segment['token'] for segment in segments],
-            'total_utility': total_utility,
-            'bigram_token_count': sum(
-                segment['kind'] == self.bigram_kind for segment in segments
-            ),
-            'segments': segments,
+        self.vocab = {t: i for i, t in enumerate(chars + bigrams_top)}
+        self.idx_token = {v: k for k, v in self.vocab.items()}
+        self.utility = {
+            row['pair']: row['exact_alignment_connected_rate']
+            for row in sorted(rows_top, key=lambda r: r['pair'])
         }
-        return output
 
-    def _segment_utility_based(self, text: str) -> dict[str, Any]:
-        best: list[_Segmentation | None] = [None] * (len(text) + 1)
-        best[len(text)] = _Segmentation(0.0, 0, ())
-
-        for index in range(len(text) - 1, -1, -1):
-            suffix = best[index + 1]
-            assert suffix is not None
-            single = {
-                'token': text[index],
-                'start': index,
-                'end': index + 1,
-                'kind': 'single',
-                'utility': 0.0,
-            }
-            winner = _Segmentation(
-                suffix.utility,
-                suffix.bigram_count,
-                (single, *suffix.segments),
-            )
-
-            pair = text[index:index + 2]
-            if len(pair) == 2 and pair in self._bigram_rows:
-                suffix = best[index + 2]
-                assert suffix is not None
-                row = self._bigram_rows[pair]
-                segment = {
-                    'token': pair,
-                    'start': index,
-                    'end': index + 2,
-                    'kind': self.bigram_kind,
-                    'utility': row['utility'],
-                }
-                for metadata_key in (
-                    'n_exact_alignment',
-                    'exact_alignment_connected_rate',
-                    'training_word_type_adjacency_count',
-                    'training_word_type_support',
-                    'rank',
-                ):
-                    if metadata_key in row:
-                        segment[metadata_key] = row[metadata_key]
-                candidate = _Segmentation(
-                    suffix.utility + row['utility'],
-                    suffix.bigram_count + 1,
-                    (segment, *suffix.segments),
+        for idx_fold in range(num_fold):
+            path_save = os.path.join(dir_tokenizers, f'{idx_fold}.json')
+            with open(path_save, 'w', encoding='utf-8') as f:
+                json.dump(
+                    {
+                        'vocab': self.vocab,
+                        'idx_token': self.idx_token,
+                        'utility': self.utility,
+                    },
+                    f,
+                    ensure_ascii=False,
                 )
-                if (
-                    candidate.utility,
-                    candidate.bigram_count,
-                ) >= (
-                    winner.utility,
-                    winner.bigram_count,
-                ):
-                    winner = candidate
-            best[index] = winner
 
-        result = best[0]
-        assert result is not None
-        output = {
-            'text': text,
-            'tokens': [segment['token'] for segment in result.segments],
-            'total_utility': result.utility,
-            'bigram_token_count': result.bigram_count,
-            'segments': list(result.segments),
-        }
-        return output
+        logger.info(
+            f'HandwritingBigramTokenizers are saved at {dir_tokenizers}.'
+        )
+
+    def load(self, path_config: str) -> None:
+        '''Loads vocabulary and bigram utilities from a JSON file.
+
+        Args:
+            path_config: Path to the tokenizer JSON file.
+        '''
+        with open(path_config, 'r', encoding='utf-8') as f:
+            configs = json.load(f)
+
+        self.vocab = configs['vocab']
+        self.idx_token = {int(k): v for k, v in configs['idx_token'].items()}
+        if 'utility' in configs:
+            self.utility = configs['utility']
+        else:
+            # archived tokenizers list bigrams as 'vocabulary' rows
+            self.utility = {
+                row['token']: row['utility'] for row in configs['vocabulary']
+            }
+
+        logger.info(
+            f'HandwritingBigramTokenizer ({self.policy}) is loaded from '
+            f'{path_config}.'
+        )
 
     def encode(self, text: str) -> list[int]:
-        """Encode text without ever emitting the CTC blank ID."""
-        result = self.segment(text)
-        missing = sorted({
-            token for token in result['tokens'] if token not in self.vocab
-        })
-        if missing:
-            raise ValueError(
-                f'characters are absent from tokenizer vocabulary: {missing!r}'
-            )
-        return [self.vocab[token] for token in result['tokens']]
+        '''Encodes text using the selected segmentation policy.
 
-    def decode(self, ids: list[int]) -> str:
-        """Decode token IDs; blank ID 0 contributes the empty string."""
-        if not self.idx_token:
+        Args:
+            text: Input text string.
+
+        Returns:
+            List of token IDs.
+
+        Raises:
+            ValueError: If the tokenizer has not been trained or loaded.
+        '''
+        if self.policy == 'greedy':
+            return super().encode(text)
+
+        if not self.vocab:
             raise ValueError('Tokenizer not trained or loaded.')
-        try:
-            return ''.join(self.idx_token[index] for index in ids)
-        except KeyError as error:
-            raise ValueError(f'unknown token ID: {error.args[0]}') from error
+
+        # best[i] = (total utility, bigram count, token IDs) for text[i:]
+        best = [(0.0, 0, [])] * (len(text) + 1)
+
+        for i in range(len(text) - 1, -1, -1):
+            utility, count, ids = best[i + 1]
+            winner = (utility, count, [self.vocab[text[i]]] + ids)
+
+            bigram = text[i : i + 2]
+            if len(bigram) == 2 and bigram in self.utility:
+                utility, count, ids = best[i + 2]
+                candidate = (
+                    utility + self.utility[bigram],
+                    count + 1,
+                    [self.vocab[bigram]] + ids,
+                )
+                if candidate[:2] >= winner[:2]:
+                    winner = candidate
+
+            best[i] = winner
+
+        return best[0][2]
 
 
-class _HandwritingSubwordTokenizer(SubwordTokenizer):
-    """ED runtime using the frozen DTLR inference rules and ED class IDs."""
+class _HandwritingSubwordTokenizer:
+    """Shared training steps of the handwriting BPE and Unigram tokenizers."""
 
     kind: str
 
+    def train(
+        self,
+        dir_ds: str,
+        categories: list[str],
+        size: int = 200,
+        path_evidence: str | None = None,
+        min_count: int = 20,
+        rate_threshold: float = 0.5,
+        max_length: int = 6,
+    ) -> None:
+        '''Learns pieces from handwriting connectivity.
 
-    def train(self, evidence_path, categories, *, output_path) -> None:
-        """Learn candidates and merges/probabilities from IAM evidence in TVA."""
-        from tva.handwriting.ed import ED_ALPHABET
-        from tva.handwriting.training import fit_ed_tokenizer, save_training_outputs
+        Candidate pieces are letter spans of 2..max_length characters observed
+        at least min_count times and written connected at least rate_threshold
+        of the time. The vocabulary then holds the blank, the categories and
+        size - len(categories) learned pieces. Every non-letter character
+        stays its own token, like letters_only=True for TVA's tokenizers.
+        The evidence describes the whole handwriting dataset, so every fold
+        gets the same vocabulary.
 
-        require(list(categories) == ['', *ED_ALPHABET], 'Expected the declared ED alphabet')
-        adapter, native, report = fit_ed_tokenizer(evidence_path, self.kind)
-        save_training_outputs(output_path, self.kind, adapter, native, report)
-        self.load(output_path)
+        Args:
+            dir_ds: Path to the directory containing 'train.json' (used to
+                read fold info). Tokenizers are saved under it.
+            categories: List of allowed characters for the alphabet.
+            size: Target vocabulary size. Defaults to 200.
+            path_evidence: Per-line connectivity, see read_connectivity_lines().
+                Defaults to '<dir_ds>/connectivity.json.gz'.
+            min_count: Minimum aligned observations of a piece. Defaults to 20.
+            rate_threshold: Minimum connected rate of a piece. Defaults to 0.5.
+            max_length: Maximum piece length. Defaults to 6.
+        '''
+        if path_evidence is None:
+            path_evidence = os.path.join(dir_ds, 'connectivity.json.gz')
 
-    def prepare(self, source_path, categories, *, output_path) -> None:
-        """Reuse frozen pieces/parameters; use train() to learn them from evidence."""
-        from tva.handwriting.ed import ED_ALPHABET
-        from tva.handwriting.subwords import SOURCE_FILES, build_ed_subword_adapter
+        dir_tokenizers = os.path.join(
+            dir_ds, 'tokenizers', f'handwriting_{self.kind}{size}'
+        )
+        os.makedirs(dir_tokenizers, exist_ok=True)
 
-        require(list(categories) == ['', *ED_ALPHABET], 'Expected the declared ED alphabet')
-        model = build_ed_subword_adapter(source_path, self.kind)
-        output_path = Path(output_path)
-        # Package the source beside the adapter so no DTLR checkout is needed.
-        save_frozen(output_path.parent / 'source' / SOURCE_FILES[self.kind],
-                    Path(source_path).read_bytes())
-        save_frozen(output_path, canonical_json_bytes(model))
-        self.load(output_path)
+        with open(
+            os.path.join(dir_ds, 'train.json'), 'r', encoding='utf-8'
+        ) as f:
+            num_fold = json.load(f)['info']['num_fold']
 
-    def load(self, path_config) -> None:
-        from tva.handwriting.subwords import load_ed_subword_adapter
+        chars = sorted(set(categories) - {''})
+        limit_piece = size - 1 - len(chars)
+        assert limit_piece > 0, 'size smaller than number of categories.'
 
-        model, source = load_ed_subword_adapter(path_config, self.kind)
-        self.model, self.source_model = model, source
-        self.vocab = dict(model['vocab'])
-        self.idx_token = {int(i): t for i, t in model['idx_token'].items()}
-        if self.kind == 'unigram':
-            # Keep learned scores exactly; new nonletters have one forced arc.
-            self._scores = {t: v for t, v in source['log_probs'].items() if t in self.vocab}
-            self._scores.update({t: 0.0 for t in model['policy']['added_singletons']})
-            self._max_length = max(map(len, self._scores))
-        logger.info(f'{type(self).__name__} is loaded from {path_config}.')
+        # learn only from lines that the categories can spell
+        lines = [
+            line for line in read_connectivity_lines(path_evidence)
+            if set(line['text']) <= set(chars)
+        ]
+        candidates = collect_candidates(
+            lines, max_length, min_count, rate_threshold
+        )
+
+        self.tokenizer = self._build(lines, candidates, chars, limit_piece)
+
+        for idx_fold in range(num_fold):
+            self.tokenizer.save(
+                os.path.join(dir_tokenizers, f'{idx_fold}.json')
+            )
+
+        self._size = self.tokenizer.get_vocab_size()
+        logger.info(
+            f'{type(self).__name__}s are saved at {dir_tokenizers}.'
+        )
 
 
-class HandwritingBPETokenizer(_HandwritingSubwordTokenizer):
-    """Apply all frozen BPE merges in their learned order."""
+class HandwritingBPETokenizer(_HandwritingSubwordTokenizer, BPETokenizer):
+    '''BPE whose merges are ranked by connected occurrences.
+
+    Like BPE training, it repeatedly merges the most supported adjacent pair,
+    but support counts only occurrences written connected, and only candidate
+    pieces may form. Encoding is TVA's Hugging Face BPE.
+    '''
 
     kind = 'bpe'
 
+    @staticmethod
+    def _build(lines, candidates, chars, limit_piece) -> Tokenizer:
+        return bpe_from_merges(chars, train_bpe(lines, candidates, limit_piece))
 
-class HandwritingUnigramTokenizer(_HandwritingSubwordTokenizer):
-    """Viterbi segmentation with frozen IAM scores and forced ED symbols."""
+
+class HandwritingUnigramTokenizer(_HandwritingSubwordTokenizer, UnigramTokenizer):
+    '''Unigram LM whose pieces are seeded and initialized by connectivity.
+
+    Candidates start from their connected counts; EM on the training text and
+    likelihood-based pruning then reduce them to the budget. Encoding is
+    TVA's Hugging Face Unigram (Viterbi).
+    '''
 
     kind = 'unigram'
+
+    @staticmethod
+    def _build(lines, candidates, chars, limit_piece) -> Tokenizer:
+        seeds = {t: row['n_connected'] for t, row in candidates.items()}
+        return unigram_from_log_probs(
+            chars, train_unigram(lines, seeds, limit_piece)
+        )
+
+
+class UnigramEMTokenizer(UnigramTokenizer):
+    '''The handwriting Unigram's EM trained on text alone.
+
+    Linguistic partner of HandwritingUnigramTokenizer: every letter span seen
+    often enough is a candidate and starts from its frequency instead of its
+    connected count. Lines, EM, pruning and encoding are the same, so the two
+    vocabularies differ only by the connectivity evidence.
+    '''
+
+    def train(
+        self,
+        dir_ds: str,
+        categories: list[str],
+        size: int = 200,
+        min_count: int = 20,
+        max_length: int = 6,
+    ) -> None:
+        '''Learns pieces from the labels of each fold.
+
+        Like letters_only=True for TVA's tokenizers, only labels spelled by
+        the categories are used and every non-letter character stays its own
+        token. Repeated labels are kept, as the handwriting Unigram sees each
+        handwritten line once.
+
+        Args:
+            dir_ds: Path to the directory containing 'train.json'.
+            categories: List of allowed characters for the alphabet.
+            size: Target vocabulary size. Defaults to 200.
+            min_count: Minimum occurrences of a piece. Defaults to 20.
+            max_length: Maximum piece length. Defaults to 6.
+        '''
+        dir_tokenizers = os.path.join(dir_ds, 'tokenizers', f'unigram_em{size}')
+        os.makedirs(dir_tokenizers, exist_ok=True)
+
+        with open(
+            os.path.join(dir_ds, 'train.json'), 'r', encoding='utf-8'
+        ) as f:
+            annos = json.load(f)['annotations']
+
+        chars = sorted(set(categories) - {''})
+        limit_piece = size - 1 - len(chars)
+        assert limit_piece > 0, 'size smaller than number of categories.'
+
+        for idx_fold, annos_fold in annos.items():
+            lines = [
+                {'text': anno['label']} for anno in annos_fold
+                if set(anno['label']) <= set(chars)
+            ]
+            seeds = frequent_spans(lines, max_length, min_count)
+            self.tokenizer = unigram_from_log_probs(
+                chars, train_unigram(lines, seeds, limit_piece)
+            )
+            self.tokenizer.save(
+                os.path.join(dir_tokenizers, f'{idx_fold}.json')
+            )
+
+        self._size = self.tokenizer.get_vocab_size()
+        logger.info(f'UnigramEMTokenizers are saved at {dir_tokenizers}.')

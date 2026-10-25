@@ -12,28 +12,32 @@ CONDITIONS = [
     ('char', 'ed_characters_v1.json', 'ed/character/char', 79),
     ('bigram', 'ed_iam_tva_original_bigram_greedy_v1.json', 'ed/linguistic/bigram', 224),
     ('handwriting_bigram_greedy', 'ed_iam_handwriting_bigram_greedy_v1.json', 'ed/handwriting/bigram', 224),
-    ('handwriting_bpe', 'ed_iam_handwriting_bpe_v1.json', 'ed/handwriting/bpe', 224),
-    ('handwriting_unigram', 'ed_iam_handwriting_unigram_v1.json', 'ed/handwriting/unigram', 224),
-    ('linguistic_bpe', 'ed_iam_linguistic_bpe_v1.json', 'ed/linguistic/bpe', 224),
-    ('linguistic_unigram', 'ed_iam_linguistic_unigram_v1.json', 'ed/linguistic/unigram', 224),
+]
+# Folders without former file names (BPE/Unigram were replaced by TVA-based files).
+FOLDERS = CONDITIONS + [
+    ('bigram', None, 'ed/linguistic/bigram_letters', 224),
+    ('bpe', None, 'ed/linguistic/bpe', 224),
+    ('unigram', None, 'ed/linguistic/unigram', 224),
+    ('unigram_em', None, 'ed/linguistic/unigram_em', 224),
+    ('handwriting_bpe', None, 'ed/handwriting/bpe', 224),
+    ('handwriting_unigram', None, 'ed/handwriting/unigram', 224),
 ]
 
 
 class ArtifactPathTests(unittest.TestCase):
     def test_all_fold_files_preserve_vocabulary_and_segmentation(self):
-        for key, _, directory, size in CONDITIONS:
+        for key, _, directory, size in FOLDERS:
             reference = get_tokenizer(key)
             root = ARTIFACTS / directory
-            reference.load(root / '0.json')
+            reference.load(str(root / '0.json'))
             for fold in range(5):
                 with self.subTest(key=key, fold=fold):
                     path = Path(resolve_tokenizer_path(str(root), fold))
                     self.assertEqual(path, root / f'{fold}.json')
                     self.assertEqual(path.read_bytes(), (root / '0.json').read_bytes())
                     tokenizer = get_tokenizer(key)
-                    tokenizer.load(path)
+                    tokenizer.load(str(path))
                     self.assertEqual(tokenizer.size, size)
-                    self.assertEqual(tokenizer.vocab, reference.vocab)
                     for text in ['the handwriting', '100% = 9 + 3? (Yes!)']:
                         self.assertEqual(tokenizer.encode(text), reference.encode(text))
                         self.assertEqual(tokenizer.decode(tokenizer.encode(text)), text)
@@ -82,10 +86,10 @@ class ArtifactPathTests(unittest.TestCase):
 
     def test_missing_unrelated_files_do_not_redirect_to_bundled_models(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / 'ed_iam_handwriting_bpe_v1.json'
+            path = Path(directory) / 'ed_iam_handwriting_bigram_greedy_v1.json'
             self.assertEqual(resolve_artifact_path(path), path)
             with self.assertRaises(FileNotFoundError):
-                get_tokenizer('handwriting_bpe').load(path)
+                get_tokenizer('handwriting_bigram_greedy').load(path)
         missing = ARTIFACTS / 'ed/handwriting/bpe/5.json'
         self.assertEqual(resolve_artifact_path(missing), missing)
         self.assertFalse(missing.exists())

@@ -2549,3 +2549,77 @@ compression-matched controls are needed to assess robustness and explanation.
 The character baseline remains better than these subword conditions on fold 0.
 
 This entry summarizes existing runs. No training or metric files were changed.
+
+## 2026-10-25 — All ED configs read the extracted files
+
+Switched the 12 remaining ZIP-backed configs (`character_{wd,wi}`,
+`bigram_tva_original_*`, `bigram_linguistic_letters_*`, `bigram_handwriting_*`,
+`bpe_handwriting_*`, `unigram_handwriting_*`) to `dataset_format: json-directory`
+and `dir_dataset: data/tva/ed/gold_wd` or `gold_wi`, like every other ED
+condition. Training settings, tokenizers, folds and result directories are
+unchanged. As recorded on 2026-10-19, the extracted files are byte-identical
+to the archive members and both loaders produce identical arrays, token IDs and
+tensors, so completed ZIP-backed runs remain comparable. All 26 ED configs now
+differ only in tokenizer, tokenizer directory and result directory (plus
+`idx_fold: -1` for the two all-fold character configs); `tests/test_ed_configs.py`
+enforces this.
+
+## 2026-10-25 — Compression-matched bigram built from the TVA letters-only bigram
+
+`bigram_matched` now keeps the top bigrams of `ed/linguistic/bigram_letters`
+(TVA's `BigramTokenizer`, `letters_only=True`) instead of the archived custom
+IAM-frequency bigram. Both sources hold the same 145 letter pairs, but TVA counts
+each distinct IAM line once while the archive counted every line, so the
+ranking differs. k is still 62 (IAM 1.336026 vs handwriting 1.335293
+characters per token; previously 1.335248). One pair changes (`et` out, `ot`
+in; they were tied in the archive), and token IDs now follow TVA's rank order,
+so the vocabulary is not byte-identical to the previous file. The file is in
+TVA's own bigram format and is byte-identical to
+`BigramTokenizer.train(..., 141, letters_only=True)` on the IAM lines with
+`PYTHONHASHSEED=42`. Its runs move to `linguistic_bigram_matched_v2_{wd,wi}`;
+any earlier `linguistic_bigram_matched_*` results used the previous vocabulary.
+
+## 2026-10-25 — ED configs grouped by experiment
+
+The 26 configs in `configs/thesis/ed/` moved into one folder per experiment;
+file names and contents are unchanged, and `configs/thesis/ed/README.md` lists
+what each folder tests:
+
+- `character/`: `character_tva_*`, `character_*`, `character_*_extracted_cv`
+- `subword_comparison/`: `bigram_tva_original_*`, `bigram_handwriting_*`,
+  `bpe_linguistic_*`, `bpe_handwriting_*`, `unigram_linguistic_*`,
+  `unigram_handwriting_*`
+- `letters_only/`: `bigram_linguistic_letters_*`
+- `compression_matched/`: `bigram_linguistic_matched_*`, `bpe_linguistic_matched_*`
+- `unigram_trainer/`: `unigram_linguistic_em_*`
+
+Paths to configs in earlier entries refer to the flat layout.
+
+## 2026-10-25 — Redundant character_tva configs removed
+
+`character_tva_{wd,wi}.yaml` equalled `character_{wd,wi}.yaml` except for the
+result directory: `character_{wd,wi}` had `dir_tokenizer: null`, which
+`main.load_configured_tokenizer` resolves to the same
+`artifacts/tokenizers/ed/character/char/0.json` that `character_tva` named
+explicitly. The `character_tva` pair was removed, and `character_{wd,wi}` now
+name the file explicitly. Their result directories (`character_{wd,wi}`) are
+unchanged; saved configs with `dir_tokenizer: null` still load the same file.
+
+## 2026-10-25 — Linguistic bigram configs renamed
+
+`subword_comparison/bigram_tva_original_{wd,wi}.yaml` are now
+`subword_comparison/bigram_linguistic_{wd,wi}.yaml`, matching
+`bigram_handwriting`, `bpe_linguistic` and `unigram_linguistic`. The tokenizer is
+still TVA's original bigram (`artifacts/tokenizers/ed/linguistic/bigram`), and
+contents, including the result directories `results/thesis/ed/tva_original_{wd,wi}`,
+are unchanged.
+
+## 2026-10-25 — ED audit uses config tokenizer keys
+
+`python -m tva.handwriting.audit` no longer has its own tokenizer kinds
+(`--tokenizer-kind handwriting|linguistic|original|bpe|unigram`, where
+`linguistic` meant the archived custom bigram and `original` TVA's bigram).
+`--tokenizer` and `--dir-tokenizer` now take a config's `tokenizer` and
+`dir_tokenizer` values and load through `tva/tokenizer_factory.py`, so every
+condition can be audited by its own key. The archived bigram stays loadable as
+`linguistic_bigram_greedy`. Commands in earlier entries use the former options.

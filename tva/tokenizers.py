@@ -4,15 +4,26 @@ from collections import Counter
 from typing import Any
 
 from loguru import logger
-from tokenizers import Tokenizer, decoders, models, pre_tokenizers, trainers
+from tokenizers import Regex, Tokenizer, decoders, models, pre_tokenizers, trainers
 
 __all__ = [
     'CharacterTokenizer',
     'BigramTokenizer',
     'BPETokenizer',
-    'UnigramTokenizer'
+    'UnigramTokenizer',
     'get_tokenizer',
+    'letters_only_pre_tokenizer',
 ]
+
+
+def letters_only_pre_tokenizer() -> pre_tokenizers.PreTokenizer:
+    '''Splits text into runs of letters and single other characters.
+
+    Learned BPE/Unigram pieces then only join letters, while spaces, digits
+    and punctuation stay single-character tokens (and are kept, unlike with
+    the Whitespace pre-tokenizer).
+    '''
+    return pre_tokenizers.Split(Regex(r'[^\W\d_]+|.'), behavior='isolated')
 
 
 class CharacterTokenizer:
@@ -151,7 +162,11 @@ class BigramTokenizer:
         return len(self.vocab)
 
     def train(
-        self, dir_ds: str, categories: list[str], size: int = 200
+        self,
+        dir_ds: str,
+        categories: list[str],
+        size: int = 200,
+        letters_only: bool = False,
     ) -> None:
         '''Trains a vocabulary containing characters and top frequent bigrams.
 
@@ -159,8 +174,13 @@ class BigramTokenizer:
             dir_ds: Path to the directory containing 'train.json'.
             categories: List of allowed characters (unigrams).
             size: Target vocabulary size. Defaults to 200.
+            letters_only: Only count bigrams of two letters, so pairs with
+                spaces, digits or punctuation are never selected. Such
+                characters stay in the vocabulary as unigrams. Defaults to
+                False (original TVA behavior).
         '''
-        dir_tokenizers = os.path.join(dir_ds, 'tokenizers', f'bigram{size}')
+        name = f'bigram{size}_letters' if letters_only else f'bigram{size}'
+        dir_tokenizers = os.path.join(dir_ds, 'tokenizers', name)
         os.makedirs(dir_tokenizers, exist_ok=True)
 
         with open(
@@ -177,6 +197,8 @@ class BigramTokenizer:
             for text in texts:
                 for i in range(len(text) - 1):
                     bigram = text[i : i + 2]
+                    if letters_only and not bigram.isalpha():
+                        continue
                     counts_bigram[bigram] += 1
 
             limit_bigram = size - len(chars)
@@ -294,7 +316,11 @@ class BPETokenizer:
         return self._size
 
     def train(
-        self, dir_ds: str, categories: list[str], size: int = 200
+        self,
+        dir_ds: str,
+        categories: list[str],
+        size: int = 200,
+        letters_only: bool = False,
     ) -> None:
         '''Trains a BPE tokenizer using an iterator of texts.
 
@@ -302,8 +328,14 @@ class BPETokenizer:
             dir_ds: Path to the directory containing 'train.json'.
             categories: List of allowed characters for the initial alphabet.
             size: Target vocabulary size. Defaults to 200.
+            letters_only: Learn pieces of letters only and keep every other
+                character, including spaces, as its own token. Labels with
+                characters outside categories are skipped, so the alphabet
+                is exactly the categories. Defaults to False (original TVA
+                behavior: whitespace is split off and dropped).
         '''
-        dir_tokenizers = os.path.join(dir_ds, 'tokenizers', f'bpe{size}')
+        name = f'bpe{size}_letters' if letters_only else f'bpe{size}'
+        dir_tokenizers = os.path.join(dir_ds, 'tokenizers', name)
         os.makedirs(dir_tokenizers, exist_ok=True)
 
         with open(
@@ -314,8 +346,15 @@ class BPETokenizer:
         for idx_fold, annos_fold in annos.items():
             texts = list(set(anno['label'] for anno in annos_fold))
 
+            if letters_only:
+                texts = [t for t in texts if set(t) <= set(categories)]
+
             self.tokenizer = Tokenizer(models.BPE())
-            self.tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
+            self.tokenizer.pre_tokenizer = (
+                letters_only_pre_tokenizer()
+                if letters_only
+                else pre_tokenizers.Whitespace()
+            )
 
             trainer = trainers.BpeTrainer(
                 vocab_size=size,
@@ -325,7 +364,9 @@ class BPETokenizer:
             )
 
             self.tokenizer.train_from_iterator(texts, trainer)
-            self.tokenizer.decoder = decoders.BPEDecoder()
+            self.tokenizer.decoder = (
+                decoders.Fuse() if letters_only else decoders.BPEDecoder()
+            )
             self.tokenizer.save(
                 os.path.join(dir_tokenizers, f'{idx_fold}.json')
             )
@@ -407,7 +448,11 @@ class UnigramTokenizer:
         return self._size
 
     def train(
-        self, dir_ds: str, categories: list[str], size: int = 200
+        self,
+        dir_ds: str,
+        categories: list[str],
+        size: int = 200,
+        letters_only: bool = False,
     ) -> None:
         '''Trains a Unigram tokenizer using an iterator of texts.
 
@@ -415,8 +460,14 @@ class UnigramTokenizer:
             dir_ds: Path to the directory containing 'train.json'.
             categories: List of allowed characters for the initial alphabet.
             size: Target vocabulary size. Defaults to 200.
+            letters_only: Learn pieces of letters only and keep every other
+                character, including spaces, as its own token. Labels with
+                characters outside categories are skipped, so the alphabet
+                is exactly the categories. Defaults to False (original TVA
+                behavior: whitespace is split off and dropped).
         '''
-        dir_tokenizers = os.path.join(dir_ds, 'tokenizers', f'unigram{size}')
+        name = f'unigram{size}_letters' if letters_only else f'unigram{size}'
+        dir_tokenizers = os.path.join(dir_ds, 'tokenizers', name)
         os.makedirs(dir_tokenizers, exist_ok=True)
 
         with open(
@@ -427,8 +478,15 @@ class UnigramTokenizer:
         for idx_fold, annos_fold in annos.items():
             texts = list(set(anno['label'] for anno in annos_fold))
 
+            if letters_only:
+                texts = [t for t in texts if set(t) <= set(categories)]
+
             self.tokenizer = Tokenizer(models.Unigram())
-            self.tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
+            self.tokenizer.pre_tokenizer = (
+                letters_only_pre_tokenizer()
+                if letters_only
+                else pre_tokenizers.Whitespace()
+            )
 
             trainer = trainers.UnigramTrainer(
                 vocab_size=size,
@@ -437,7 +495,9 @@ class UnigramTokenizer:
             )
 
             self.tokenizer.train_from_iterator(texts, trainer)
-            self.tokenizer.decoder = decoders.BPEDecoder()
+            self.tokenizer.decoder = (
+                decoders.Fuse() if letters_only else decoders.BPEDecoder()
+            )
             self.tokenizer.save(
                 os.path.join(dir_tokenizers, f'{idx_fold}.json')
             )

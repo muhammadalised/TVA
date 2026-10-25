@@ -15,9 +15,11 @@ The file is 859,995 bytes. Compressed SHA-256:
 `815304d2591bc187a2eea7dd76593499905c11645c8b9a146e7f1699c0e636fa`.
 Decompressed SHA-256:
 `1b44fddd0fa76dbb4ed14517f4361c522a4415139d16307b3468e14d122b8d0c`.
-Both hashes and the original five input hashes are checked by
-`tva/handwriting/evidence.py`. It also validates line identities/transcription
-hashes, coverage, offsets, component semantics, and aggregate reconstruction.
+
+`tva/handwriting_tokenizers.py` reads it: `read_bigram_scores()` for the
+bigram scores and `read_connectivity_lines()` for the per-line evidence. Any
+dataset can supply the same two structures. `tests/test_subword_tokenizers.py`
+checks that the aggregate scores agree with the per-line evidence.
 
 DTLR regenerates this evidence without importing TVA or fitting tokenizers:
 
@@ -27,6 +29,6 @@ python poc/scripts/export_iam_tokenizer_evidence.py \
   --output /home/artellisys/TVA/artifacts/evidence/iam/iam_connectivity_v1.json.gz
 ```
 
-TVA training does not need a DTLR checkout or raw IAM image files. The original
-TVA linguistic bigram wrapper still reads its authenticated IAM labels and
-selection inputs, as declared in the ED notebook.
+TVA training does not need a DTLR checkout or raw IAM image files. The
+linguistic tokenizers read the IAM labels and selection inputs declared in the
+ED notebook (`tva/dataset/iam.py`).

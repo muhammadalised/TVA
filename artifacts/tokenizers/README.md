@@ -10,8 +10,10 @@ artifacts/tokenizers/
       char/             0.json, 1.json, 2.json, 3.json, 4.json
     linguistic/
       bigram/           0.json, 1.json, 2.json, 3.json, 4.json
+      bigram_letters/   0.json, 1.json, 2.json, 3.json, 4.json
       bpe/              0.json, 1.json, 2.json, 3.json, 4.json
       unigram/          0.json, 1.json, 2.json, 3.json, 4.json
+      unigram_em/       0.json, 1.json, 2.json, 3.json, 4.json
       bigram_matched/   0.json, 1.json, 2.json, 3.json, 4.json
       bpe_matched/      0.json, 1.json, 2.json, 3.json, 4.json
     handwriting/
@@ -37,23 +39,18 @@ merges, probabilities and recognition results are unchanged.
 | --- | --- | --- | --- |
 | Character | Original TVA character | [char/0.json](ed/character/char/0.json) | [Comparison](ed/character/char/0.comparison.json) |
 | Linguistic | Original TVA bigram | [bigram/0.json](ed/linguistic/bigram/0.json) | [Provenance](ed/linguistic/bigram/0.provenance.json), [audit](ed/linguistic/bigram/0.audit.json) |
-| Linguistic | Matched BPE | [bpe/0.json](ed/linguistic/bpe/0.json) | [Training](ed/linguistic/bpe/0.training.json) |
-| Linguistic | Matched Unigram | [unigram/0.json](ed/linguistic/unigram/0.json) | [Training](ed/linguistic/unigram/0.training.json) |
-| Linguistic | Compression-matched bigram (top 62) | [bigram_matched/0.json](ed/linguistic/bigram_matched/0.json) | Selection recorded inside the file |
-| Linguistic | Compression-matched BPE (first 59) | [bpe_matched/0.json](ed/linguistic/bpe_matched/0.json) | Selection recorded inside the file |
-| Handwriting | Bigram | [bigram/0.json](ed/handwriting/bigram/0.json) | [Training](ed/handwriting/bigram/0.training.json) |
-| Handwriting | BPE | [bpe/0.json](ed/handwriting/bpe/0.json) | [Training](ed/handwriting/bpe/0.training.json) |
-| Handwriting | Unigram | [unigram/0.json](ed/handwriting/unigram/0.json) | [Training](ed/handwriting/unigram/0.training.json) |
+| Linguistic | Original TVA bigram, `letters_only=True` | [bigram_letters/0.json](ed/linguistic/bigram_letters/0.json) | Letter pairs only, like the handwriting bigram |
+| Linguistic | Original TVA BPE, `letters_only=True` | [bpe/0.json](ed/linguistic/bpe/0.json) | Hugging Face BPE file |
+| Linguistic | Original TVA Unigram, `letters_only=True` | [unigram/0.json](ed/linguistic/unigram/0.json) | Hugging Face Unigram file |
+| Linguistic | Handwriting Unigram's EM on text alone (frequency seeds) | [unigram_em/0.json](ed/linguistic/unigram_em/0.json) | Hugging Face Unigram file; partner of the handwriting Unigram |
+| Linguistic | Compression-matched bigram (top 62 of `bigram_letters`) | [bigram_matched/0.json](ed/linguistic/bigram_matched/0.json) | [Selection](ed/linguistic/bigram_matched/selection.json) |
+| Linguistic | Compression-matched BPE (first 59) | [bpe_matched/0.json](ed/linguistic/bpe_matched/0.json) | [Selection](ed/linguistic/bpe_matched/selection.json) |
+| Handwriting | Bigram (most connected IAM letter pairs) | [bigram/0.json](ed/handwriting/bigram/0.json) | Connectivity rate stored as `utility` inside the file |
+| Handwriting | BPE (merges ranked by connected occurrences) | [bpe/0.json](ed/handwriting/bpe/0.json) | Hugging Face BPE file |
+| Handwriting | Unigram (pieces seeded by connected counts) | [unigram/0.json](ed/handwriting/unigram/0.json) | Hugging Face Unigram file |
 
-Reports alongside `0.json` describe the shared tokenizer, so they are not
-replicated for the other four copies. Native IAM sources live in each learned
-method's `source/` directory. Their original versioned release names and JSON
-metadata are retained for authentication and provenance.
-
-The handwriting BPE/Unigram [release manifest](ed/handwriting/source/iam-english-handwriting-subwords-v1.manifest.json)
-is shared. Family-level compatibility audits are
-[handwriting](ed/handwriting/subwords.audit.json) and
-[linguistic](ed/linguistic/subwords.audit.json).
+Records alongside `0.json` describe the shared tokenizer, so they are not
+replicated for the other four copies.
 
 ## Construction and reuse
 
@@ -61,17 +58,20 @@ is shared. Family-level compatibility audits are
 calls `.train()` using IAM transcripts or the bundled
 [IAM connectivity evidence](../evidence/README.md). Its final cell publishes the
 same fitted vocabulary as `0.json` through `4.json` using `save_fold_tokenizers`.
-Calling `.prepare()` adapts a frozen native model; `.load()` reuses a saved file.
+Every learned file is written by `.train(dir_ds, categories, 224, ...)` on IAM
+in TVA's own format, like the original TVA notebook; `.load()` reuses a saved
+file. BPE/Unigram files are Hugging Face tokenizers with letters-only splitting.
 The character file is produced by the unchanged original TVA class, with 79 IDs.
 All learned ED methods have 145 extra pieces and 224 CTC classes, except the
 two compression-matched controls. They keep a prefix of a text-only vocabulary
 (62 bigrams, 141 classes; 59 BPE merges, 138 classes) and are built by
 `tva/compression_matched_tokenizers.py`.
 
-The linguistic BPE/Unigram controls use the shared custom trainers and segmentation
-with handwriting evidence disabled. Original TVA's Hugging Face implementations
-remain available separately. Training policies and authenticated source models
-retain their existing version identities inside the JSON records.
+The linguistic tokenizers are TVA's own classes; the handwriting tokenizers
+subclass them and only replace `.train()`. `UnigramEMTokenizer` also subclasses
+TVA's `UnigramTokenizer`: it runs the handwriting Unigram's EM without
+connectivity. The BPE/Unigram files replaced the
+earlier custom (DTLR-format) ones, which remain in git history.
 
 ## Historical runs and compatibility
 

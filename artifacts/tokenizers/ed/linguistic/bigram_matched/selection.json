@@ -1,0 +1,24 @@
+{
+  "handwriting_partner": {
+    "path": "ed/handwriting/bigram/0.json",
+    "sha256": "0764b0acad53a4e5ee89e34f1d8f5f2885b6a8e89529394e03e6851001301247"
+  },
+  "kind": "bigram",
+  "schema_version": "tva.ed-compression-matched-text-control.v1",
+  "selection": {
+    "ed_labels_read": false,
+    "iam_characters_per_token": {
+      "full_text_only": 1.472253,
+      "handwriting_partner": 1.335293,
+      "matched": 1.336026
+    },
+    "iam_text_lines": 5612,
+    "rule": "top-k letters-only TVA bigrams (TVA rank order = ID order); k minimizes |IAM characters per token - handwriting partner|"
+  },
+  "source": {
+    "path": "ed/linguistic/bigram_letters/0.json",
+    "sha256": "d4aed8b020f540ac5a9be30284488a10ab33d61d97f5f7ba1832e8a1e48d67d5",
+    "subword_count": 145
+  },
+  "subword_count": 62
+}

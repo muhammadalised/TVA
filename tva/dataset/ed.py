@@ -16,11 +16,19 @@ from loguru import logger
 import numpy as np
 from tqdm import tqdm
 
-from tva.handwriting.ed import ED_ALPHABET
-
 from . import HRDataset
 from .transforms import AddNoise, Drift, Dropout, TimeWarp
 
+
+# The 78 characters declared by the ED archives (CTC blank excluded).
+ED_ALPHABET = (
+    ' ', '!', '"', '%', "'", '(', ')', '+', ',', '-', '.', '/',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '=', '?',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+)
 
 ED_ARCHIVE_SHA256 = {
     'wd': 'edaf78b0f422f719bbb13153249a5a6667a814d6f5a8d7d0d2ba02535ae55a3e',

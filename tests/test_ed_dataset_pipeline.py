@@ -9,17 +9,17 @@ import yaml
 
 from main import build_dataset
 from tva.dataset import EdZipDataset, fn_collate, get_ed_num_folds
-from tva.handwriting.ed import ED_ALPHABET
+from tva.dataset.ed import ED_ALPHABET
 from tva.model import BaseModel
 from tva.tokenizer_factory import get_tokenizer, resolve_tokenizer_path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CONFIG_ROOT = REPO_ROOT / 'configs/thesis/ed'
+CONFIG_ROOT = REPO_ROOT / 'configs/thesis/ed/subword_comparison'
 ED_DIRECTORY = Path('/mnt/c/Users/Ali/Downloads/ed-dataset')
 PRODUCTION_CONFIGS = {
     f'{kind}_{distribution}': CONFIG_ROOT / f'bigram_{kind}_{distribution}.yaml'
-    for kind in ('handwriting', 'tva_original')
+    for kind in ('handwriting', 'linguistic')
     for distribution in ('wd', 'wi')
 }
 
@@ -44,7 +44,6 @@ MATCHED_KEYS = (
     'checkpoint',
     'dataset_format',
     'device',
-    'dir_dataset',
     'epoch',
     'epoch_warmup',
     'freq_eval',
@@ -86,6 +85,9 @@ class EdSmokeConfigTests(unittest.TestCase):
                 self.assertEqual(
                     config['ed_distribution'], expected_distribution
                 )
+                self.assertEqual(
+                    config['dir_dataset'], f'data/tva/ed/gold_{expected_distribution}'
+                )
 
     def test_each_config_builds_a_seven_channel_224_output_model(self):
         for name, config in self.configs.items():
@@ -126,6 +128,7 @@ class EdProductionConfigTests(unittest.TestCase):
 
     def test_all_four_production_conditions_are_strictly_matched(self):
         excluded = {
+            'dir_dataset',
             'dir_tokenizer',
             'dir_work',
             'ed_distribution',
@@ -146,10 +149,9 @@ class EdProductionConfigTests(unittest.TestCase):
                     },
                     reference,
                 )
-                self.assertEqual(
-                    config['ed_distribution'],
-                    'wd' if name.endswith('_wd') else 'wi',
-                )
+                distribution = 'wd' if name.endswith('_wd') else 'wi'
+                self.assertEqual(config['ed_distribution'], distribution)
+                self.assertEqual(config['dir_dataset'], f'data/tva/ed/gold_{distribution}')
 
     def test_production_settings_and_tokenizers_are_frozen(self):
         for name, config in self.configs.items():
@@ -219,7 +221,7 @@ class EdZipDatasetTests(unittest.TestCase):
         self.assertTrue(torch.all(label_lengths > 0))
 
     def test_validation_split_is_bounded_independently(self):
-        config = self._load_config('tva_original_wi')
+        config = self._load_config('linguistic_wi')
         tokenizer = get_tokenizer(config.tokenizer)
         tokenizer.load(resolve_tokenizer_path(str(REPO_ROOT / config.dir_tokenizer), config.idx_fold))
         with patch.dict(os.environ, {'TVA_ED_DATASET_DIR': str(ED_DIRECTORY)}):
@@ -229,8 +231,9 @@ class EdZipDatasetTests(unittest.TestCase):
         self.assertEqual(dataset.split, 'val')
 
     def _load_config(self, name: str) -> argparse.Namespace:
+        # Configs read the extracted files; these tests cover the retained ZIP loader.
         return argparse.Namespace(
-            **bounded_config(name)
+            **{**bounded_config(name), 'dataset_format': 'ed-zip', 'dir_dataset': 'unused'}
         )
 
 

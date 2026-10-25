@@ -8,11 +8,8 @@ from pathlib import Path
 import unicodedata
 import zipfile
 
-from .ed import ED_ALPHABET
-from tva.handwriting_tokenizers import HandwritingBigramTokenizer
-from tva.tokenizer_compatibility import GreedyLinguisticBigramTokenizer
-from tva.handwriting_tokenizers import HandwritingBPETokenizer, HandwritingUnigramTokenizer
-from tva.dataset.ed import ED_ARCHIVE_SHA256
+from tva.dataset.ed import ED_ALPHABET, ED_ARCHIVE_SHA256
+from tva.tokenizer_factory import get_tokenizer, resolve_tokenizer_path
 
 
 ARCHIVE_SHA256 = {
@@ -22,9 +19,8 @@ ARCHIVE_SHA256 = {
 DEFAULT_DATASET_DIRECTORY = Path(os.environ.get(
     'TVA_ED_DATASET_DIR', '/mnt/c/Users/Ali/Downloads/fau-english-dataset'
 ))
-DEFAULT_ADAPTER = Path(
-    'artifacts/tokenizers/ed/handwriting/bigram/0.json'
-)
+DEFAULT_TOKENIZER = 'handwriting_bigram_greedy'
+DEFAULT_DIR_TOKENIZER = Path('artifacts/tokenizers/ed/handwriting/bigram')
 
 
 def _sha256(path: Path) -> str:
@@ -49,23 +45,26 @@ def read_archive(path: Path, stem: str) -> dict:
     return value
 
 
+def load_tokenizer(tokenizer: str, dir_tokenizer: str | Path, idx_fold: int = 0):
+    """Load a frozen tokenizer like a recognition config does.
+
+    Args:
+        tokenizer: Config key, e.g. 'bigram', 'handwriting_bpe' or the archived
+            'linguistic_bigram_greedy' (see tva/tokenizer_factory.py).
+        dir_tokenizer: Method directory (loads '<idx_fold>.json') or a JSON file.
+    """
+    loaded = get_tokenizer(tokenizer)
+    loaded.load(resolve_tokenizer_path(str(dir_tokenizer), idx_fold))
+    return loaded
+
+
 def audit(
     dataset_directory: Path,
-    adapter_path: Path,
-    tokenizer_kind: str = 'handwriting',
+    dir_tokenizer: str | Path = DEFAULT_DIR_TOKENIZER,
+    tokenizer: str = DEFAULT_TOKENIZER,
 ) -> dict[str, int]:
     """Check both distributions contain the same 2,550 encodable records."""
-    from tva.tokenizers import BigramTokenizer
-
-    tokenizer_classes = {
-        'handwriting': lambda: HandwritingBigramTokenizer(policy='greedy'),
-        'linguistic': GreedyLinguisticBigramTokenizer,
-        'original': BigramTokenizer,
-        'bpe': HandwritingBPETokenizer,
-        'unigram': HandwritingUnigramTokenizer,
-    }
-    tokenizer = tokenizer_classes[tokenizer_kind]()
-    tokenizer.load(adapter_path)
+    tokenizer = load_tokenizer(tokenizer, dir_tokenizer)
     records_by_split: dict[str, dict[int, str]] = {}
     encoded_tokens = 0
     for stem in ARCHIVE_SHA256:
@@ -106,9 +105,8 @@ def compare(dataset_directory, *, labels_path=None, selection_path=None, output_
     from itertools import combinations
     import string
 
-    from tva.tokenizer_factory import get_tokenizer
     from .common import canonical_json_bytes as json_bytes, require, save_frozen, sha256_bytes as sha256
-    from tva.iam_tokenizers import DEFAULT_LABELS, DEFAULT_SELECTION, read_iam_training
+    from tva.dataset.iam import DEFAULT_LABELS, DEFAULT_SELECTION, read_iam_training
 
     REPO_ROOT = Path(__file__).resolve().parents[2]
     ED_DIRECTORY = Path(dataset_directory)
@@ -244,8 +242,10 @@ def compare(dataset_directory, *, labels_path=None, selection_path=None, output_
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dataset-directory', type=Path, default=DEFAULT_DATASET_DIRECTORY)
-    parser.add_argument('--adapter', type=Path, default=DEFAULT_ADAPTER)
-    parser.add_argument('--tokenizer-kind', choices=('handwriting', 'linguistic', 'original', 'bpe', 'unigram'), default='handwriting')
+    parser.add_argument('--tokenizer', default=DEFAULT_TOKENIZER,
+                        help="Config key, e.g. 'bigram', 'handwriting_bpe', 'unigram_em'.")
+    parser.add_argument('--dir-tokenizer', type=Path, default=DEFAULT_DIR_TOKENIZER,
+                        help='Tokenizer directory (fold 0) or JSON file, as dir_tokenizer in a config.')
     parser.add_argument('--compare', action='store_true', help='Compare all frozen vocabularies and ED targets.')
     parser.add_argument('--output', type=Path, help='Optional frozen JSON report for --compare.')
     args = parser.parse_args()
@@ -260,7 +260,7 @@ def main() -> None:
             },
         }
     else:
-        summary = audit(args.dataset_directory, args.adapter, args.tokenizer_kind)
+        summary = audit(args.dataset_directory, args.dir_tokenizer, args.tokenizer)
     print(json.dumps(summary, indent=2))
 
 

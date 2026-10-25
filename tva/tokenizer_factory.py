@@ -1,41 +1,39 @@
 """Shared tokenizer initialization for recognition and analysis.
 
-Original linguistic keys delegate to TVA; matched text controls use shared trainers.
-Historical custom linguistic keys are retained for saved experiments.
+Original TVA keys ('char', 'bigram', 'bpe', 'unigram') delegate to TVA's own
+factory and are the linguistic tokenizers; the keys below add the handwriting
+tokenizers, the text-only Unigram EM ('unigram_em') and keys used by earlier
+experiments.
 """
 
 from typing import Any
 
 from tva.tokenizers import (
+    BigramTokenizer, BPETokenizer,
     get_tokenizer as get_original_tokenizer,
 )
 from tva.handwriting.common import resolve_artifact_path
 from tva.handwriting_tokenizers import (
     HandwritingBigramTokenizer,
     HandwritingBPETokenizer, HandwritingUnigramTokenizer,
-)
-from tva.linguistic_tokenizers import LinguisticBPETokenizer, LinguisticUnigramTokenizer
-from tva.compression_matched_tokenizers import (
-    CompressionMatchedBigramTokenizer, CompressionMatchedBPETokenizer,
-)
-from tva.tokenizer_compatibility import (
-    LinguisticBigramTokenizer, GreedyLinguisticBigramTokenizer,
+    UnigramEMTokenizer,
 )
 
 
 def get_tokenizer(tokenizer: str) -> Any:
     """Use thesis extensions or delegate to the original TVA factory."""
     extensions = {
-        'linguistic_bpe': LinguisticBPETokenizer,
-        'linguistic_unigram': LinguisticUnigramTokenizer,
-        'linguistic_bigram_matched': CompressionMatchedBigramTokenizer,
-        'linguistic_bpe_matched': CompressionMatchedBPETokenizer,
+        'handwriting_bigram_greedy': lambda: HandwritingBigramTokenizer('greedy'),
+        'handwriting_bigram_utility': lambda: HandwritingBigramTokenizer('utility-based'),
         'handwriting_bpe': HandwritingBPETokenizer,
         'handwriting_unigram': HandwritingUnigramTokenizer,
-        'handwriting_bigram': lambda: HandwritingBigramTokenizer(policy='utility-based'),
-        'handwriting_bigram_greedy': lambda: HandwritingBigramTokenizer(policy='greedy'),
-        'linguistic_bigram': LinguisticBigramTokenizer,
-        'linguistic_bigram_greedy': GreedyLinguisticBigramTokenizer,
+        'unigram_em': UnigramEMTokenizer,
+        # Keys recorded by earlier experiments; their files load with these classes.
+        'handwriting_bigram': lambda: HandwritingBigramTokenizer('utility-based'),
+        'linguistic_bigram': lambda: HandwritingBigramTokenizer('utility-based'),
+        'linguistic_bigram_greedy': lambda: HandwritingBigramTokenizer('greedy'),
+        'linguistic_bigram_matched': BigramTokenizer,
+        'linguistic_bpe_matched': BPETokenizer,
     }
     if tokenizer in extensions:
         return extensions[tokenizer]()

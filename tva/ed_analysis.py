@@ -17,8 +17,8 @@ from IPython.display import Markdown, display
 from torch.utils.data import DataLoader
 
 from tva.compression_matched_tokenizers import (  # noqa: F401  (re-exported for the notebooks)
-    bigram_compression_curve, bpe_compression_curve, bpe_split, characters_per_token,
-    greedy_bigram_split, iam_training_texts,
+    bigram_compression_curve, bpe_compression_curve, bpe_merges, characters_per_token,
+    greedy_bigram_split, iam_training_texts, ranked_pieces,
 )
 from tva.dataset import HRDataset, fn_collate
 from tva.model import BaseModel
@@ -37,17 +37,21 @@ DATA_ROOT = _root('TVA_ED_EXTRACTED_DIR', 'data/tva/ed')
 RESULTS_ROOT = _root('TVA_ED_RESULTS_DIR', 'results/thesis/ed')
 
 # Readable condition name -> saved result directory under RESULTS_ROOT.
+# BPE/Unigram '_v2' runs use TVA's letters-only BPE/Unigram and their handwriting subclasses.
+# The matched bigram '_v2' runs use the top 62 bigrams of TVA's letters-only bigram.
 CONDITIONS = {
     'character': 'character_{split}_cv_rerun',
     'handwriting_bigram': 'handwriting_{split}',
-    'handwriting_bpe': 'handwriting_bpe_{split}',
-    'handwriting_unigram': 'handwriting_unigram_{split}',
+    'handwriting_bpe': 'handwriting_bpe_v2_{split}',
+    'handwriting_unigram': 'handwriting_unigram_v2_{split}',
     'linguistic_bigram_tva': 'tva_original_{split}',
+    'linguistic_bigram_letters': 'linguistic_bigram_letters_{split}',
     'linguistic_bigram_iam_frequency': 'linguistic_{split}',
-    'linguistic_bpe': 'linguistic_bpe_{split}',
-    'linguistic_unigram': 'linguistic_unigram_{split}',
-    'linguistic_bigram_matched': 'linguistic_bigram_matched_{split}',
-    'linguistic_bpe_matched': 'linguistic_bpe_matched_{split}',
+    'linguistic_bpe': 'linguistic_bpe_v2_{split}',
+    'linguistic_unigram': 'linguistic_unigram_v2_{split}',
+    'linguistic_unigram_em': 'linguistic_unigram_em_{split}',
+    'linguistic_bigram_matched': 'linguistic_bigram_matched_v2_{split}',
+    'linguistic_bpe_matched': 'linguistic_bpe_matched_v2_{split}',
 }
 
 # Frozen tokenizer files, for analyses that need no trained model.
@@ -57,11 +61,13 @@ TOKENIZERS = {
     'handwriting_bpe': ('handwriting_bpe', 'artifacts/tokenizers/ed/handwriting/bpe/0.json'),
     'handwriting_unigram': ('handwriting_unigram', 'artifacts/tokenizers/ed/handwriting/unigram/0.json'),
     'linguistic_bigram_tva': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram/0.json'),
+    'linguistic_bigram_letters': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_letters/0.json'),
     'linguistic_bigram_iam_frequency': ('linguistic_bigram_greedy', 'artifacts/tokenizers/archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'),
-    'linguistic_bpe': ('linguistic_bpe', 'artifacts/tokenizers/ed/linguistic/bpe/0.json'),
-    'linguistic_unigram': ('linguistic_unigram', 'artifacts/tokenizers/ed/linguistic/unigram/0.json'),
-    'linguistic_bigram_matched': ('linguistic_bigram_matched', 'artifacts/tokenizers/ed/linguistic/bigram_matched/0.json'),
-    'linguistic_bpe_matched': ('linguistic_bpe_matched', 'artifacts/tokenizers/ed/linguistic/bpe_matched/0.json'),
+    'linguistic_bpe': ('bpe', 'artifacts/tokenizers/ed/linguistic/bpe/0.json'),
+    'linguistic_unigram': ('unigram', 'artifacts/tokenizers/ed/linguistic/unigram/0.json'),
+    'linguistic_unigram_em': ('unigram_em', 'artifacts/tokenizers/ed/linguistic/unigram_em/0.json'),
+    'linguistic_bigram_matched': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_matched/0.json'),
+    'linguistic_bpe_matched': ('bpe', 'artifacts/tokenizers/ed/linguistic/bpe_matched/0.json'),
 }
 
 
@@ -182,9 +188,8 @@ def saved_scores(condition: str, split: str, fold: int) -> dict | None:
 
 def token_counts(tokenizer, id_lists) -> Counter:
     """Count token strings over many encoded or predicted sequences."""
-    # TVA's CharacterTokenizer names its ID mapping idx_char.
-    mapping = getattr(tokenizer, 'idx_token', None) or tokenizer.idx_char
-    return Counter(mapping[i] for ids in id_lists for i in ids)
+    # decode() of one ID gives its token string for every TVA tokenizer
+    return Counter(tokenizer.decode([i]) for ids in id_lists for i in ids)
 
 
 def js_divergence(a: Counter, b: Counter) -> float:

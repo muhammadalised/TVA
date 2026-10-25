@@ -7,14 +7,14 @@ import tempfile
 import yaml
 
 from main import load_configured_tokenizer
-from tva.handwriting.ed import ED_ALPHABET
+from tva.dataset.ed import ED_ALPHABET
 from tva.model import BaseModel
 from tva.tokenizers import CharacterTokenizer
 from tva.tokenizer_factory import get_tokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CONFIG_ROOT = REPO_ROOT / 'configs/thesis/ed'
+CONFIG_ROOT = REPO_ROOT / 'configs/thesis/ed/character'
 
 
 class EdCharacterBaselineTests(unittest.TestCase):
@@ -31,7 +31,8 @@ class EdCharacterBaselineTests(unittest.TestCase):
         cls.bigram_configs = {
             distribution: yaml.safe_load(
                 (
-                    CONFIG_ROOT
+                    CONFIG_ROOT.parent
+                    / 'subword_comparison'
                     / f'bigram_handwriting_{distribution}.yaml'
                 ).read_text(encoding='utf-8')
             )
@@ -44,7 +45,7 @@ class EdCharacterBaselineTests(unittest.TestCase):
                 expected = dict(self.bigram_configs[distribution])
                 expected.update(
                     {
-                        'dir_tokenizer': None,
+                        'dir_tokenizer': 'artifacts/tokenizers/ed/character/char',
                         'dir_work': (
                             f'results/thesis/ed/character_{distribution}'
                         ),
@@ -87,7 +88,8 @@ class EdCharacterBaselineTests(unittest.TestCase):
     def test_saved_ed_configs_reject_categories_that_change_character_ids(self):
         for categories in (['a'], ['', 'a', 'a'], ['', '', 'a']):
             with self.subTest(categories=categories):
-                cfgs = argparse.Namespace(**dict(self.configs['wd'], categories=categories))
+                # Completed runs saved dir_tokenizer: null; their categories are checked.
+                cfgs = argparse.Namespace(**dict(self.configs['wd'], categories=categories, dir_tokenizer=None))
                 with self.assertRaisesRegex(ValueError, 'character categories differ'):
                     load_configured_tokenizer(cfgs)
 
@@ -101,10 +103,10 @@ class EdCharacterBaselineTests(unittest.TestCase):
             tokenizer.train(directory, ['', *ED_ALPHABET])
             self.assertEqual((root / 'tokenizers/char/0.json').read_bytes(), artifact.read_bytes())
 
-    def test_explicit_tva_configs_match_existing_baseline_ids_and_settings(self):
+    def test_fold_zero_configs_match_the_all_fold_configs_ids_and_settings(self):
         for distribution in ('wd', 'wi'):
-            explicit = yaml.safe_load((CONFIG_ROOT / f'character_tva_{distribution}.yaml').read_text())
-            existing = yaml.safe_load((CONFIG_ROOT / f'character_{distribution}_extracted_cv.yaml').read_text())
+            explicit = yaml.safe_load((CONFIG_ROOT / f'character_{distribution}.yaml').read_text())
+            existing = yaml.safe_load((CONFIG_ROOT / f'character_{distribution}_cv.yaml').read_text())
             excluded = {'dir_tokenizer', 'dir_work', 'idx_fold'}
             self.assertEqual({k: v for k, v in explicit.items() if k not in excluded},
                              {k: v for k, v in existing.items() if k not in excluded})

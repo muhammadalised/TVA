@@ -1,0 +1,24 @@
+{
+  "handwriting_partner": {
+    "path": "ed/handwriting/bpe/0.json",
+    "sha256": "a170d66795e21c0eac56c49c9e065fd965e1f245da4c709f78e9ed4d3fb0e738"
+  },
+  "kind": "bpe",
+  "schema_version": "tva.ed-compression-matched-text-control.v1",
+  "selection": {
+    "ed_labels_read": false,
+    "iam_characters_per_token": {
+      "full_text_only": 1.552535,
+      "handwriting_partner": 1.379326,
+      "matched": 1.378576
+    },
+    "iam_text_lines": 5612,
+    "rule": "first k text BPE merges (learned order); k minimizes |IAM characters per token - handwriting partner|"
+  },
+  "source": {
+    "path": "ed/linguistic/bpe/0.json",
+    "sha256": "f0a4cd51f1c3a52ef35b73f0cd1c54f06aeaa8bd787c27973598f16f4f211319",
+    "subword_count": 145
+  },
+  "subword_count": 59
+}
