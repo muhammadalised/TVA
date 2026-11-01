@@ -13,6 +13,7 @@ __all__ = [
     'UnigramTokenizer',
     'get_tokenizer',
     'letters_only_pre_tokenizer',
+    'split_at_pairs',
 ]
 
 
@@ -24,6 +25,22 @@ def letters_only_pre_tokenizer() -> pre_tokenizers.PreTokenizer:
     the Whitespace pre-tokenizer).
     '''
     return pre_tokenizers.Split(Regex(r'[^\W\d_]+|.'), behavior='isolated')
+
+
+def split_at_pairs(text: str, allowed_pairs) -> list[str]:
+    '''Cuts text between two letters whose pair is not allowed.
+
+    Learned pieces then only join allowed letter pairs; every other character
+    is left to the pre-tokenizer.
+    '''
+    chunks, start = [], 0
+    for i in range(len(text) - 1):
+        pair = text[i : i + 2]
+        if pair.isalpha() and pair not in allowed_pairs:
+            chunks.append(text[start : i + 1])
+            start = i + 1
+    chunks.append(text[start:])
+    return chunks
 
 
 class CharacterTokenizer:
@@ -139,15 +156,28 @@ class CharacterTokenizer:
 class BigramTokenizer:
     '''Implements a simplified Hybrid Unigram + Bigram Tokenizer.
 
+    Segmentation policies:
+        'greedy': Left-to-right bigram matching (original TVA behavior).
+        'dp': Non-overlapping bigrams with the highest total score (ties
+            prefer more bigrams). The score is the one that selected the
+            bigram, saved next to the vocabulary as '<fold>.scores.json'.
+
     Attributes:
         vocab: Mapping from token to ID.
         idx_token: Mapping from ID to token.
+        scores: Selection score of each bigram.
+        policy: Segmentation policy used by encode().
         size: Property return of the vocabulary size.
     '''
 
-    def __init__(self) -> None:
+    def __init__(self, policy: str = 'greedy') -> None:
+        if policy not in ('greedy', 'dp'):
+            raise ValueError(f"policy must be 'greedy' or 'dp', got {policy!r}")
+
         self.vocab: dict[str, int] = {}
         self.idx_token: dict[int, str] = {}
+        self.scores: dict[str, float] = {}
+        self.policy = policy
 
     @property
     def size(self) -> int:
@@ -167,6 +197,8 @@ class BigramTokenizer:
         categories: list[str],
         size: int = 200,
         letters_only: bool = False,
+        allowed_pairs=None,
+        name: str | None = None,
     ) -> None:
         '''Trains a vocabulary containing characters and top frequent bigrams.
 
@@ -178,8 +210,14 @@ class BigramTokenizer:
                 spaces, digits or punctuation are never selected. Such
                 characters stay in the vocabulary as unigrams. Defaults to
                 False (original TVA behavior).
+            allowed_pairs: Only these bigrams are counted, so only they can
+                be selected. Defaults to None (every bigram, original TVA
+                behavior).
+            name: Directory name under 'tokenizers'. Defaults to
+                'bigram<size>' (with '_letters' if letters_only).
         '''
-        name = f'bigram{size}_letters' if letters_only else f'bigram{size}'
+        if name is None:
+            name = f'bigram{size}_letters' if letters_only else f'bigram{size}'
         dir_tokenizers = os.path.join(dir_ds, 'tokenizers', name)
         os.makedirs(dir_tokenizers, exist_ok=True)
 
@@ -199,6 +237,8 @@ class BigramTokenizer:
                     bigram = text[i : i + 2]
                     if letters_only and not bigram.isalpha():
                         continue
+                    if allowed_pairs is not None and bigram not in allowed_pairs:
+                        continue
                     counts_bigram[bigram] += 1
 
             limit_bigram = size - len(chars)
@@ -210,6 +250,7 @@ class BigramTokenizer:
 
             self.vocab = {t: i for i, t in enumerate(chars + bigrams_top)}
             self.idx_token = {v: k for k, v in self.vocab.items()}
+            self.scores = {t: counts_bigram[t] for t in bigrams_top}
 
             path_save = os.path.join(dir_tokenizers, f'{idx_fold}.json')
             with open(path_save, 'w', encoding='utf-8') as f:
@@ -219,10 +260,17 @@ class BigramTokenizer:
                     ensure_ascii=False,
                 )
 
+            # selection scores for the 'dp' policy, beside the vocabulary
+            path_scores = os.path.join(
+                dir_tokenizers, f'{idx_fold}.scores.json'
+            )
+            with open(path_scores, 'w', encoding='utf-8') as f:
+                json.dump(self.scores, f, ensure_ascii=False)
+
         logger.info(f'BigramTokenizers are saved at {dir_tokenizers}.')
 
     def load(self, path_config: str) -> None:
-        '''Loads vocabulary from a JSON file.
+        '''Loads vocabulary (and scores, if saved) from a JSON file.
 
         Args:
             path_config: Path to the tokenizer JSON file.
@@ -233,10 +281,17 @@ class BigramTokenizer:
         self.vocab = configs['vocab']
         self.idx_token = {int(k): v for k, v in configs['idx_token'].items()}
 
-        logger.info(f'BigramTokenizer is loaded from {path_config}.')
+        path_scores = os.path.splitext(path_config)[0] + '.scores.json'
+        if os.path.exists(path_scores):
+            with open(path_scores, 'r', encoding='utf-8') as f:
+                self.scores = json.load(f)
+        elif self.policy == 'dp':
+            raise ValueError(f'The dp policy needs {path_scores}.')
+
+        logger.info(f'BigramTokenizer ({self.policy}) is loaded from {path_config}.')
 
     def encode(self, text: str) -> list[int]:
-        '''Encodes text using greedy bigram matching.
+        '''Encodes text using the selected segmentation policy.
 
         Args:
             text: Input text string.
@@ -249,6 +304,9 @@ class BigramTokenizer:
         '''
         if not self.vocab:
             raise ValueError('Tokenizer not trained or loaded.')
+
+        if self.policy == 'dp':
+            return self._encode_dp(text)
 
         tokens = []
         i = 0
@@ -269,6 +327,30 @@ class BigramTokenizer:
             i += 1
 
         return tokens
+
+    def _encode_dp(self, text: str) -> list[int]:
+        '''Bigrams with the highest total score; ties prefer more bigrams.'''
+        # best[i] = (total score, bigram count, token IDs) for text[i:]
+        best = [(0.0, 0, [])] * (len(text) + 1)
+
+        for i in range(len(text) - 1, -1, -1):
+            score, count, ids = best[i + 1]
+            winner = (score, count, [self.vocab[text[i]]] + ids)
+
+            bigram = text[i : i + 2]
+            if len(bigram) == 2 and bigram in self.scores:
+                score, count, ids = best[i + 2]
+                candidate = (
+                    score + self.scores[bigram],
+                    count + 1,
+                    [self.vocab[bigram]] + ids,
+                )
+                if candidate[:2] >= winner[:2]:
+                    winner = candidate
+
+            best[i] = winner
+
+        return best[0][2]
 
     def decode(self, ids: list[int]) -> str:
         '''Decodes token IDs back to string.
@@ -321,6 +403,8 @@ class BPETokenizer:
         categories: list[str],
         size: int = 200,
         letters_only: bool = False,
+        allowed_pairs=None,
+        name: str | None = None,
     ) -> None:
         '''Trains a BPE tokenizer using an iterator of texts.
 
@@ -333,8 +417,15 @@ class BPETokenizer:
                 characters outside categories are skipped, so the alphabet
                 is exactly the categories. Defaults to False (original TVA
                 behavior: whitespace is split off and dropped).
+            allowed_pairs: Letter pairs that pieces may join. Texts are cut
+                between two letters whose pair is not allowed, see
+                split_at_pairs(). Defaults to None (every pair, original TVA
+                behavior).
+            name: Directory name under 'tokenizers'. Defaults to
+                'bpe<size>' (with '_letters' if letters_only).
         '''
-        name = f'bpe{size}_letters' if letters_only else f'bpe{size}'
+        if name is None:
+            name = f'bpe{size}_letters' if letters_only else f'bpe{size}'
         dir_tokenizers = os.path.join(dir_ds, 'tokenizers', name)
         os.makedirs(dir_tokenizers, exist_ok=True)
 
@@ -348,6 +439,9 @@ class BPETokenizer:
 
             if letters_only:
                 texts = [t for t in texts if set(t) <= set(categories)]
+
+            if allowed_pairs is not None:
+                texts = [c for t in texts for c in split_at_pairs(t, allowed_pairs)]
 
             self.tokenizer = Tokenizer(models.BPE())
             self.tokenizer.pre_tokenizer = (
@@ -453,6 +547,8 @@ class UnigramTokenizer:
         categories: list[str],
         size: int = 200,
         letters_only: bool = False,
+        allowed_pairs=None,
+        name: str | None = None,
     ) -> None:
         '''Trains a Unigram tokenizer using an iterator of texts.
 
@@ -465,8 +561,15 @@ class UnigramTokenizer:
                 characters outside categories are skipped, so the alphabet
                 is exactly the categories. Defaults to False (original TVA
                 behavior: whitespace is split off and dropped).
+            allowed_pairs: Letter pairs that pieces may join. Texts are cut
+                between two letters whose pair is not allowed, see
+                split_at_pairs(). Defaults to None (every pair, original TVA
+                behavior).
+            name: Directory name under 'tokenizers'. Defaults to
+                'unigram<size>' (with '_letters' if letters_only).
         '''
-        name = f'unigram{size}_letters' if letters_only else f'unigram{size}'
+        if name is None:
+            name = f'unigram{size}_letters' if letters_only else f'unigram{size}'
         dir_tokenizers = os.path.join(dir_ds, 'tokenizers', name)
         os.makedirs(dir_tokenizers, exist_ok=True)
 
@@ -480,6 +583,9 @@ class UnigramTokenizer:
 
             if letters_only:
                 texts = [t for t in texts if set(t) <= set(categories)]
+
+            if allowed_pairs is not None:
+                texts = [c for t in texts for c in split_at_pairs(t, allowed_pairs)]
 
             self.tokenizer = Tokenizer(models.Unigram())
             self.tokenizer.pre_tokenizer = (

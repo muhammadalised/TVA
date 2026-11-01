@@ -19,8 +19,8 @@ ARCHIVE_SHA256 = {
 DEFAULT_DATASET_DIRECTORY = Path(os.environ.get(
     'TVA_ED_DATASET_DIR', '/mnt/c/Users/Ali/Downloads/fau-english-dataset'
 ))
-DEFAULT_TOKENIZER = 'handwriting_bigram_greedy'
-DEFAULT_DIR_TOKENIZER = Path('artifacts/tokenizers/ed/handwriting/bigram')
+DEFAULT_TOKENIZER = 'bigram'
+DEFAULT_DIR_TOKENIZER = Path('artifacts/tokenizers/ed/handwriting/bigram_v3')
 
 
 def _sha256(path: Path) -> str:
@@ -243,7 +243,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dataset-directory', type=Path, default=DEFAULT_DATASET_DIRECTORY)
     parser.add_argument('--tokenizer', default=DEFAULT_TOKENIZER,
-                        help="Config key, e.g. 'bigram', 'handwriting_bpe', 'unigram_em'.")
+                        help="Config key, e.g. 'bigram', 'bigram_dp', 'bpe', 'unigram'.")
     parser.add_argument('--dir-tokenizer', type=Path, default=DEFAULT_DIR_TOKENIZER,
                         help='Tokenizer directory (fold 0) or JSON file, as dir_tokenizer in a config.')
     parser.add_argument('--compare', action='store_true', help='Compare all frozen vocabularies and ED targets.')

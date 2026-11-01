@@ -8,8 +8,8 @@ checkpoint: null
 dataset_format: json-directory
 device: cuda
 dir_dataset: data/tva/ed/gold_wi
-dir_tokenizer: artifacts/tokenizers/ed/handwriting/bigram
-dir_work: results/thesis/ed/handwriting_wi
+dir_tokenizer: artifacts/tokenizers/ed/handwriting/bigram_v3
+dir_work: results/thesis/ed/handwriting_bigram_v3_wi
 epoch: 300
 epoch_warmup: 30
 ed_distribution: wi
@@ -25,5 +25,5 @@ num_worker: 8
 seed: 42
 size_batch: 32
 test: false
-tokenizer: handwriting_bigram_greedy
+tokenizer: bigram
 categories: ["", " ", "!", "\"", "%", "'", "(", ")", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "=", "?", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]

@@ -1,4 +1,4 @@
-"""Linguistic (original TVA, letters only), text-only EM and handwriting BPE/Unigram tokenizers for ED."""
+"""Linguistic (original TVA, letters only) and handwriting BPE/Unigram tokenizers for ED (D024)."""
 from collections import defaultdict
 import json
 import os
@@ -7,10 +7,9 @@ import tempfile
 import unittest
 
 from tva.dataset.ed import ED_ALPHABET
-from tva.handwriting.training import collect_candidates, frequent_spans
 from tva.handwriting_tokenizers import (
-    HandwritingBPETokenizer, HandwritingUnigramTokenizer, UnigramEMTokenizer,
-    read_bigram_scores, read_connectivity_lines,
+    HandwritingBPETokenizer, HandwritingUnigramTokenizer,
+    connected_pairs, read_bigram_scores, read_connectivity_lines,
 )
 from tva.tokenizer_factory import get_tokenizer
 from tva.tokenizers import BPETokenizer, UnigramTokenizer
@@ -23,9 +22,8 @@ CATEGORIES = ['', *ED_ALPHABET]
 FILES = {
     'linguistic_bpe': ('bpe', ED / 'linguistic/bpe'),
     'linguistic_unigram': ('unigram', ED / 'linguistic/unigram'),
-    'linguistic_unigram_em': ('unigram_em', ED / 'linguistic/unigram_em'),
-    'handwriting_bpe': ('handwriting_bpe', ED / 'handwriting/bpe'),
-    'handwriting_unigram': ('handwriting_unigram', ED / 'handwriting/unigram'),
+    'handwriting_bpe': ('bpe', ED / 'handwriting/bpe_v3'),
+    'handwriting_unigram': ('unigram', ED / 'handwriting/unigram_v3'),
 }
 
 
@@ -74,18 +72,25 @@ class SubwordTrainingTests(unittest.TestCase):
         tokenizer.train(self.directory.name, CATEGORIES, 224, letters_only=True)
         self.assertEqual(pieces(tokenizer), pieces(load('linguistic_unigram')))
 
-    def test_text_only_unigram_em_reproduces_its_files(self):
-        UnigramEMTokenizer().train(self.directory.name, CATEGORIES, 224)
-        for fold in range(5):
-            self.assertEqual((ED / f'linguistic/unigram_em/{fold}.json').read_bytes(), self.trained('unigram_em224'))
+    def test_allowing_every_pair_is_the_original_tva_trainer(self):
+        letters = [c for c in ED_ALPHABET if c.isalpha()]
+        every_pair = {a + b for a in letters for b in letters}
+        BPETokenizer().train(self.directory.name, CATEGORIES, 224, letters_only=True,
+                             allowed_pairs=every_pair, name='bpe_every_pair')
+        self.assertEqual(self.trained('bpe_every_pair'), (ED / 'linguistic/bpe/0.json').read_bytes())
 
-    def test_handwriting_training_reproduces_the_frozen_files(self):
-        for cls, name in ((HandwritingBPETokenizer, 'bpe'), (HandwritingUnigramTokenizer, 'unigram')):
-            with self.subTest(name=name):
-                cls().train(self.directory.name, CATEGORIES, 224, path_evidence=EVIDENCE)
-                for fold in range(5):
-                    self.assertEqual((ED / f'handwriting/{name}/{fold}.json').read_bytes(),
-                                     self.trained(f'handwriting_{name}224'))
+    def test_handwriting_bpe_reproduces_its_files(self):
+        HandwritingBPETokenizer().train(self.directory.name, CATEGORIES, 224, path_evidence=EVIDENCE)
+        for fold in range(5):
+            self.assertEqual((ED / f'handwriting/bpe_v3/{fold}.json').read_bytes(), self.trained('handwriting_bpe224'))
+
+    def test_handwriting_unigram_selects_the_frozen_pieces(self):
+        tokenizer = HandwritingUnigramTokenizer()
+        tokenizer.train(self.directory.name, CATEGORIES, 224, path_evidence=EVIDENCE)
+        self.assertEqual(pieces(tokenizer), pieces(load('handwriting_unigram')))
+        for fold in range(1, 5):
+            self.assertEqual((ED / f'handwriting/unigram_v3/{fold}.json').read_bytes(),
+                             (ED / 'handwriting/unigram_v3/0.json').read_bytes())
 
     @unittest.skipUnless((ONHW / 'tokenizers/bpe200/0.json').is_file(), 'needs the local OnHW dataset')
     def test_default_bpe_is_the_original_tva_trainer(self):
@@ -107,11 +112,9 @@ class SubwordEncodingTests(unittest.TestCase):
         cls.tokenizers = {name: load(name) for name in FILES}
 
     def test_classes_are_tva_classes(self):
-        self.assertIs(type(self.tokenizers['linguistic_bpe']), BPETokenizer)
-        self.assertIs(type(self.tokenizers['linguistic_unigram']), UnigramTokenizer)
-        self.assertIsInstance(self.tokenizers['handwriting_bpe'], BPETokenizer)
-        self.assertIsInstance(self.tokenizers['handwriting_unigram'], UnigramTokenizer)
-        self.assertIsInstance(self.tokenizers['linguistic_unigram_em'], UnigramTokenizer)
+        for name, tokenizer in self.tokenizers.items():
+            with self.subTest(name=name):
+                self.assertIs(type(tokenizer), BPETokenizer if 'bpe' in name else UnigramTokenizer)
 
     def test_same_layout_and_letter_only_pieces(self):
         for name, tokenizer in self.tokenizers.items():
@@ -133,43 +136,40 @@ class SubwordEncodingTests(unittest.TestCase):
                 tokens = [tokenizer.decode([i]) for i in tokenizer.encode('the cat, 42')]
                 self.assertEqual([t for t in tokens if not t.isalpha()], [' ', ',', ' ', '4', '2'])
 
-    def test_handwriting_pieces_are_connected_candidates(self):
-        lines = [line for line in iam_lines() if set(line['text']) <= set(ED_ALPHABET)]
-        candidates = collect_candidates(lines)
-        for name in ('handwriting_bpe', 'handwriting_unigram'):
+    def test_handwriting_pieces_only_join_allowed_pairs(self):
+        allowed = set(connected_pairs(EVIDENCE, 145, CATEGORIES))
+        self.assertEqual(min(connected_pairs(EVIDENCE, 145, CATEGORIES).values()), 0.5)
+        for name in FILES:
             with self.subTest(name=name):
-                self.assertTrue(pieces(self.tokenizers[name]) <= set(candidates))
-
-    def test_connectivity_narrows_the_text_only_candidates(self):
-        # Both Unigrams draw from the frequent IAM letter spans; connectivity
-        # only removes spans and changes the seeds.
-        lines = [line for line in iam_lines() if set(line['text']) <= set(ED_ALPHABET)]
-        spans = set(frequent_spans(lines))
-        self.assertTrue(set(collect_candidates(lines)) < spans)
-        for name in ('linguistic_unigram_em', 'handwriting_unigram'):
-            with self.subTest(name=name):
-                self.assertTrue(pieces(self.tokenizers[name]) <= spans)
+                joined = {p for p in pieces(self.tokenizers[name])
+                          if all(p[i:i + 2] in allowed for i in range(len(p) - 1))}
+                if name.startswith('handwriting'):
+                    self.assertEqual(joined, pieces(self.tokenizers[name]))
+                else:  # text-only pieces also join pairs usually written apart
+                    self.assertLess(len(joined), 145)
 
 
 class SubwordConfigTests(unittest.TestCase):
-    def test_configs_load_their_tokenizers_and_write_v2_results(self):
+    def test_configs_load_their_tokenizers(self):
         from argparse import Namespace
 
         import yaml
 
         from main import load_configured_tokenizer
 
-        keys = {'subword_comparison/bpe_linguistic': 'bpe', 'subword_comparison/unigram_linguistic': 'unigram',
-                'unigram_trainer/unigram_linguistic_em': 'unigram_em',
-                'subword_comparison/bpe_handwriting': 'handwriting_bpe',
-                'subword_comparison/unigram_handwriting': 'handwriting_unigram'}
-        for stem, key in keys.items():
+        expected = {
+            'bpe_linguistic': ('bpe', 'linguistic/bpe', 'linguistic_bpe_v2'),
+            'unigram_linguistic': ('unigram', 'linguistic/unigram', 'linguistic_unigram_v2'),
+            'bpe_handwriting': ('bpe', 'handwriting/bpe_v3', 'handwriting_bpe_v3'),
+            'unigram_handwriting': ('unigram', 'handwriting/unigram_v3', 'handwriting_unigram_v3'),
+        }
+        for stem, (key, directory, work) in expected.items():
             for split in ('wd', 'wi'):
                 with self.subTest(config=f'{stem}_{split}'):
-                    config = yaml.safe_load((ROOT / f'configs/thesis/ed/{stem}_{split}.yaml').read_text())
+                    config = yaml.safe_load((ROOT / f'configs/thesis/ed/subword_comparison/{stem}_{split}.yaml').read_text())
                     self.assertEqual(config['tokenizer'], key)
-                    suffix = f'_{split}' if key == 'unigram_em' else f'_v2_{split}'
-                    self.assertTrue(config['dir_work'].endswith(suffix))
+                    self.assertEqual(config['dir_tokenizer'], f'artifacts/tokenizers/ed/{directory}')
+                    self.assertEqual(config['dir_work'], f'results/thesis/ed/{work}_{split}')
                     self.assertEqual(load_configured_tokenizer(Namespace(**config)).size, 224)
 
 

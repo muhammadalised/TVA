@@ -1,0 +1,25 @@
+{
+  "accepted_seeds": [
+    2,
+    3,
+    4
+  ],
+  "handwriting_partner": {
+    "iam_characters_per_token": 1.335293,
+    "path": "ed/handwriting/bigram_v3/0.json",
+    "sha256": "d95208440c44505beaada1f29aee253fd8348bc8c77c16fd1b21d90b8e7743a7"
+  },
+  "rejected": [
+    {
+      "iam_characters_per_token": 1.336587,
+      "seed": 0
+    },
+    {
+      "iam_characters_per_token": 1.337472,
+      "seed": 1
+    }
+  ],
+  "rule": "145 bigrams drawn without replacement from the handwriting bigram candidates (letter bigrams with >= 20 aligned IAM observations), with probability proportional to IAM text count ** alpha (Gumbel top-k, random.Random(seed)); alpha on a 0.001 grid in [0, 2] minimizes |IAM characters per token - handwriting partner|; draws further than 0.001 from the partner are skipped",
+  "schema_version": "tva.ed-size-compression-matched-bigram.v2",
+  "tolerance": 0.001
+}

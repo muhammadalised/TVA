@@ -107,15 +107,11 @@ class EdSmokeConfigTests(unittest.TestCase):
                 self.assertEqual(model.decoder.fc.out_features, 224)
 
     def test_tokenizer_pairings_are_explicit(self):
+        # Both are TVA bigram files (D024); only the tokenizer directory differs.
         for name, config in self.configs.items():
-            expected = (
-                'handwriting_bigram_greedy'
-                if name.startswith('handwriting')
-                else 'bigram'
-            )
-            self.assertEqual(config['tokenizer'], expected)
-            family = 'handwriting' if name.startswith('handwriting') else 'linguistic'
-            self.assertEqual(config['dir_tokenizer'], f'artifacts/tokenizers/ed/{family}/bigram')
+            self.assertEqual(config['tokenizer'], 'bigram')
+            directory = 'handwriting/bigram_v3' if name.startswith('handwriting') else 'linguistic/bigram'
+            self.assertEqual(config['dir_tokenizer'], f'artifacts/tokenizers/ed/{directory}')
 
 
 class EdProductionConfigTests(unittest.TestCase):
@@ -156,11 +152,7 @@ class EdProductionConfigTests(unittest.TestCase):
     def test_production_settings_and_tokenizers_are_frozen(self):
         for name, config in self.configs.items():
             with self.subTest(config=name):
-                expected_tokenizer = (
-                    'handwriting_bigram_greedy'
-                    if name.startswith('handwriting')
-                    else 'bigram'
-                )
+                expected_tokenizer = 'bigram'
                 tokenizer = get_tokenizer(config['tokenizer'])
                 tokenizer.load(resolve_tokenizer_path(str(REPO_ROOT / config['dir_tokenizer']), config['idx_fold']))
                 model = BaseModel(

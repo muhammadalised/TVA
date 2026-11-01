@@ -6,6 +6,6 @@ numpy
 PyYAML
 scipy
 thop
-tokenizers
+tokenizers==0.23.1
 tqdm
 # torch

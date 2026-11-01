@@ -5,5 +5,6 @@
     "poc/dtlr_poc/tokenizer.py": "5dcc479f4ed4adf75800e2bff386a0844a14e7216410d089c674fc6b98cfec03"
   },
   "migration_date": "2026-10-10",
-  "algorithms": "unchanged functions; imports replaced with TVA-local helpers"
+  "algorithms": "unchanged functions; imports replaced with TVA-local helpers",
+  "retired": "2026-11-01 (docs/DECISIONS.md, D024): the handwriting_subwords.py BPE/Unigram trainers (tva/handwriting/training.py) were removed; tokenizers are built by TVA's trainers. The tokenizer.py dynamic-programming segmentation lives on as BigramTokenizer's dp policy."
 }

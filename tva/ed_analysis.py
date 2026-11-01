@@ -17,8 +17,7 @@ from IPython.display import Markdown, display
 from torch.utils.data import DataLoader
 
 from tva.compression_matched_tokenizers import (  # noqa: F401  (re-exported for the notebooks)
-    bigram_compression_curve, bpe_compression_curve, bpe_merges, characters_per_token,
-    greedy_bigram_split, iam_training_texts, ranked_pieces,
+    characters_per_token, greedy_bigram_split, iam_training_texts,
 )
 from tva.dataset import HRDataset, fn_collate
 from tva.model import BaseModel
@@ -37,13 +36,18 @@ DATA_ROOT = _root('TVA_ED_EXTRACTED_DIR', 'data/tva/ed')
 RESULTS_ROOT = _root('TVA_ED_RESULTS_DIR', 'results/thesis/ed')
 
 # Readable condition name -> saved result directory under RESULTS_ROOT.
-# BPE/Unigram '_v2' runs use TVA's letters-only BPE/Unigram and their handwriting subclasses.
-# The matched bigram '_v2' runs use the top 62 bigrams of TVA's letters-only bigram.
+# Handwriting and matched '_v3' runs use the frozen construction (docs/DECISIONS.md, D024);
+# '_previous' conditions are the runs before it. Linguistic BPE/Unigram '_v2' runs use
+# TVA's letters-only BPE/Unigram; the matched bigram '_v2' runs use the top 62 bigrams of
+# TVA's letters-only bigram (unchanged by D024).
 CONDITIONS = {
     'character': 'character_{split}_cv_rerun',
-    'handwriting_bigram': 'handwriting_{split}',
-    'handwriting_bpe': 'handwriting_bpe_v2_{split}',
-    'handwriting_unigram': 'handwriting_unigram_v2_{split}',
+    'handwriting_bigram': 'handwriting_bigram_v3_{split}',
+    'handwriting_bpe': 'handwriting_bpe_v3_{split}',
+    'handwriting_unigram': 'handwriting_unigram_v3_{split}',
+    'handwriting_bigram_previous': 'handwriting_{split}',
+    'handwriting_bpe_previous': 'handwriting_bpe_v2_{split}',
+    'handwriting_unigram_previous': 'handwriting_unigram_v2_{split}',
     'linguistic_bigram_tva': 'tva_original_{split}',
     'linguistic_bigram_letters': 'linguistic_bigram_letters_{split}',
     'linguistic_bigram_iam_frequency': 'linguistic_{split}',
@@ -51,16 +55,24 @@ CONDITIONS = {
     'linguistic_unigram': 'linguistic_unigram_v2_{split}',
     'linguistic_unigram_em': 'linguistic_unigram_em_{split}',
     'linguistic_bigram_matched': 'linguistic_bigram_matched_v2_{split}',
-    'linguistic_bpe_matched': 'linguistic_bpe_matched_v2_{split}',
-    'linguistic_unigram_matched': 'linguistic_unigram_matched_{split}',
+    'linguistic_bpe_matched': 'linguistic_bpe_matched_v3_{split}',
+    'linguistic_unigram_matched': 'linguistic_unigram_matched_v3_{split}',
+    'linguistic_bpe_matched_previous': 'linguistic_bpe_matched_v2_{split}',
+    'linguistic_unigram_matched_previous': 'linguistic_unigram_matched_{split}',
+    'linguistic_bigram_drawn0': 'linguistic_bigram_drawn0_{split}',
+    'linguistic_bigram_drawn1': 'linguistic_bigram_drawn1_{split}',
+    'linguistic_bigram_drawn2': 'linguistic_bigram_drawn2_{split}',
 }
 
 # Frozen tokenizer files, for analyses that need no trained model.
 TOKENIZERS = {
     'character': ('char', 'artifacts/tokenizers/ed/character/char/0.json'),
-    'handwriting_bigram': ('handwriting_bigram_greedy', 'artifacts/tokenizers/ed/handwriting/bigram/0.json'),
-    'handwriting_bpe': ('handwriting_bpe', 'artifacts/tokenizers/ed/handwriting/bpe/0.json'),
-    'handwriting_unigram': ('handwriting_unigram', 'artifacts/tokenizers/ed/handwriting/unigram/0.json'),
+    'handwriting_bigram': ('bigram', 'artifacts/tokenizers/ed/handwriting/bigram_v3/0.json'),
+    'handwriting_bpe': ('bpe', 'artifacts/tokenizers/ed/handwriting/bpe_v3/0.json'),
+    'handwriting_unigram': ('unigram', 'artifacts/tokenizers/ed/handwriting/unigram_v3/0.json'),
+    'handwriting_bigram_previous': ('handwriting_bigram_greedy', 'artifacts/tokenizers/ed/handwriting/bigram/0.json'),
+    'handwriting_bpe_previous': ('bpe', 'artifacts/tokenizers/ed/handwriting/bpe/0.json'),
+    'handwriting_unigram_previous': ('unigram', 'artifacts/tokenizers/ed/handwriting/unigram/0.json'),
     'linguistic_bigram_tva': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram/0.json'),
     'linguistic_bigram_letters': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_letters/0.json'),
     'linguistic_bigram_iam_frequency': ('linguistic_bigram_greedy', 'artifacts/tokenizers/archive/ed/linguistic/ed_iam_linguistic_bigram_greedy_v1.json'),
@@ -68,8 +80,13 @@ TOKENIZERS = {
     'linguistic_unigram': ('unigram', 'artifacts/tokenizers/ed/linguistic/unigram/0.json'),
     'linguistic_unigram_em': ('unigram_em', 'artifacts/tokenizers/ed/linguistic/unigram_em/0.json'),
     'linguistic_bigram_matched': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_matched/0.json'),
-    'linguistic_bpe_matched': ('bpe', 'artifacts/tokenizers/ed/linguistic/bpe_matched/0.json'),
-    'linguistic_unigram_matched': ('unigram', 'artifacts/tokenizers/ed/linguistic/unigram_matched/0.json'),
+    'linguistic_bpe_matched': ('bpe', 'artifacts/tokenizers/ed/linguistic/bpe_matched_v3/0.json'),
+    'linguistic_unigram_matched': ('unigram', 'artifacts/tokenizers/ed/linguistic/unigram_matched_v3/0.json'),
+    'linguistic_bpe_matched_previous': ('bpe', 'artifacts/tokenizers/ed/linguistic/bpe_matched/0.json'),
+    'linguistic_unigram_matched_previous': ('unigram', 'artifacts/tokenizers/ed/linguistic/unigram_matched/0.json'),
+    'linguistic_bigram_drawn0': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/0.json'),
+    'linguistic_bigram_drawn1': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/0.json'),
+    'linguistic_bigram_drawn2': ('bigram', 'artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/0.json'),
 }
 
 

@@ -98,7 +98,7 @@ them that.
 | `letters_only` | Is the result only because text-only bigrams include spaces and punctuation? |
 | `compression_matched` | Is the result only because handwriting tokenizers merge fewer letters? |
 | `size_and_compression_matched` | Once size and compression are equal, does the *choice* of letter pairs still matter? |
-| `unigram_trainer` | Is the Unigram result caused by the training method instead of the evidence? |
+| ~~`unigram_trainer`~~ | Retired on 2026-11-01: both sides now use TVA's own trainer (D024), so the training method can no longer differ |
 
 These all live in `configs/thesis/ed/`. Most of them only have fold 0 results
 so far.
@@ -115,8 +115,8 @@ so far.
 
 ### Phase 1: Finish the checks we already built
 
-- Run `compression_matched`, the three `drawn` bigram sets, `letters_only`
-  and `unigram_trainer` on 5 folds (or 3 if computing time is short).
+- Run `compression_matched`, the three `drawn` bigram sets and
+  `letters_only` on 5 folds (or 3 if computing time is short).
 - **Why:** these are our main proof that connectivity itself, not
   compression or size, explains the result.
 
@@ -142,11 +142,14 @@ same.
 
 - **Vocabulary size:** try, for example, 50, 100, 145 and 200 learned pieces
   for both handwriting and text-only tokenizers. A curve says much more than
-  a single point.
+  a single point. Limits: the handwriting bigram can have at most 389 pieces
+  (only 389 letter pairs are seen 20 times), and Unigram stops at about 470
+  classes.
+- **Number of allowed pairs** (BPE and Unigram): try 100, 145 and 200 most
+  connected pairs (connected at least about 55%, 50% and 44% of the time).
 - **Minimum count:** try `min_count` of 5, 10, 20 and 40.
-- **Connection threshold** (BPE and Unigram): try `rate_threshold` of 0.3,
-  0.5 and 0.7.
-- **Splitting policy:** greedy vs utility-based (both already exist).
+- **Splitting policy** (bigram): greedy vs `dp`, always on both sides
+  (config key `bigram_dp`).
 - **Why:** this shows our result is not just a lucky choice of settings.
 
 ### Phase 4 (optional): Other handwriting sources
@@ -157,6 +160,12 @@ same.
   works once.
 
 ## Getting the code ready
+
+Tokenizer construction is frozen (`docs/DECISIONS.md`, D024 and D025): every
+tokenizer is built by TVA's own trainer, and a handwriting tokenizer only adds
+a list of letter pairs allowed to join. Every experiment in Phases 2 and 3
+changes only a setting: the allowed list, the vocabulary size or the
+splitting policy. No construction code needs to change.
 
 To run many experiments without mistakes, the pipeline needs a few
 additions:

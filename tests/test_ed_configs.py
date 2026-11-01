@@ -7,7 +7,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_ROOT = ROOT / 'configs/thesis/ed'
 CONFIGS = sorted(CONFIG_ROOT.rglob('*.yaml'))
-EXPERIMENTS = {'character', 'subword_comparison', 'letters_only', 'compression_matched', 'unigram_trainer'}
+EXPERIMENTS = {'character', 'subword_comparison', 'letters_only', 'compression_matched',
+               'size_and_compression_matched'}
 # What a condition may change: its tokenizer and where its results go.
 PER_CONDITION = {'tokenizer', 'dir_tokenizer', 'dir_work'}
 # Data location follows the split.

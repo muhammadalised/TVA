@@ -87,61 +87,66 @@ from tva.handwriting_tokenizers import HandwritingBigramTokenizer
 prepare_iam(iam_labels, iam_selection, 'data/tva/iam')   # IAM -> train.json
 
 linguistic = get_tokenizer('bigram')                      # original TVA, unchanged
-linguistic.train('data/tva/iam', categories, 224)
+linguistic.train('data/tva/iam', categories, 224, letters_only=True)
 
-handwriting = HandwritingBigramTokenizer(policy='greedy')
+handwriting = HandwritingBigramTokenizer()                # TVA's train() + allowed pairs
 handwriting.train('data/tva/iam', categories, 224, path_evidence=iam_evidence)
 ```
 
-`HandwritingBigramTokenizer` subclasses TVA's `BigramTokenizer` and keeps its
-vocabulary layout, files, `load`, `encode` and `decode`. Only `train` differs:
-instead of the most frequent label bigrams it keeps the letter bigrams most
-often written connected (highest `exact_alignment_connected_rate` among pairs
-with at least `min_count=20` aligned observations). Any dataset works the same
-way: a `train.json` for the folds plus a per-bigram connectivity score file.
+**Tokenizer construction is frozen** ([docs/DECISIONS.md](docs/DECISIONS.md),
+D024 and D025). Every tokenizer, linguistic or handwriting, is trained by TVA's
+own `.train()` in `tva/tokenizers.py`. A handwriting tokenizer adds one input,
+`allowed_pairs`: the letter pairs that may join inside a token. That list is
+the only place connectivity enters:
 
-The segmentation policy is a constructor parameter:
+- **Bigram:** only allowed pairs are counted. A size-k handwriting bigram holds
+  the k most connected IAM letter pairs (highest `exact_alignment_connected_rate`
+  among pairs with at least 20 aligned observations); its linguistic partner
+  holds TVA's k most frequent letter pairs.
+- **BPE and Unigram:** each IAM line is cut between two letters whose pair is not
+  allowed before TVA's trainer sees it. The allowed pairs are the 145 most
+  connected ones (written connected at least half of the time).
+- `allowed_pairs=None` (the default) is the original TVA tokenizer. The matched
+  linguistic partner is TVA's `letters_only=True` version, because handwriting
+  tokenizers never join spaces or punctuation.
 
-```python
-greedy = HandwritingBigramTokenizer(policy='greedy')            # identical to BigramTokenizer
-utility_based = HandwritingBigramTokenizer(policy='utility-based')  # max total connected rate
-```
+Ablations change only settings, never this code: the allowed list (its size,
+the minimum count, the rate column, the evidence file, or a control list), the
+vocabulary size, and the bigram segmentation policy. Every bigram file can be
+encoded greedily (config key `bigram`, TVA's default) or with the `dp` policy
+(key `bigram_dp`), which keeps the bigrams with the highest total score saved
+next to the vocabulary in `<fold>.scores.json` (text count for linguistic
+bigrams, connected rate for handwriting bigrams). A policy is always applied
+to both sides of a comparison.
 
-Both load the same file; the policy changes only how text is split. ED
-experiments use `greedy` so that linguistic and handwriting bigrams differ only
-in their vocabularies. Config keys: `bigram` (linguistic),
-`handwriting_bigram_greedy`, `handwriting_bigram_utility`.
-
-Both bigram vocabularies have 145 bigrams, 78 ED characters and the CTC blank
-(224 classes); neither reads ED labels. TVA's linguistic selection counts all
-adjacent pairs, so 35 of its 145 bigrams contain a space, while handwriting
-selection only ranks letter pairs. The letters-only control removes that
-difference: `train(..., letters_only=True)` counts only letter pairs; spaces
-and punctuation stay single-character tokens (`linguistic/bigram_letters`,
-configs `bigram_linguistic_letters_{wd,wi}.yaml`). TVA breaks frequency ties in `set()` order,
-so the linguistic file is reproduced with `PYTHONHASHSEED=42`. The character
-baseline uses the original TVA class with a fixed character JSON file (79 classes).
+All learned ED tokenizers have 145 pieces, 78 ED characters and the CTC blank
+(224 classes); none reads ED labels. Run the notebook with `PYTHONHASHSEED=42`:
+TVA breaks bigram frequency ties in `set()` order. Hugging Face's Unigram
+trainer is not bit-reproducible, so Unigram files are checked by their pieces.
+`tokenizers==0.23.1` is pinned. The character baseline uses the original TVA
+class with a fixed character JSON file (79 classes).
 
 ```text
 train_ed_tokenizers.ipynb            ED categories, IAM preparation, train, example
 train_tokenizers.ipynb               Original TVA OnHW notebook, unchanged
 tva/
-  tokenizers.py                     Original TVA tokenizers (+ letters_only option, off by default)
-  handwriting_tokenizers.py         Handwriting bigram, BPE and Unigram, text-only Unigram EM (TVA subclasses)
+  tokenizers.py                     Original TVA tokenizers (+ letters_only, allowed_pairs and the
+                                    bigram dp policy, all off by default)
+  handwriting_tokenizers.py         Handwriting bigram, BPE and Unigram: evidence -> allowed pairs
   tokenizer_factory.py              Config key -> tokenizer
   dataset/iam.py                    IAM transcriptions -> TVA train.json
   dataset/ed.py                     ED loader and ED_ALPHABET
   compression_matched_tokenizers.py Compression-matched text-only controls
+  drawn_bigram_tokenizers.py        Size- and compression-matched bigram draws
   handwriting/
     common.py                       Shared frozen-file helpers
-    training.py                     Handwriting BPE and Unigram learning (Unigram EM also text-only)
     audit.py                        Optional ED compatibility/comparison audits
 ```
 
 Tokenizer files already exist in `artifacts/tokenizers/ed/`. See
 [the artifact index](artifacts/tokenizers/README.md) for current and archived
 vocabularies. Each ED method has its own directory (for example
-`ed/handwriting/bigram/`) containing `0.json` through `4.json`. Configs point to
+`ed/handwriting/bigram_v3/`) containing `0.json` through `4.json`. Configs point to
 the directory, and TVA loads the requested fold. The five files contain the same
 IAM vocabulary; WD/WI share them. The notebook refuses to overwrite a differing
 frozen file. Detailed audits are separate from the training notebook:
@@ -158,15 +163,18 @@ bigram):
 python -m tva.handwriting.audit --tokenizer bpe --dir-tokenizer artifacts/tokenizers/ed/linguistic/bpe
 ```
 
-Archived bigram files (custom ED linguistic bigram, OnHW conditions) load with
-`HandwritingBigramTokenizer`; their saved config keys `handwriting_bigram`,
-`linguistic_bigram` and `linguistic_bigram_greedy` still work.
+Files from before D024 stay at their paths so completed runs still decode
+correctly. Archived bigram files (custom ED linguistic bigram, OnHW conditions,
+the previous ED handwriting bigram) load with `LegacyBigramTokenizer`; their
+saved config keys `handwriting_bigram`, `handwriting_bigram_greedy`,
+`linguistic_bigram` and `linguistic_bigram_greedy` still work, and `unigram_em`,
+`handwriting_bpe` and `handwriting_unigram` load the previous Hugging Face files.
 See docs/EXPERIMENTS.md for provenance and methodological differences.
 
 Recognition training is a separate manual step. ED configs live in
 [configs/thesis/ed/](configs/thesis/ed/README.md), one folder per experiment
 (`character`, `subword_comparison`, `letters_only`, `compression_matched`,
-`unigram_trainer`), all using batch 32. Run one config at a time, for example:
+`size_and_compression_matched`), all using batch 32. Run one config at a time, for example:
 
 ```bash
 python main.py -c configs/thesis/ed/subword_comparison/bigram_linguistic_wd.yaml
@@ -205,88 +213,66 @@ result directories and were removed.
 
 ### BPE and Unigram — ED
 
-The same rule as for the bigrams: the linguistic tokenizers are TVA's own
-`BPETokenizer` and `UnigramTokenizer`, and the handwriting tokenizers subclass
-them and only replace `train()`. Both are trained with letters-only splitting:
-learned pieces only join letters, while spaces, digits and punctuation stay
-single tokens. (TVA's default whitespace splitting drops the spaces of ED
-sentences, so `letters_only=True` is required on ED.) Every tokenizer has the
-`<PAD>` blank, 78 ED characters and 145 learned pieces (224 classes); encoding
-and decoding are TVA's Hugging Face code for both sides.
+The linguistic tokenizers are TVA's own `BPETokenizer` and `UnigramTokenizer`
+with `letters_only=True`: learned pieces only join letters, while spaces,
+digits and punctuation stay single tokens (TVA's default whitespace splitting
+drops the spaces of ED sentences). The handwriting tokenizers call the same
+trainers with the 145 most connected letter pairs as `allowed_pairs` (D024).
+Every tokenizer has the `<PAD>` blank, 78 ED characters and 145 learned pieces
+(224 classes); encoding and decoding are TVA's Hugging Face code for both sides.
 
 ```python
 get_tokenizer('bpe').train('data/tva/iam', categories, 224, letters_only=True)
 get_tokenizer('unigram').train('data/tva/iam', categories, 224, letters_only=True)
-UnigramEMTokenizer().train('data/tva/iam', categories, 224)
 HandwritingBPETokenizer().train('data/tva/iam', categories, 224, path_evidence=iam_evidence)
 HandwritingUnigramTokenizer().train('data/tva/iam', categories, 224, path_evidence=iam_evidence)
 ```
 
-Handwriting candidates are letter spans of 2–6 characters with at least 20
-aligned IAM observations, written connected at least half the time. Handwriting
-BPE merges the pair with the most *connected* occurrences at each step;
-handwriting Unigram seeds and initializes pieces with connected counts, then
-runs EM and likelihood pruning (`tva/handwriting/training.py`).
+On IAM, the handwriting BPE keeps 71 of TVA's 145 pieces (1.41 vs 1.55
+characters per token) and the handwriting Unigram 39 (1.28 vs 1.54). Every
+handwriting piece joins only allowed pairs; about half of TVA's BPE pieces and
+61% of its Unigram pieces join a pair that is usually written apart.
 
-With connectivity switched off, the handwriting BPE trainer reproduces TVA's
-BPE (138 of 145 merges, 1.554 vs 1.553 characters per token on IAM), but the
-Unigram EM shares only 103 of 145 pieces with Hugging Face's Unigram trainer.
-`UnigramEMTokenizer` is therefore the linguistic partner of the handwriting
-Unigram: the same EM, pruning and IAM lines, with every letter span of 2–6
-characters seen at least 20 times as a candidate, seeded by its frequency
-instead of its connected count. Only the connectivity evidence separates the
-two. TVA's Unigram stays as the reference baseline. Hugging Face's Unigram
-trainer is also not bit-reproducible (same pieces, slightly different IDs and
-scores), so its file is frozen once.
-
-Run fold 0 from the TVA root; results go to `results/thesis/ed/*_v2_{wd,wi}`
-(`linguistic_unigram_em_{wd,wi}` for the text-only EM):
+Run fold 0 from the TVA root. Linguistic results go to
+`results/thesis/ed/linguistic_{bpe,unigram}_v2_{wd,wi}`, handwriting results to
+`results/thesis/ed/handwriting_{bpe,unigram}_v3_{wd,wi}`:
 
 ```bash
 python main.py -c configs/thesis/ed/subword_comparison/bpe_linguistic_wd.yaml
 python main.py -c configs/thesis/ed/subword_comparison/bpe_linguistic_wi.yaml
 python main.py -c configs/thesis/ed/subword_comparison/unigram_linguistic_wd.yaml
 python main.py -c configs/thesis/ed/subword_comparison/unigram_linguistic_wi.yaml
-python main.py -c configs/thesis/ed/unigram_trainer/unigram_linguistic_em_wd.yaml
-python main.py -c configs/thesis/ed/unigram_trainer/unigram_linguistic_em_wi.yaml
 python main.py -c configs/thesis/ed/subword_comparison/bpe_handwriting_wd.yaml
 python main.py -c configs/thesis/ed/subword_comparison/bpe_handwriting_wi.yaml
 python main.py -c configs/thesis/ed/subword_comparison/unigram_handwriting_wd.yaml
 python main.py -c configs/thesis/ed/subword_comparison/unigram_handwriting_wi.yaml
 ```
 
-The earlier custom BPE/Unigram tokenizers (and their `linguistic_bpe`,
-`linguistic_unigram` runs) are superseded; their files remain in git history.
+The handwriting BPE/Unigram built with custom trainers before D024 (files in
+`ed/handwriting/{bpe,unigram}/`, runs in `handwriting_{bpe,unigram}_v2_*`) and
+the text-only Unigram EM (`ed/linguistic/unigram_em/`, runs in
+`linguistic_unigram_em_*`) are superseded. Their files stay so those runs can
+still be decoded; the code that built them is in git history.
 
 ### Compression-matched text-only controls — ED
 
-Handwriting tokenizers merge less than their 145-piece text-only partners
-(on IAM, 1.38 vs 1.55 characters per token for BPE, 1.34 vs 1.47 for the
-letters-only frequency bigram), and on ED fewer merges
-go with lower error. These controls remove that difference: each keeps only the
-first *k* pieces of a text-only tokenizer, with *k* chosen so that it covers as
-many characters per token on IAM training text as its handwriting partner.
+Handwriting tokenizers merge less than their 145-piece text-only partners,
+and on ED fewer merges go with lower error. These controls remove that
+difference: each is TVA's letters-only tokenizer trained with a smaller
+vocabulary, 79 + *k* classes, with *k* chosen so that it covers as many
+characters per token on IAM training text as its handwriting partner.
 
-| Control | Pieces kept | CTC classes | IAM characters per token (handwriting partner) |
+| Control | TVA tokenizer with | CTC classes | IAM characters per token (handwriting partner) |
 | --- | --- | --- | --- |
-| `linguistic_bigram_matched` | top 62 letters-only TVA bigrams | 141 | 1.336 (1.335) |
-| `linguistic_bpe_matched` | first 59 letters-only TVA BPE merges | 138 | 1.379 (1.379) |
-| `linguistic_unigram_matched` | text-only Unigram EM retrained with 55 pieces | 134 | 1.367 (1.365) |
+| `linguistic_bigram_matched` | 62 bigrams (the top 62 of `bigram_letters`) | 141 | 1.336 (1.335) |
+| `linguistic_bpe_matched` | 71 merges (the first 71 of `bpe`) | 150 | 1.409 (1.410) |
+| `linguistic_unigram_matched` | 36 pieces (retrained) | 115 | 1.286 (1.284) |
 
-A Unigram has no learned order to cut, so its control retrains the text-only
-Unigram EM (`UnigramEMTokenizer`, the partner in `unigram_trainer/`) with a
-budget of *k* pieces; every budget is a separate training, and `selection.json`
-keeps the compression for all 146 budgets. Its steps are coarser, so it matches
-less closely (1.367 vs 1.365).
-
-Files are in `artifacts/tokenizers/ed/linguistic/{bigram,bpe,unigram}_matched/`; they
-were built by `tva/compression_matched_tokenizers.py` (`build_fold_tokenizers`)
-without reading ED labels and load with TVA's `BigramTokenizer` / `BPETokenizer` / `UnigramTokenizer`
-(`selection.json` records the choice of *k*). TVA ranks bigrams by frequency, so
-the bigram control is byte-identical to
-`BigramTokenizer.train(..., 141, letters_only=True)`. Both controls were rebuilt
-on the letters-only TVA tokenizers, so they need new runs. Run fold 0 from the
-TVA root:
+`tva/compression_matched_tokenizers.py` (`build_fold_tokenizers`) trains every
+*k* = 1..145 without reading ED labels and keeps the whole compression curve in
+`selection.json`. Files are in `artifacts/tokenizers/ed/linguistic/bigram_matched/`
+(unchanged by D024: the handwriting bigram kept its pairs) and
+`{bpe,unigram}_matched_v3/`. Run fold 0 from the TVA root:
 
 ```bash
 python main.py -c configs/thesis/ed/compression_matched/bigram_linguistic_matched_wd.yaml
@@ -300,11 +286,49 @@ python main.py -c configs/thesis/ed/compression_matched/unigram_linguistic_match
 Settings equal the other ED configs; set `idx_fold` to 1–4 for further folds,
 or to -1 for `train_cv.py`. Results go to
 `results/thesis/ed/linguistic_bigram_matched_v2_{wd,wi}` and
-`results/thesis/ed/linguistic_bpe_matched_v2_{wd,wi}` and
-`results/thesis/ed/linguistic_unigram_matched_{wd,wi}`, which
+`results/thesis/ed/linguistic_{bpe,unigram}_matched_v3_{wd,wi}`, which
 `analyze_ed_compression.ipynb` picks up automatically. Compare each control with
 its handwriting partner: if the handwriting tokenizer still has lower error, the
 connectivity evidence helps beyond compression.
+
+### Size- and compression-matched bigram draws — ED
+
+The compression-matched bigram has 141 classes against the handwriting
+bigram's 224, so it differs in two ways: which bigrams and how many. These
+controls keep 145 bigrams (224 classes) and the handwriting bigram's
+compression, so only the choice of bigrams differs. Each is a random draw from
+the handwriting bigram's own candidates (389 letter bigrams with at least 20
+aligned IAM observations), weighted by text frequency (probability ∝
+count^α, Gumbel top-k); α is set per draw so that the draw compresses IAM text
+like the handwriting bigram. A uniform draw (α = 0) compresses much less
+(1.22 ± 0.03), so the weighting is needed.
+
+| Draw | Seed | α | IAM characters per token (handwriting 1.3353) | Bigrams shared with handwriting |
+| --- | --- | --- | --- | --- |
+| `linguistic_bigram_drawn0` | 2 | 0.542 | 1.3355 | 61 of 145 |
+| `linguistic_bigram_drawn1` | 3 | 0.466 | 1.3348 | 62 of 145 |
+| `linguistic_bigram_drawn2` | 4 | 0.496 | 1.3346 | 60 of 145 |
+
+Seeds 0 and 1 got no closer than 0.0013 and 0.0022 and were skipped (tolerance
+0.001, as close as the compression-matched bigram). Files are in
+`artifacts/tokenizers/ed/linguistic/bigram_drawn/draw{0,1,2}/`, built by
+`tva/drawn_bigram_tokenizers.py` without reading ED labels. Each is built like
+the handwriting bigram: TVA's `BigramTokenizer` with the drawn bigrams as its
+allowed pairs, greedy encoding. Run fold 0 from the TVA root:
+
+```bash
+python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn0_wd.yaml
+python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn0_wi.yaml
+python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn1_wd.yaml
+python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn1_wi.yaml
+python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn2_wd.yaml
+python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn2_wi.yaml
+```
+
+Results go to `results/thesis/ed/linguistic_bigram_drawn{0,1,2}_{wd,wi}`. If
+the handwriting bigram beats all three draws, choosing bigrams by connectivity
+helps beyond vocabulary size and compression; if it falls within their range,
+it does not.
 
 ### Training
 

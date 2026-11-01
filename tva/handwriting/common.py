@@ -77,15 +77,19 @@ def resolve_artifact_path(path: str | Path) -> Path:
 def save_fold_tokenizers(directory: str | Path, num_folds: int = 5) -> None:
     """Publish the same IAM-trained tokenizer for each recognition fold.
 
-    This copies an existing 0.json; it does not fit on any recognition labels.
-    Preflight all destinations before creating files so conflicts are preserved.
+    This copies an existing 0.json (and a bigram's 0.scores.json); it does not
+    fit on any recognition labels. Preflight all destinations before creating
+    files so conflicts are preserved.
     """
     directory = Path(directory)
     require(num_folds > 0, 'Expected at least one fold')
-    content = (directory / '0.json').read_bytes()
-    paths = [directory / f'{fold}.json' for fold in range(num_folds)]
-    for path in paths:
+    copies = []
+    for suffix in ('.json', '.scores.json'):
+        if (directory / f'0{suffix}').exists():
+            content = (directory / f'0{suffix}').read_bytes()
+            copies += [(directory / f'{fold}{suffix}', content) for fold in range(num_folds)]
+    for path, content in copies:
         require(not path.exists() or path.read_bytes() == content,
                 f'Existing frozen file differs: {path}')
-    for path in paths:
+    for path, content in copies:
         save_frozen(path, content)
