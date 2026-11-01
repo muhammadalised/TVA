@@ -1397,7 +1397,7 @@ byte comparisons against the independently reformatted linguistic bigram
 
    Results: `results/thesis/ed/handwriting_{bigram,bpe,unigram}_v3_{wd,wi}`.
 
-2. The linguistic Unigram, still missing:
+2. Linguistic Unigram — completed for WD and WI on 2026-11-01:
 
    ```bash
    python main.py -c configs/thesis/ed/subword_comparison/unigram_linguistic_wd.yaml
@@ -1405,6 +1405,10 @@ byte comparisons against the independently reformatted linguistic bigram
    ```
 
    Results: `results/thesis/ed/linguistic_unigram_v2_{wd,wi}`.
+   Both runs completed 300 epochs. CER/WER at the best-CER epoch: WD
+   **29.5318% / 69.5594%** (epoch 166), WI **18.4140% / 45.5890%**
+   (epoch 276). Full sources and independent minima are recorded in
+   [EXPERIMENTS.md](EXPERIMENTS.md#2026-11-01--standard-linguistic-unigram-wdwi-fold-0-completed).
 
 3. Controls, once the six handwriting runs are in:
 
