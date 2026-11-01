@@ -1353,3 +1353,91 @@ both policies. The full suite ran 109 tests: 97 passed, seven optional skips and
 the same five pre-existing failures as the baseline. Those failures are strict
 byte comparisons against the independently reformatted linguistic bigram
 `0.json`; that user edit was preserved. No recognition training, commit or push.
+
+
+## 2026-11-01 — Tokenizer construction frozen; next fold-0 runs
+
+### Completed
+
+- Wrote a plain-language ablation study plan: `docs/ABLATION_PLAN.md`.
+- Froze tokenizer construction (`docs/DECISIONS.md`, D024 and D025). Every
+  tokenizer is built by TVA's own `.train()`; a handwriting tokenizer only adds
+  a list of letter pairs allowed to join (the most connected IAM pairs).
+  Ablations change settings only: the allowed list, the vocabulary size or the
+  bigram segmentation policy (`greedy`, or `dp` on both sides). Do not change
+  the construction code.
+- Rebuilt the handwriting tokenizers (`ed/handwriting/*_v3`), the BPE/Unigram
+  compression-matched controls (`ed/linguistic/*_matched_v3`) and the drawn
+  bigrams. Details and numbers: `docs/EXPERIMENTS.md`, 2026-11-01.
+- Full test suite: 76 passed, 3 skipped. No recognition training yet.
+
+### Immediate next steps
+
+**Setup on the training laptop**
+
+1. `git pull` on branch `handwriting-tokenizers-v1`.
+2. Check the environment has `tokenizers==0.23.1`:
+   `python -c "import tokenizers; print(tokenizers.__version__)"`.
+   If not, run `pip install tokenizers==0.23.1`. The tokenizer files were
+   built with this version.
+3. Optional check: `PYTHONHASHSEED=42 python -m pytest -q` should pass.
+
+**Fold-0 runs, in this order** (from the TVA root, one at a time)
+
+1. New handwriting tokenizers. They replace the earlier handwriting results:
+
+   ```bash
+   python main.py -c configs/thesis/ed/subword_comparison/bigram_handwriting_wd.yaml
+   python main.py -c configs/thesis/ed/subword_comparison/bigram_handwriting_wi.yaml
+   python main.py -c configs/thesis/ed/subword_comparison/bpe_handwriting_wd.yaml
+   python main.py -c configs/thesis/ed/subword_comparison/bpe_handwriting_wi.yaml
+   python main.py -c configs/thesis/ed/subword_comparison/unigram_handwriting_wd.yaml
+   python main.py -c configs/thesis/ed/subword_comparison/unigram_handwriting_wi.yaml
+   ```
+
+   Results: `results/thesis/ed/handwriting_{bigram,bpe,unigram}_v3_{wd,wi}`.
+
+2. The linguistic Unigram, still missing:
+
+   ```bash
+   python main.py -c configs/thesis/ed/subword_comparison/unigram_linguistic_wd.yaml
+   python main.py -c configs/thesis/ed/subword_comparison/unigram_linguistic_wi.yaml
+   ```
+
+   Results: `results/thesis/ed/linguistic_unigram_v2_{wd,wi}`.
+
+3. Controls, once the six handwriting runs are in:
+
+   ```bash
+   python main.py -c configs/thesis/ed/compression_matched/bpe_linguistic_matched_wd.yaml
+   python main.py -c configs/thesis/ed/compression_matched/bpe_linguistic_matched_wi.yaml
+   python main.py -c configs/thesis/ed/compression_matched/unigram_linguistic_matched_wd.yaml
+   python main.py -c configs/thesis/ed/compression_matched/unigram_linguistic_matched_wi.yaml
+   python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn0_wd.yaml
+   python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn0_wi.yaml
+   python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn1_wd.yaml
+   python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn1_wi.yaml
+   python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn2_wd.yaml
+   python main.py -c configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn2_wi.yaml
+   ```
+
+   Results: `results/thesis/ed/linguistic_{bpe,unigram}_matched_v3_{wd,wi}`
+   and `linguistic_bigram_drawn{0,1,2}_{wd,wi}`. The bigram
+   compression-matched control did not change; check whether its runs
+   (`linguistic_bigram_matched_v2_*`) already exist before rerunning it.
+
+**After the runs**
+
+- Record each finished run in `docs/EXPERIMENTS.md` (as earlier entries do)
+  and tick it off here.
+- Report the new handwriting results separately from the earlier ones
+  (`handwriting_{wd,wi}`, `handwriting_{bpe,unigram}_v2_*`), which used the
+  previous construction. `tva/ed_analysis.py` names those `*_previous`.
+- Rerun `notebooks/analysis/analyze_ed_compression.ipynb`; its outputs were
+  cleared because they came from the previous tokenizers.
+- Then start Phase 0 of `docs/ABLATION_PLAN.md`: five folds for the main
+  comparison.
+
+**Writing style:** keep plans, decisions and summaries in simple, plain
+language, so that people new to the project (and the supervisor) can follow
+them.
