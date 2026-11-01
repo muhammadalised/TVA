@@ -2639,3 +2639,107 @@ training, so the match is looser than for bigram and BPE. `selection.json`
 keeps the compression for all 146 budgets; k = 145 reproduces the frozen
 `unigram_em` file byte for byte. The control differs from the handwriting
 Unigram only in the connectivity evidence, at equal compression.
+
+## 2026-11-01 — ED fold-0 updated subword, Unigram EM and letters-only results
+
+User-reported recognition results for the updated tokenizer artifacts introduced
+in `f90953f`/`445d94f`. All ten supplied `best` summaries were checked against
+local saved metric files: every metric value and its epoch match exactly, and
+each run contains epochs 0–299. The commands were of the form
+`python main.py -c <config>`; the config and metric-file links below identify
+each run. Configured settings are fold 0, seed 42, batch size 32, 300 epochs,
+and the extracted ED WD/WI datasets. This entry records existing results;
+no recognition training or tokenizer training was launched.
+
+These BPE/Unigram runs belong to the updated artifacts and must be reported
+separately from the earlier custom-tokenizer scores. The existing linguistic
+and handwriting bigram fold-0 results are reused: their tokenization did not
+change. The character baseline is unchanged.
+
+### Commands, output directories and saved runs
+
+Every config below is relative to the repository root. Each saved metric link
+is under its configured `dir_work/0/` directory.
+
+| Condition | Config passed to `python main.py -c` | Saved metrics |
+| --- | --- | --- |
+| `bpe_linguistic_wd` | [subword_comparison/bpe_linguistic_wd.yaml](../configs/thesis/ed/subword_comparison/bpe_linguistic_wd.yaml) | [train_20261026092230.json](../results/thesis/ed/linguistic_bpe_v2_wd/0/train_20261026092230.json) |
+| `bpe_linguistic_wi` | [subword_comparison/bpe_linguistic_wi.yaml](../configs/thesis/ed/subword_comparison/bpe_linguistic_wi.yaml) | [train_20261026103942.json](../results/thesis/ed/linguistic_bpe_v2_wi/0/train_20261026103942.json) |
+| `bpe_handwriting_wd` | [subword_comparison/bpe_handwriting_wd.yaml](../configs/thesis/ed/subword_comparison/bpe_handwriting_wd.yaml) | [train_20261026120710.json](../results/thesis/ed/handwriting_bpe_v2_wd/0/train_20261026120710.json) |
+| `bpe_handwriting_wi` | [subword_comparison/bpe_handwriting_wi.yaml](../configs/thesis/ed/subword_comparison/bpe_handwriting_wi.yaml) | [train_20261026131408.json](../results/thesis/ed/handwriting_bpe_v2_wi/0/train_20261026131408.json) |
+| `unigram_handwriting_wd` | [subword_comparison/unigram_handwriting_wd.yaml](../configs/thesis/ed/subword_comparison/unigram_handwriting_wd.yaml) | [train_20261026152016.json](../results/thesis/ed/handwriting_unigram_v2_wd/0/train_20261026152016.json) |
+| `unigram_handwriting_wi` | [subword_comparison/unigram_handwriting_wi.yaml](../configs/thesis/ed/subword_comparison/unigram_handwriting_wi.yaml) | [train_20261026163746.json](../results/thesis/ed/handwriting_unigram_v2_wi/0/train_20261026163746.json) |
+| `unigram_linguistic_em_wd` | [unigram_trainer/unigram_linguistic_em_wd.yaml](../configs/thesis/ed/unigram_trainer/unigram_linguistic_em_wd.yaml) | [train_20261026175409.json](../results/thesis/ed/linguistic_unigram_em_wd/0/train_20261026175409.json) |
+| `unigram_linguistic_em_wi` | [unigram_trainer/unigram_linguistic_em_wi.yaml](../configs/thesis/ed/unigram_trainer/unigram_linguistic_em_wi.yaml) | [train_20261026185955.json](../results/thesis/ed/linguistic_unigram_em_wi/0/train_20261026185955.json) |
+| `bigram_linguistic_letters_wd` | [letters_only/bigram_linguistic_letters_wd.yaml](../configs/thesis/ed/letters_only/bigram_linguistic_letters_wd.yaml) | [train_20261026201847.json](../results/thesis/ed/linguistic_bigram_letters_wd/0/train_20261026201847.json) |
+| `bigram_linguistic_letters_wi` | [letters_only/bigram_linguistic_letters_wi.yaml](../configs/thesis/ed/letters_only/bigram_linguistic_letters_wi.yaml) | [train_20261027151924.json](../results/thesis/ed/linguistic_bigram_letters_wi/0/train_20261027151924.json) |
+
+### Exact reported minima
+
+CER and WER below are fractions, exactly as reported by `best`; epochs are
+zero-based. CER and WER are independently selected validation minima and
+usually come from different checkpoints. The Levenshtein distance is the
+mean edit distance, not a corpus-total edit count. Average sentence length
+is `[0, 42.17693836978131]` for every WD run and
+`[0, 41.76952380952381]` for every WI run.
+
+| Condition | CER `[epoch, value]` | WER `[epoch, value]` | Levenshtein distance `[epoch, value]` |
+| --- | --- | --- | --- |
+| `bpe_linguistic_wd` | `[149, 0.2790949799670045]` | `[203, 0.6765180010746911]` | `[149, 11.771371769383698]` |
+| `bpe_linguistic_wi` | `[276, 0.1709608281271376]` | `[266, 0.43333333333333335]` | `[276, 7.140952380952381]` |
+| `bpe_handwriting_wd` | `[283, 0.24888050907376855]` | `[202, 0.6445459430413756]` | `[283, 10.497017892644136]` |
+| `bpe_handwriting_wi` | `[281, 0.16703908066943318]` | `[266, 0.44411027568922307]` | `[281, 6.977142857142857]` |
+| `unigram_handwriting_wd` | `[285, 0.2425170869667688]` | `[249, 0.6359484148307362]` | `[285, 10.228628230616302]` |
+| `unigram_handwriting_wi` | `[261, 0.1671302840986821]` | `[291, 0.4521303258145363]` | `[261, 6.980952380952381]` |
+| `unigram_linguistic_em_wd` | `[142, 0.3097808154607589]` | `[254, 0.7055346587855992]` | `[142, 13.065606361829026]` |
+| `unigram_linguistic_em_wi` | `[277, 0.1833644945049934]` | `[274, 0.4568922305764411]` | `[277, 7.659047619047619]` |
+| `bigram_linguistic_letters_wd` | `[227, 0.31944378977138815]` | `[231, 0.706609349811929]` | `[227, 13.473161033797217]` |
+| `bigram_linguistic_letters_wi` | `[242, 0.18021797619590496]` | `[299, 0.46115288220551376]` | `[242, 7.527619047619048]` |
+
+### Paired comparison
+
+Percentages below use the independent minima above. Positive improvements
+mean the handwriting result is lower; values are percentage points (pp).
+The Unigram comparator here is the text-only EM trainer (`unigram_em`),
+which is distinct from TVA/Hugging Face Unigram and from the 55-piece
+compression-matched Unigram. The letters-only bigram comparison reuses the
+existing handwriting bigram metrics.
+
+| Pair | Setting | Linguistic CER (%) | Handwriting CER (%) | CER improvement (pp) | Linguistic WER (%) | Handwriting WER (%) | WER improvement (pp) |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BPE | WD | 27.9095 | 24.8881 | +3.0214 | 67.6518 | 64.4546 | +3.1972 |
+| BPE | WI | 17.0961 | 16.7039 | +0.3922 | 43.3333 | 44.4110 | -1.0777 |
+| Unigram EM | WD | 30.9781 | 24.2517 | +6.7264 | 70.5535 | 63.5948 | +6.9586 |
+| Unigram EM | WI | 18.3364 | 16.7130 | +1.6234 | 45.6892 | 45.2130 | +0.4762 |
+| Letters-only bigram | WD | 31.9444 | 24.2706 | +7.6738 | 70.6609 | 64.8039 | +5.8571 |
+| Letters-only bigram | WI | 18.0218 | 16.4212 | +1.6006 | 46.1153 | 44.8371 | +1.2782 |
+
+Reused handwriting bigram sources:
+[WD](../results/thesis/ed/handwriting_wd/0/train_20260923234401.json) and
+[WI](../results/thesis/ed/handwriting_wi/0/train_20260924144953.json).
+
+Handwriting has lower CER in all six pairs, but BPE WI has higher WER
+(44.4110% versus 43.3333%). The absolute CER gains are larger in WD than WI
+for each pair. These are single-fold observations, not five-fold averages or
+a demonstration that connectivity alone causes the differences. Equal learned
+piece counts do not imply equal compression. Conversely, the separate
+compression-matched controls use fewer classes, so they change vocabulary size
+as well as compression.
+
+### Coverage and outstanding results
+
+- Recorded ten distinct runs: four BPE, two handwriting Unigram, two text-only
+  Unigram EM, and two letters-only linguistic bigram. The repeated EM WD command
+  in the supplied message is one run, not an additional result.
+- The original Step 1 list still lacks the standard TVA/Hugging Face linguistic
+  Unigram WD/WI results:
+  [`subword_comparison/unigram_linguistic_wd.yaml`](../configs/thesis/ed/subword_comparison/unigram_linguistic_wd.yaml)
+  and [`subword_comparison/unigram_linguistic_wi.yaml`](../configs/thesis/ed/subword_comparison/unigram_linguistic_wi.yaml).
+  Their configured `linguistic_unigram_v2_{wd,wi}/0/` directories contain no
+  local metric summaries at recording time. The supplied EM pair completes the
+  separate trainer-control comparison; it does not fill these two conditions.
+- No new bigram-pair or character runs are required for these unchanged
+  tokenizers. Both letters-only runs and both EM runs have all four reported
+  metrics, so nothing is missing within those supplied conditions.
+- Compression-matched recognition scores were not supplied in this message
+  and are outside this entry.
