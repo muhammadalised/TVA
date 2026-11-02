@@ -4,7 +4,7 @@ This file records scientific runs and important development experiments. All
 reported values must be traceable to the saved configuration, log, metrics,
 predictions, code version, and experiment backup.
 
-## Current ED results — frozen method (updated 2026-11-01)
+## Current ED results — frozen method (updated 2026-11-02)
 
 This overview contains reusable results for the construction frozen in D024
 and D025. Empty metric cells mean the required run is not completed locally.
@@ -48,23 +48,23 @@ deviation below is the population standard deviation across the five folds
 Every condition below has 145 learned pieces and 224 output classes. The
 **letters-only bigram is the primary linguistic partner** specified by D024;
 original TVA bigram is retained as an additional reference. Linguistic BPE
-uses the unchanged `_v2` runs. Linguistic Unigram WD/WI is now complete;
-every handwriting `v3` condition is still pending. Bigram segmentation is
-greedy on both sides.
+uses the unchanged `_v2` runs. Linguistic Unigram WD/WI and all six
+handwriting `v3` runs are complete. Bigram segmentation is greedy on both
+sides.
 
 Configs: [subword_comparison/](../configs/thesis/ed/subword_comparison/) and
 [letters_only/](../configs/thesis/ed/letters_only/).
 
 | Tokenizer | Setting | Linguistic CER (%) | Linguistic WER (%) | Handwriting v3 CER (%) | Handwriting v3 WER (%) |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Bigram (original reference) | WD | [35.9557](../results/thesis/ed/tva_original_wd/0/train_20261003230725.json) | 79.7958 |  |  |
-| Bigram (original reference) | WI | [20.9312](../results/thesis/ed/tva_original_wi/0/train_20261004001614.json) | 52.6316 |  |  |
-| Bigram (letters-only primary) | WD | [31.9444](../results/thesis/ed/linguistic_bigram_letters_wd/0/train_20261026201847.json) | 71.8968 |  |  |
-| Bigram (letters-only primary) | WI | [18.0218](../results/thesis/ed/linguistic_bigram_letters_wi/0/train_20261027151924.json) | 46.5664 |  |  |
-| BPE | WD | [27.9095](../results/thesis/ed/linguistic_bpe_v2_wd/0/train_20261026092230.json) | 68.1085 |  |  |
-| BPE | WI | [17.0961](../results/thesis/ed/linguistic_bpe_v2_wi/0/train_20261026103942.json) | 43.5338 |  |  |
-| Unigram | WD | [29.5310](../results/thesis/ed/linguistic_unigram_v2_wd/0/train_20261101184618.json) | 69.5594 |  |  |
-| Unigram | WI | [18.4140](../results/thesis/ed/linguistic_unigram_v2_wi/0/train_20261101200726.json) | 45.5890 |  |  |
+| Bigram (original reference) | WD | [35.9557](../results/thesis/ed/tva_original_wd/0/train_20261003230725.json) | 79.7958 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 |
+| Bigram (original reference) | WI | [20.9312](../results/thesis/ed/tva_original_wi/0/train_20261004001614.json) | 52.6316 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 |
+| Bigram (letters-only primary) | WD | [31.9444](../results/thesis/ed/linguistic_bigram_letters_wd/0/train_20261026201847.json) | 71.8968 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 |
+| Bigram (letters-only primary) | WI | [18.0218](../results/thesis/ed/linguistic_bigram_letters_wi/0/train_20261027151924.json) | 46.5664 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 |
+| BPE | WD | [27.9095](../results/thesis/ed/linguistic_bpe_v2_wd/0/train_20261026092230.json) | 68.1085 | [25.4160](../results/thesis/ed/handwriting_bpe_v3_wd/0/train_20261102023305.json) | 65.0457 |
+| BPE | WI | [17.0961](../results/thesis/ed/linguistic_bpe_v2_wi/0/train_20261026103942.json) | 43.5338 | [16.7632](../results/thesis/ed/handwriting_bpe_v3_wi/0/train_20261102034657.json) | 44.1604 |
+| Unigram | WD | [29.5310](../results/thesis/ed/linguistic_unigram_v2_wd/0/train_20261101184618.json) | 69.5594 | [23.8699](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.json) | 65.1531 |
+| Unigram | WI | [18.4140](../results/thesis/ed/linguistic_unigram_v2_wi/0/train_20261101200726.json) | 45.5890 | [15.3313](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.json) | 43.0576 |
 
 ### 3. Letters-only bigram comparison — fold 0
 
@@ -72,13 +72,13 @@ This view shows the original text-only reference, the letters-only text-only
 control, and the handwriting partner together. All have 145 bigrams and 224
 output classes. Letters-only excludes space-, digit- and punctuation-containing
 bigrams; those characters remain individual tokens in recognition targets.
-The completed letters-only runs are reused. The handwriting columns await
-the new `bigram_v3` runs, rather than reusing the previous handwriting scores.
+The completed letters-only runs are reused. The handwriting columns use
+the completed `bigram_v3` runs, separately from previous handwriting scores.
 
 | Setting | Original linguistic CER (%) | Original linguistic WER (%) | Letters-only linguistic CER (%) | Letters-only linguistic WER (%) | Handwriting v3 CER (%) | Handwriting v3 WER (%) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| WD | [35.9557](../results/thesis/ed/tva_original_wd/0/train_20261003230725.json) | 79.7958 | [31.9444](../results/thesis/ed/linguistic_bigram_letters_wd/0/train_20261026201847.json) | 71.8968 |  |  |
-| WI | [20.9312](../results/thesis/ed/tva_original_wi/0/train_20261004001614.json) | 52.6316 | [18.0218](../results/thesis/ed/linguistic_bigram_letters_wi/0/train_20261027151924.json) | 46.5664 |  |  |
+| WD | [35.9557](../results/thesis/ed/tva_original_wd/0/train_20261003230725.json) | 79.7958 | [31.9444](../results/thesis/ed/linguistic_bigram_letters_wd/0/train_20261026201847.json) | 71.8968 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 |
+| WI | [20.9312](../results/thesis/ed/tva_original_wi/0/train_20261004001614.json) | 52.6316 | [18.0218](../results/thesis/ed/linguistic_bigram_letters_wi/0/train_20261027151924.json) | 46.5664 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 |
 
 ### 4. Compression-matched comparison — fold 0
 
@@ -96,23 +96,25 @@ differ, so this comparison does not isolate compression alone.
 
 | Tokenizer | Setting | Linguistic pieces / classes | Matched linguistic CER (%) | Matched linguistic WER (%) | Handwriting v3 CER (%) | Handwriting v3 WER (%) |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| Bigram | WD | 62 / 141 | [22.8848](../results/thesis/ed/linguistic_bigram_matched_v2_wd/0/train_20261031163351.json) | 64.4277 |  |  |
-| Bigram | WI | 62 / 141 | [17.1736](../results/thesis/ed/linguistic_bigram_matched_v2_wi/0/train_20261031224705.json) | 46.1905 |  |  |
-| BPE | WD | 71 / 150 |  |  |  |  |
-| BPE | WI | 71 / 150 |  |  |  |  |
-| Unigram | WD | 36 / 115 |  |  |  |  |
-| Unigram | WI | 36 / 115 |  |  |  |  |
+| Bigram | WD | 62 / 141 | [22.8848](../results/thesis/ed/linguistic_bigram_matched_v2_wd/0/train_20261031163351.json) | 64.4277 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 |
+| Bigram | WI | 62 / 141 | [17.1736](../results/thesis/ed/linguistic_bigram_matched_v2_wi/0/train_20261031224705.json) | 46.1905 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 |
+| BPE | WD | 71 / 150 |  |  | [25.4160](../results/thesis/ed/handwriting_bpe_v3_wd/0/train_20261102023305.json) | 65.0457 |
+| BPE | WI | 71 / 150 |  |  | [16.7632](../results/thesis/ed/handwriting_bpe_v3_wi/0/train_20261102034657.json) | 44.1604 |
+| Unigram | WD | 36 / 115 |  |  | [23.8699](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.json) | 65.1531 |
+| Unigram | WI | 36 / 115 |  |  | [15.3313](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.json) | 43.0576 |
 
 The three additional size-and-compression-matched bigram draws are also
 pending; they are a separate experiment in
 [size_and_compression_matched/](../configs/thesis/ed/size_and_compression_matched/).
-Tables 2–4 cover fold 0 only; they are not five-fold averages. The blank
-handwriting cells refer to the same six pending `v3` runs across the tables.
+Tables 2–4 cover fold 0 only; they are not five-fold averages. The handwriting
+columns reuse the same six completed `v3` runs. The four linguistic BPE/Unigram
+compression-matched cells remain empty until their new runs are complete.
 
 ---
 
 The chronological experiment log follows. Earlier results remain unchanged
 and describe the tokenizer version and reporting convention used at the time.
+
 
 ## ED dataset compatibility audit — pre-training
 
@@ -3168,3 +3170,123 @@ now superseded by this completion entry. All three linguistic tokenizer
 families now have fold-0 WD/WI results, including the letters-only bigram
 partner. No new handwriting scores were inferred from previous versions, and
 no training was launched while recording these results.
+
+## 2026-11-02 — Handwriting v3 Bigram, BPE and Unigram fold 0 completed
+
+All six handwriting `v3` runs completed epochs 0–299. Saved configs exactly
+match the current `subword_comparison/{bigram,bpe,unigram}_handwriting_{wd,wi}`
+launch templates: seed 42, batch size 32, 300 epochs, the extracted ED data,
+and the frozen `artifacts/tokenizers/ed/handwriting/{bigram,bpe,unigram}_v3`
+files. Each tokenizer has 145 learned pieces and 224 output classes. Bigram
+uses greedy segmentation. Training logs record epoch 299 and final summaries.
+
+### Primary scores: CER and WER from the best-CER epoch
+
+These are percentages from the same epoch, selected by minimum validation
+CER with the earliest epoch breaking a tie. The handwriting columns in all
+current-results tables above now use these scores. Earlier handwriting
+results remain separate historical conditions.
+
+| Tokenizer | Setting | Selected epoch | CER (%) | WER (%) | Mean Levenshtein distance |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Bigram | WD | 273 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 | 10.99403578528827 |
+| Bigram | WI | 277 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 | 7.0495238095238095 |
+| BPE | WD | 188 | [25.4160](../results/thesis/ed/handwriting_bpe_v3_wd/0/train_20261102023305.json) | 65.0457 | 10.719681908548708 |
+| BPE | WI | 273 | [16.7632](../results/thesis/ed/handwriting_bpe_v3_wi/0/train_20261102034657.json) | 44.1604 | 7.001904761904762 |
+| Unigram | WD | 142 | [23.8699](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.json) | 65.1531 | 10.067594433399602 |
+| Unigram | WI | 284 | [15.3313](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.json) | 43.0576 | 6.403809523809524 |
+
+Average sentence length is 42.17693836978131 for WD and 41.76952380952381
+for WI. These are fold-0, single-seed results, not five-fold averages.
+
+### Commands and saved evidence
+
+Commands use `python main.py -c <config>` from the repository root.
+
+| Tokenizer | Setting | Launch config | Saved config | Saved metrics |
+| --- | --- | --- | --- | --- |
+| Bigram | WD | [bigram_handwriting_wd.yaml](../configs/thesis/ed/subword_comparison/bigram_handwriting_wd.yaml) | [train_20261102000404.yaml](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.yaml) | [train_20261102000404.json](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) |
+| Bigram | WI | [bigram_handwriting_wi.yaml](../configs/thesis/ed/subword_comparison/bigram_handwriting_wi.yaml) | [train_20261102011808.yaml](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.yaml) | [train_20261102011808.json](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) |
+| BPE | WD | [bpe_handwriting_wd.yaml](../configs/thesis/ed/subword_comparison/bpe_handwriting_wd.yaml) | [train_20261102023305.yaml](../results/thesis/ed/handwriting_bpe_v3_wd/0/train_20261102023305.yaml) | [train_20261102023305.json](../results/thesis/ed/handwriting_bpe_v3_wd/0/train_20261102023305.json) |
+| BPE | WI | [bpe_handwriting_wi.yaml](../configs/thesis/ed/subword_comparison/bpe_handwriting_wi.yaml) | [train_20261102034657.yaml](../results/thesis/ed/handwriting_bpe_v3_wi/0/train_20261102034657.yaml) | [train_20261102034657.json](../results/thesis/ed/handwriting_bpe_v3_wi/0/train_20261102034657.json) |
+| Unigram | WD | [unigram_handwriting_wd.yaml](../configs/thesis/ed/subword_comparison/unigram_handwriting_wd.yaml) | [train_20261102050157.yaml](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.yaml) | [train_20261102050157.json](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.json) |
+| Unigram | WI | [unigram_handwriting_wi.yaml](../configs/thesis/ed/subword_comparison/unigram_handwriting_wi.yaml) | [train_20261102061619.yaml](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.yaml) | [train_20261102061619.json](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.json) |
+
+### Exact independent minima (secondary record)
+
+The saved `best` summaries below preserve the independent minima. They
+do not define the WER used in the primary tables unless its epoch also
+matches the best-CER epoch.
+
+| Tokenizer | Setting | CER `[epoch, fraction]` | WER `[epoch, fraction]` | Levenshtein distance `[epoch, value]` |
+| --- | --- | --- | --- | --- |
+| Bigram | WD | `[273, 0.2606646240867311]` | `[271, 0.6644277270284793]` | `[273, 10.99403578528827]` |
+| Bigram | WI | `[277, 0.16877194582516303]` | `[277, 0.45764411027568924]` | `[277, 7.0495238095238095]` |
+| BPE | WD | `[188, 0.2541597925995758]` | `[188, 0.6504567436861902]` | `[188, 10.719681908548708]` |
+| BPE | WI | `[273, 0.16763190295955127]` | `[274, 0.4388471177944862]` | `[273, 7.001904761904762]` |
+| Unigram | WD | `[142, 0.23869903370256892]` | `[233, 0.6477700161203654]` | `[142, 10.067594433399602]` |
+| Unigram | WI | `[284, 0.15331296456746774]` | `[267, 0.42781954887218043]` | `[284, 6.403809523809524]` |
+
+For every WD run, the saved average-sentence-length minimum is
+`[0, 42.17693836978131]`; for every WI run it is `[0, 41.76952380952381]`.
+
+### Reproducibility identifiers
+
+**Bigram WD:**
+
+- [train_20261102000404.json](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json): SHA-256 `621a1c149ff3f56e23f414cd709f39bc2bb38fe6d316f0ff97da2c97fd814e33`.
+- [train_20261102000404.yaml](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.yaml): SHA-256 `81f5aa14f62f363f23bc8c54471626749aec2ca5de0649f1a990f9879a8ae528`.
+- [0.json](../artifacts/tokenizers/ed/handwriting/bigram_v3/0.json): SHA-256 `d95208440c44505beaada1f29aee253fd8348bc8c77c16fd1b21d90b8e7743a7`.
+- [0.scores.json](../artifacts/tokenizers/ed/handwriting/bigram_v3/0.scores.json): SHA-256 `83b45f93c396febf9f00532b6729469e560d3523a8a82942e27e18104b8fff15`.
+
+**Bigram WI:**
+
+- [train_20261102011808.json](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json): SHA-256 `f3b291ca8efc7413bdbf20bf95b52874cda713a00d34ed55d1d55ac1e4326e2a`.
+- [train_20261102011808.yaml](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.yaml): SHA-256 `5facbfb8216c34aea6bf99d1fac32029ae975804feaf2e58c4b6567d7f104d29`.
+- [0.json](../artifacts/tokenizers/ed/handwriting/bigram_v3/0.json): SHA-256 `d95208440c44505beaada1f29aee253fd8348bc8c77c16fd1b21d90b8e7743a7`.
+- [0.scores.json](../artifacts/tokenizers/ed/handwriting/bigram_v3/0.scores.json): SHA-256 `83b45f93c396febf9f00532b6729469e560d3523a8a82942e27e18104b8fff15`.
+
+**BPE WD:**
+
+- [train_20261102023305.json](../results/thesis/ed/handwriting_bpe_v3_wd/0/train_20261102023305.json): SHA-256 `75ddeed36d2bd4d64f1a01fcc15fe18bfa8a533fc9884ae55f1d0fdf8fee7f35`.
+- [train_20261102023305.yaml](../results/thesis/ed/handwriting_bpe_v3_wd/0/train_20261102023305.yaml): SHA-256 `f785554c02a0fbb9453f017b0c66afb03e48e50d6e74e6991e66914a66e65086`.
+- [0.json](../artifacts/tokenizers/ed/handwriting/bpe_v3/0.json): SHA-256 `c20e029e3ab8d8be7f67e58aa8816a3c2930ade9ef6356dfe4d65bd68bf1f3fc`.
+
+**BPE WI:**
+
+- [train_20261102034657.json](../results/thesis/ed/handwriting_bpe_v3_wi/0/train_20261102034657.json): SHA-256 `c3bfe440ad641db563fac21e2dee954c396ceaa3a4aeded892d5b0afe5235511`.
+- [train_20261102034657.yaml](../results/thesis/ed/handwriting_bpe_v3_wi/0/train_20261102034657.yaml): SHA-256 `c35e368eba737088ac29e417feaafb87421964798e254a12b95b8cfed6aaa8c6`.
+- [0.json](../artifacts/tokenizers/ed/handwriting/bpe_v3/0.json): SHA-256 `c20e029e3ab8d8be7f67e58aa8816a3c2930ade9ef6356dfe4d65bd68bf1f3fc`.
+
+**Unigram WD:**
+
+- [train_20261102050157.json](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.json): SHA-256 `516f8d3dcb64c96254718ae2310e2e0c4d1cfd3977031a6413e1fd8c7bad6d53`.
+- [train_20261102050157.yaml](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.yaml): SHA-256 `c193e511a2f38f53b8b2786fbf5e49f158a8f30f004d31fe78bd7ff1f6a6eceb`.
+- [0.json](../artifacts/tokenizers/ed/handwriting/unigram_v3/0.json): SHA-256 `e9887467132cf55674b1145213a5d66de51c23b5ca61099bb1cc1419525a6e5d`.
+
+**Unigram WI:**
+
+- [train_20261102061619.json](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.json): SHA-256 `9d24835f58a1644926a4a02f69ccf119c82768074f640046497e936b9d5996b1`.
+- [train_20261102061619.yaml](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.yaml): SHA-256 `bff91ec5e6d7cc9aee31c9e77859b07f616e4a65e22a83a1ef6d46d62c4f76ee`.
+- [0.json](../artifacts/tokenizers/ed/handwriting/unigram_v3/0.json): SHA-256 `e9887467132cf55674b1145213a5d66de51c23b5ca61099bb1cc1419525a6e5d`.
+
+### Interpretation and remaining runs
+
+Against the primary letters-only linguistic bigram and the standard
+linguistic BPE/Unigram, handwriting has lower CER in all six comparisons.
+WER at the selected epoch is lower in five comparisons; BPE WI is the
+exception (handwriting 44.1604% versus linguistic 43.5338%). The CER gains
+are larger in WD than WI for all three families. Character recognition still
+has lower fold-0 CER than all these subword conditions.
+
+The existing 62-piece compression-matched linguistic bigram has lower WD CER
+than handwriting bigram, while handwriting bigram has lower WI CER. The new
+71-piece BPE and 36-piece Unigram compression-matched runs are still pending,
+as are the three size-and-compression-matched bigram draws under WD/WI.
+These controls and further folds are needed before attributing differences
+to connectivity or making a claim about a greater WI benefit.
+
+Also corrected a progress-log transcription typo: the completed linguistic
+Unigram WD CER is **29.5310%** (raw fraction `0.2953099222248409`), matching
+the existing experiment table, rather than 29.5318%. Earlier result values
+and saved run files were not changed. No training was launched for this update.

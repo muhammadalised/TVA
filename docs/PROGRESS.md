@@ -1384,7 +1384,7 @@ byte comparisons against the independently reformatted linguistic bigram
 
 **Fold-0 runs, in this order** (from the TVA root, one at a time)
 
-1. New handwriting tokenizers. They replace the earlier handwriting results:
+1. New handwriting tokenizers — all six completed on 2026-11-02:
 
    ```bash
    python main.py -c configs/thesis/ed/subword_comparison/bigram_handwriting_wd.yaml
@@ -1396,6 +1396,9 @@ byte comparisons against the independently reformatted linguistic bigram
    ```
 
    Results: `results/thesis/ed/handwriting_{bigram,bpe,unigram}_v3_{wd,wi}`.
+   All six runs completed 300 epochs. Scores and saved evidence are recorded in
+   [EXPERIMENTS.md](EXPERIMENTS.md#2026-11-02--handwriting-v3-bigram-bpe-and-unigram-fold-0-completed);
+   the handwriting columns in the current overview are filled.
 
 2. Linguistic Unigram — completed for WD and WI on 2026-11-01:
 
@@ -1406,7 +1409,7 @@ byte comparisons against the independently reformatted linguistic bigram
 
    Results: `results/thesis/ed/linguistic_unigram_v2_{wd,wi}`.
    Both runs completed 300 epochs. CER/WER at the best-CER epoch: WD
-   **29.5318% / 69.5594%** (epoch 166), WI **18.4140% / 45.5890%**
+   **29.5310% / 69.5594%** (epoch 166), WI **18.4140% / 45.5890%**
    (epoch 276). Full sources and independent minima are recorded in
    [EXPERIMENTS.md](EXPERIMENTS.md#2026-11-01--standard-linguistic-unigram-wdwi-fold-0-completed).
 
@@ -1445,3 +1448,25 @@ byte comparisons against the independently reformatted linguistic bigram
 **Writing style:** keep plans, decisions and summaries in simple, plain
 language, so that people new to the project (and the supervisor) can follow
 them.
+
+## 2026-11-02 — All handwriting v3 fold-0 runs completed
+
+Completed all six Bigram/BPE/Unigram × WD/WI runs with the frozen D024
+construction. Each has 300 epochs, seed 42, batch size 32 and 224 classes.
+Both metrics below are from the best-CER epoch.
+
+| Tokenizer | WD CER / WER (%) | WI CER / WER (%) |
+| --- | ---: | ---: |
+| Bigram | 26.0665 / 66.8726 | 16.8772 / 45.7644 |
+| BPE | 25.4160 / 65.0457 | 16.7632 / 44.1604 |
+| Unigram | 23.8699 / 65.1531 | 15.3313 / 43.0576 |
+
+Sources, selected epochs, independent minima and hashes are in
+[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-02--handwriting-v3-bigram-bpe-and-unigram-fold-0-completed).
+The current overview now has every main fold-0 linguistic/handwriting result.
+Corrected the earlier linguistic Unigram WD CER transcription to 29.5310%.
+
+Next: four BPE/Unigram compression-matched `v3` runs, then the six drawn
+bigram WD/WI runs. Keep the completed 62-piece matched bigram runs. After
+recording the controls, rerun the compression notebook and extend the main
+comparison across five folds. No training was started while recording scores.
