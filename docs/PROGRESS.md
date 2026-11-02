@@ -1413,7 +1413,9 @@ byte comparisons against the independently reformatted linguistic bigram
    (epoch 276). Full sources and independent minima are recorded in
    [EXPERIMENTS.md](EXPERIMENTS.md#2026-11-01--standard-linguistic-unigram-wdwi-fold-0-completed).
 
-3. Controls, once the six handwriting runs are in:
+3. Controls — all four BPE/Unigram compression-matched runs completed on
+   2026-11-02; the six drawn-bigram runs remain pending. The first four
+   commands below are complete:
 
    ```bash
    python main.py -c configs/thesis/ed/compression_matched/bpe_linguistic_matched_wd.yaml
@@ -1470,3 +1472,27 @@ Next: four BPE/Unigram compression-matched `v3` runs, then the six drawn
 bigram WD/WI runs. Keep the completed 62-piece matched bigram runs. After
 recording the controls, rerun the compression notebook and extend the main
 comparison across five folds. No training was started while recording scores.
+
+## 2026-11-02 — Compression-matched v3 BPE/Unigram completed
+
+All four runs completed 300 epochs with the frozen configs (fold 0, seed 42,
+batch size 32). BPE has 71 pieces / 150 classes; Unigram has 36 pieces / 115
+classes. Both scores below are from the minimum-CER epoch.
+
+| Tokenizer | Setting | Selected epoch | CER (%) | WER (%) |
+| --- | --- | ---: | ---: | ---: |
+| BPE | WD | 161 | 24.3884 | 64.6964 |
+| BPE | WI | 276 | 16.5990 | 44.7619 |
+| Unigram | WD | 265 | 21.0747 | 61.2305 |
+| Unigram | WI | 242 | 15.6870 | 44.1103 |
+
+The current compression-matched table is complete, including the retained
+bigram runs. Saved configs, metrics, independent minima, hashes and partner
+comparisons are recorded in
+[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-02--compression-matched-v3-bpe-and-unigram-fold-0-completed).
+
+Next: the six `size_and_compression_matched/bigram_linguistic_drawn{0,1,2}`
+WD/WI runs. After recording them, rerun the compression notebook and extend
+comparisons across five folds. The smaller compression-matched controls do
+not hold vocabulary size constant, so they cannot establish a compression-only
+explanation. No training was launched while recording these results.
