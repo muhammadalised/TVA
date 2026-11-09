@@ -4,7 +4,7 @@ This file records scientific runs and important development experiments. All
 reported values must be traceable to the saved configuration, log, metrics,
 predictions, code version, and experiment backup.
 
-## Current ED results — frozen method (updated 2026-11-02)
+## Current ED results — frozen method (updated 2026-11-03)
 
 This overview contains reusable results for the construction frozen in D024
 and D025. Empty metric cells mean the required run is not completed locally.
@@ -103,12 +103,40 @@ differ, so this comparison does not isolate compression alone.
 | Unigram | WD | 36 / 115 | [21.0747](../results/thesis/ed/linguistic_unigram_matched_v3_wd/0/train_20261102174155.json) | 61.2305 | [23.8699](../results/thesis/ed/handwriting_unigram_v3_wd/0/train_20261102050157.json) | 65.1531 |
 | Unigram | WI | 36 / 115 | [15.6870](../results/thesis/ed/linguistic_unigram_matched_v3_wi/0/train_20261102185535.json) | 44.1103 | [15.3313](../results/thesis/ed/handwriting_unigram_v3_wi/0/train_20261102061619.json) | 43.0576 |
 
-The three additional size-and-compression-matched bigram draws are also
-pending; they are a separate experiment in
-[size_and_compression_matched/](../configs/thesis/ed/size_and_compression_matched/).
-Tables 2–4 cover fold 0 only; they are not five-fold averages. The handwriting
-columns reuse the same six completed `v3` runs. All six compression-matched
-WD/WI conditions are now complete; the new BPE/Unigram scores use `v3` controls.
+All six compression-matched WD/WI conditions are complete. The handwriting
+columns reuse the same six completed `v3` runs; the new BPE/Unigram scores
+use `v3` controls.
+
+### 5. Size-and-compression-matched bigram draws — fold 0
+
+Each frequency-weighted draw and the handwriting partner have 145 letter
+bigrams and 224 classes, with greedy segmentation. Draws use the same 389
+eligible IAM pairs (at least 20 aligned observations), selecting by text
+frequency without connectivity-rate ranking. Their IAM compression is within
+0.001 characters per token of the handwriting partner, 1.335293. Draws 0, 1
+and 2 use vocabulary-drawing seeds 2, 3 and 4; the recognition seed is **42
+for every run**. These are three vocabularies, not three recognition seeds
+or three folds.
+
+Configs: [size_and_compression_matched/](../configs/thesis/ed/size_and_compression_matched/).
+The same WD/WI handwriting `bigram_v3` scores are repeated for comparison,
+not counted as new recognition runs. All six draw runs are complete.
+
+| Draw | Setting | Drawn linguistic CER (%) | Drawn linguistic WER (%) | Handwriting v3 CER (%) | Handwriting v3 WER (%) |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 0 | WD | [26.8489](../results/thesis/ed/linguistic_bigram_drawn0_wd/0/train_20261103092340.json) | 68.5116 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 |
+| 0 | WI | [17.8804](../results/thesis/ed/linguistic_bigram_drawn0_wi/0/train_20261103103617.json) | 47.7694 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 |
+| 1 | WD | [26.4153](../results/thesis/ed/linguistic_bigram_drawn1_wd/0/train_20261103115048.json) | 67.1413 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 |
+| 1 | WI | [17.0414](../results/thesis/ed/linguistic_bigram_drawn1_wi/0/train_20261103130413.json) | 46.0902 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 |
+| 2 | WD | [27.2402](../results/thesis/ed/linguistic_bigram_drawn2_wd/0/train_20261103141840.json) | 67.9205 | [26.0665](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json) | 66.8726 |
+| 2 | WI | [17.9169](../results/thesis/ed/linguistic_bigram_drawn2_wi/0/train_20261103153222.json) | 47.5439 | [16.8772](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json) | 45.7644 |
+
+Handwriting has lower CER and WER in all six draw comparisons on fold 0.
+This is preliminary evidence in its favor under matched vocabulary size and
+approximate IAM compression, not a significance test or five-fold result.
+Compression is not guaranteed identical on ED. Tables 2–5 cover fold 0 only;
+the character table alone includes five-fold averages.
+
 
 ---
 
@@ -3405,3 +3433,153 @@ and additional folds remain necessary controls before stronger conclusions.
 All current fold-0 main, letters-only and compression-matched comparison
 results are now recorded. The six drawn-bigram WD/WI runs remain pending.
 No training was launched while recording these scores.
+
+## 2026-11-03 — Size-and-compression-matched bigram draws completed
+
+All six drawn-bigram runs completed epochs 0–299. Saved configs exactly
+match `size_and_compression_matched/bigram_linguistic_drawn{0,1,2}_{wd,wi}`
+launch templates: fold 0, recognition seed 42, batch size 32, 300 epochs,
+extracted ED data, and greedy TVA bigram encoding. Each frozen draw has 145
+letter bigrams and 224 output classes. Logs include epoch 299 and final
+summaries. The current-results overview now has a dedicated fifth table.
+
+### Frozen draw identities
+
+Draws are frequency-weighted samples without replacement from the 389 IAM
+letter-pair candidates with at least 20 aligned observations. Alpha and the
+accepted seeds were selected using IAM compression only, not ED labels or
+recognition results. They share the eligible pool and size with handwriting
+but are not ranked by connected rate.
+
+| Draw | Vocabulary-drawing seed | Alpha | IAM chars/token | Bigrams shared with handwriting |
+| --- | ---: | ---: | ---: | ---: |
+| [0](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/selection.json) | 2 | 0.542 | 1.335487 | 61 |
+| [1](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/selection.json) | 3 | 0.466 | 1.334800 | 62 |
+| [2](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/selection.json) | 4 | 0.496 | 1.334568 | 60 |
+
+The handwriting target is 1.335293 IAM characters per token; the tolerance
+is 0.001. These vocabulary-drawing seeds differ from the fixed recognition
+seed 42. All three draws use fold 0, so this is not a fold or training-seed
+variance estimate. The [shared draw record](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draws.json)
+also records the rejected candidate seeds.
+
+### Primary scores: CER and WER at the best-CER epoch
+
+Both percentages are from the same epoch, selected by minimum validation CER
+with the earliest epoch breaking ties.
+
+| Draw | Setting | Selected epoch | CER (%) | WER (%) | Mean Levenshtein distance |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 0 | WD | 142 | [26.8489](../results/thesis/ed/linguistic_bigram_drawn0_wd/0/train_20261103092340.json) | 68.5116 | 11.324055666003977 |
+| 0 | WI | 283 | [17.8804](../results/thesis/ed/linguistic_bigram_drawn0_wi/0/train_20261103103617.json) | 47.7694 | 7.47047619047619 |
+| 1 | WD | 257 | [26.4153](../results/thesis/ed/linguistic_bigram_drawn1_wd/0/train_20261103115048.json) | 67.1413 | 11.141153081510934 |
+| 1 | WI | 285 | [17.0414](../results/thesis/ed/linguistic_bigram_drawn1_wi/0/train_20261103130413.json) | 46.0902 | 7.118095238095238 |
+| 2 | WD | 239 | [27.2402](../results/thesis/ed/linguistic_bigram_drawn2_wd/0/train_20261103141840.json) | 67.9205 | 11.489065606361828 |
+| 2 | WI | 284 | [17.9169](../results/thesis/ed/linguistic_bigram_drawn2_wi/0/train_20261103153222.json) | 47.5439 | 7.483809523809524 |
+
+Average sentence length is 42.17693836978131 for WD and 41.76952380952381
+for WI. The same-epoch handwriting comparison is in current-results table 5;
+its sources are [WD](../results/thesis/ed/handwriting_bigram_v3_wd/0/train_20261102000404.json)
+and [WI](../results/thesis/ed/handwriting_bigram_v3_wi/0/train_20261102011808.json).
+
+### Commands and saved evidence
+
+Commands use `python main.py -c <config>` from the repository root.
+
+| Draw | Setting | Launch config | Saved config | Saved metrics |
+| --- | --- | --- | --- | --- |
+| 0 | WD | [bigram_linguistic_drawn0_wd.yaml](../configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn0_wd.yaml) | [train_20261103092340.yaml](../results/thesis/ed/linguistic_bigram_drawn0_wd/0/train_20261103092340.yaml) | [train_20261103092340.json](../results/thesis/ed/linguistic_bigram_drawn0_wd/0/train_20261103092340.json) |
+| 0 | WI | [bigram_linguistic_drawn0_wi.yaml](../configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn0_wi.yaml) | [train_20261103103617.yaml](../results/thesis/ed/linguistic_bigram_drawn0_wi/0/train_20261103103617.yaml) | [train_20261103103617.json](../results/thesis/ed/linguistic_bigram_drawn0_wi/0/train_20261103103617.json) |
+| 1 | WD | [bigram_linguistic_drawn1_wd.yaml](../configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn1_wd.yaml) | [train_20261103115048.yaml](../results/thesis/ed/linguistic_bigram_drawn1_wd/0/train_20261103115048.yaml) | [train_20261103115048.json](../results/thesis/ed/linguistic_bigram_drawn1_wd/0/train_20261103115048.json) |
+| 1 | WI | [bigram_linguistic_drawn1_wi.yaml](../configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn1_wi.yaml) | [train_20261103130413.yaml](../results/thesis/ed/linguistic_bigram_drawn1_wi/0/train_20261103130413.yaml) | [train_20261103130413.json](../results/thesis/ed/linguistic_bigram_drawn1_wi/0/train_20261103130413.json) |
+| 2 | WD | [bigram_linguistic_drawn2_wd.yaml](../configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn2_wd.yaml) | [train_20261103141840.yaml](../results/thesis/ed/linguistic_bigram_drawn2_wd/0/train_20261103141840.yaml) | [train_20261103141840.json](../results/thesis/ed/linguistic_bigram_drawn2_wd/0/train_20261103141840.json) |
+| 2 | WI | [bigram_linguistic_drawn2_wi.yaml](../configs/thesis/ed/size_and_compression_matched/bigram_linguistic_drawn2_wi.yaml) | [train_20261103153222.yaml](../results/thesis/ed/linguistic_bigram_drawn2_wi/0/train_20261103153222.yaml) | [train_20261103153222.json](../results/thesis/ed/linguistic_bigram_drawn2_wi/0/train_20261103153222.json) |
+
+### Exact independent minima (secondary record)
+
+Independent minima are retained below; independently best WER is not used in
+place of WER at the best-CER checkpoint in the primary tables.
+
+| Draw | Setting | CER `[epoch, fraction]` | WER `[epoch, fraction]` | Levenshtein distance `[epoch, value]` |
+| --- | --- | --- | --- | --- |
+| 0 | WD | `[142, 0.2684892764553382]` | `[225, 0.6786673831273509]` | `[142, 11.324055666003977]` |
+| 0 | WI | `[283, 0.1788043230425464]` | `[248, 0.4764411027568922]` | `[283, 7.47047619047619]` |
+| 1 | WD | `[257, 0.264152722130568]` | `[262, 0.6660397635679742]` | `[257, 11.141153081510934]` |
+| 1 | WI | `[285, 0.17041360755164395]` | `[285, 0.46090225563909776]` | `[285, 7.118095238095238]` |
+| 2 | WD | `[239, 0.27240160263964175]` | `[239, 0.6792047286405158]` | `[239, 11.489065606361828]` |
+| 2 | WI | `[284, 0.17916913675954216]` | `[284, 0.47543859649122805]` | `[284, 7.483809523809524]` |
+
+For all WD runs the saved average-sentence-length minimum is
+`[0, 42.17693836978131]`; for all WI runs it is `[0, 41.76952380952381]`.
+
+### Interpretation
+
+The handwriting bigram has lower CER and same-checkpoint WER than all three
+draws under both WD and WI. The closest draw by CER is draw 1: WD 26.4153%
+versus handwriting 26.0665%, and WI 17.0414% versus handwriting 16.8772%.
+These smaller gaps must not be called statistically significant on the basis
+of one fold and one recognition seed.
+
+Compared with the smaller-vocabulary compression controls, these draws also
+hold output-class count constant, so they are more direct controls for which
+bigrams are selected. The observation supports a potential benefit from the
+connectivity-selected inventory under the tested setup. It does not establish
+a causal explanation or generalization across folds: compression is matched
+approximately on IAM, token frequencies and composition still differ, and the
+recognition split is unchanged across draws.
+
+### Reproducibility identifiers
+
+**Draw 0 WD:**
+
+- [train_20261103092340.json](../results/thesis/ed/linguistic_bigram_drawn0_wd/0/train_20261103092340.json): SHA-256 `26b32714c9a3a1a67b0c3397cd5b6a20e8fc8b988d42bd139d85788bb19261bc`.
+- [train_20261103092340.yaml](../results/thesis/ed/linguistic_bigram_drawn0_wd/0/train_20261103092340.yaml): SHA-256 `a79d328488f8bf1fda1f038898b2edda4da1a583bfd15020dcf2aa239ea78b98`.
+- [0.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/0.json): SHA-256 `a9d4398fb63508f1e327475db7f283c720be95f6371e158172c1d999d5673866`.
+- [selection.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/selection.json): SHA-256 `153ab58b0700032d1f7773bdffdd70aba209b70832b835a36dd0c508a17ca4b7`.
+- [0.scores.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/0.scores.json): SHA-256 `617a29b9b0c236a2585f5852ab25b053d7a9c776e0f93a8d3673ccb80863fe71`.
+
+**Draw 0 WI:**
+
+- [train_20261103103617.json](../results/thesis/ed/linguistic_bigram_drawn0_wi/0/train_20261103103617.json): SHA-256 `b72671ba141a01be804fefe3c5ecbc2b7342ba4c309c1fc725e74c4d2ce426d3`.
+- [train_20261103103617.yaml](../results/thesis/ed/linguistic_bigram_drawn0_wi/0/train_20261103103617.yaml): SHA-256 `591f16efa0377db0521470b358ef09aa5163bee06ec0cfc72777779e599b194e`.
+- [0.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/0.json): SHA-256 `a9d4398fb63508f1e327475db7f283c720be95f6371e158172c1d999d5673866`.
+- [selection.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/selection.json): SHA-256 `153ab58b0700032d1f7773bdffdd70aba209b70832b835a36dd0c508a17ca4b7`.
+- [0.scores.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw0/0.scores.json): SHA-256 `617a29b9b0c236a2585f5852ab25b053d7a9c776e0f93a8d3673ccb80863fe71`.
+
+**Draw 1 WD:**
+
+- [train_20261103115048.json](../results/thesis/ed/linguistic_bigram_drawn1_wd/0/train_20261103115048.json): SHA-256 `f28a026d5055ebb041ad221c9838532583386be15c9859e96161dc0d1ed5c02b`.
+- [train_20261103115048.yaml](../results/thesis/ed/linguistic_bigram_drawn1_wd/0/train_20261103115048.yaml): SHA-256 `1f8c344ffd8801ae37edbb11d1b5211a1281710a2718e304f733d6ef5ee36a19`.
+- [0.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/0.json): SHA-256 `42d41b7463a87bd3b01e5da7bf2e988f5ca062672e008f4ef71a4401712bbe9f`.
+- [selection.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/selection.json): SHA-256 `fff5b3339423c0be959bef585d88f531b9248b29174f86b81d4af7b74bd59d6d`.
+- [0.scores.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/0.scores.json): SHA-256 `c90575d2336891bbafaa0c7c24f4ead0c77cca06a85bf96dbe3105f92096d703`.
+
+**Draw 1 WI:**
+
+- [train_20261103130413.json](../results/thesis/ed/linguistic_bigram_drawn1_wi/0/train_20261103130413.json): SHA-256 `b7e259da6957ff699b10f0306184f4aadfc326c00d98d26e643b398db700ef84`.
+- [train_20261103130413.yaml](../results/thesis/ed/linguistic_bigram_drawn1_wi/0/train_20261103130413.yaml): SHA-256 `077b99052581fac016a73cbfe75f66a248fff40e05bbc16e89592cdeee9fba7b`.
+- [0.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/0.json): SHA-256 `42d41b7463a87bd3b01e5da7bf2e988f5ca062672e008f4ef71a4401712bbe9f`.
+- [selection.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/selection.json): SHA-256 `fff5b3339423c0be959bef585d88f531b9248b29174f86b81d4af7b74bd59d6d`.
+- [0.scores.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw1/0.scores.json): SHA-256 `c90575d2336891bbafaa0c7c24f4ead0c77cca06a85bf96dbe3105f92096d703`.
+
+**Draw 2 WD:**
+
+- [train_20261103141840.json](../results/thesis/ed/linguistic_bigram_drawn2_wd/0/train_20261103141840.json): SHA-256 `46857420ab63477e7e2b6704bc082c2808f078c44ba97a0abdfa47eee79f3e76`.
+- [train_20261103141840.yaml](../results/thesis/ed/linguistic_bigram_drawn2_wd/0/train_20261103141840.yaml): SHA-256 `f04693ba996ebd5e95a1657b91a270aea5caef7f3ab27628be9bd13da3503137`.
+- [0.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/0.json): SHA-256 `73f62e2acc4f7f3b150b581678de95beb0378ad22219f71ee3662202e6bfbd9e`.
+- [selection.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/selection.json): SHA-256 `b762dd966871641292c0d6ee9c41c1593a5246bbdb1aac1de33baf1c86c2f2c6`.
+- [0.scores.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/0.scores.json): SHA-256 `6e700b96dab24f36dc8a304d0d7024cd1fbe7d7e04bd17e9bc328bdb1fb9a221`.
+
+**Draw 2 WI:**
+
+- [train_20261103153222.json](../results/thesis/ed/linguistic_bigram_drawn2_wi/0/train_20261103153222.json): SHA-256 `8efc5fe71d9adba0df490a91708ebc24adc658c7a0b359ac5a63d81dce602fb8`.
+- [train_20261103153222.yaml](../results/thesis/ed/linguistic_bigram_drawn2_wi/0/train_20261103153222.yaml): SHA-256 `1cbf4c28254bfa57d8ab090434cfd50ffd45a09b517671212ff2a0d4c1b89cd1`.
+- [0.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/0.json): SHA-256 `73f62e2acc4f7f3b150b581678de95beb0378ad22219f71ee3662202e6bfbd9e`.
+- [selection.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/selection.json): SHA-256 `b762dd966871641292c0d6ee9c41c1593a5246bbdb1aac1de33baf1c86c2f2c6`.
+- [0.scores.json](../artifacts/tokenizers/ed/linguistic/bigram_drawn/draw2/0.scores.json): SHA-256 `6e700b96dab24f36dc8a304d0d7024cd1fbe7d7e04bd17e9bc328bdb1fb9a221`.
+
+The planned current-method fold-0 main, letters-only, compression-matched and
+drawn-bigram screening blocks are now recorded. Next: rerun the compression
+analysis with these current results and extend the main comparisons across
+five folds. No training or analysis notebook was launched while recording
+these scores.

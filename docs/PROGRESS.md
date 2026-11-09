@@ -1413,9 +1413,9 @@ byte comparisons against the independently reformatted linguistic bigram
    (epoch 276). Full sources and independent minima are recorded in
    [EXPERIMENTS.md](EXPERIMENTS.md#2026-11-01--standard-linguistic-unigram-wdwi-fold-0-completed).
 
-3. Controls — all four BPE/Unigram compression-matched runs completed on
-   2026-11-02; the six drawn-bigram runs remain pending. The first four
-   commands below are complete:
+3. Controls — complete: the four BPE/Unigram compression-matched runs on
+   2026-11-02 and all six drawn-bigram runs on 2026-11-03. The commands below
+   are retained as the record of completed runs:
 
    ```bash
    python main.py -c configs/thesis/ed/compression_matched/bpe_linguistic_matched_wd.yaml
@@ -1496,3 +1496,31 @@ WD/WI runs. After recording them, rerun the compression notebook and extend
 comparisons across five folds. The smaller compression-matched controls do
 not hold vocabulary size constant, so they cannot establish a compression-only
 explanation. No training was launched while recording these results.
+
+## 2026-11-03 — All six size-and-compression-matched bigram draws completed
+
+All three vocabulary draws completed WD and WI fold 0, each with 300 epochs,
+recognition seed 42, batch size 32, 145 letter bigrams and 224 classes.
+Both scores below come from the selected minimum-CER epoch.
+
+| Draw | Setting | Selected epoch | CER (%) | WER (%) |
+| --- | --- | ---: | ---: | ---: |
+| 0 | WD | 142 | 26.8489 | 68.5116 |
+| 0 | WI | 283 | 17.8804 | 47.7694 |
+| 1 | WD | 257 | 26.4153 | 67.1413 |
+| 1 | WI | 285 | 17.0414 | 46.0902 |
+| 2 | WD | 239 | 27.2402 | 67.9205 |
+| 2 | WI | 284 | 17.9169 | 47.5439 |
+
+Handwriting bigram has lower CER and same-checkpoint WER than all three draws
+in WD and WI, but these are one-fold, one-recognition-seed findings. Drawing
+seeds 2, 3 and 4 produce the three vocabularies; they are not training-seed
+repeats. Full scores, independent minima, matching metadata, source files
+and hashes are in
+[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-03--size-and-compression-matched-bigram-draws-completed).
+
+The scheduled fold-0 screening sequence is complete. Next, rerun
+`notebooks/analysis/analyze_ed_compression.ipynb` with the current results,
+confirm the final comparison set and checkpoint-reporting rule, then extend
+main comparisons across five folds as Phase 0 of `docs/ABLATION_PLAN.md`.
+No training or analysis notebook was started while recording these results.

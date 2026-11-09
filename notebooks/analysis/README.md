@@ -10,7 +10,7 @@ Existing outputs stay under the repository's `results/` directory.
 | [analyze_ed.ipynb](analyze_ed.ipynb) | ED dataset, folds, signals, tokenization and character-baseline results |
 | [analyze_onhw.ipynb](analyze_onhw.ipynb) | OnHW writer/character distributions and fold structure |
 | [analyze_ed_compression.ipynb](analyze_ed_compression.ipynb) | Tokenizer compression, recognition-error trends and compression-matched controls |
-| [analyze_ed_linguistic_bigrams.ipynb](analyze_ed_linguistic_bigrams.ipynb) | Linguistic bigram usage and train/validation token distributions |
+| [analyze_ed_linguistic_bigrams.ipynb](analyze_ed_linguistic_bigrams.ipynb) | Letters-only vs original and handwriting bigrams: vocabulary, spaces, compression, recognition scores and token usage |
 | [analyze_ed_token_distribution.ipynb](analyze_ed_token_distribution.ipynb) | Training-label, validation-label and actual model-prediction token frequencies |
 | [analyze_handwriting_predictions.ipynb](analyze_handwriting_predictions.ipynb) | A saved recognizer's prediction for one handwriting recording |
 | [inspect_handwriting_tokenizers.ipynb](inspect_handwriting_tokenizers.ipynb) | Token IDs, segmentation and decoding for an ED sentence or custom text |
