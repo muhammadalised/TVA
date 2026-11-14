@@ -43,7 +43,7 @@ We use a MSCOCO-like structure for the training and evaluation of our dataset. A
 
 ### Analysis notebooks
 
-All seven analysis and inspection notebooks are in
+All eight analysis and inspection notebooks are in
 [`notebooks/analysis/`](notebooks/analysis/README.md). Select the TVA Python
 kernel, adjust the settings near the top, then run the cells. The first code
 cell locates the repository automatically, whether the kernel starts in the
@@ -52,6 +52,7 @@ repository root or the notebook folder. Shared ED loading code is in
 
 | Notebook | What it shows | Needs |
 | --- | --- | --- |
+| [compare_dataset_token_distributions.ipynb](notebooks/analysis/compare_dataset_token_distributions.ipynb) | Simple IAM/ED token and OnHW character charts; vocabulary use and compression | Prepared ED/OnHW labels; bundled IAM evidence and frozen tokenizers; no checkpoint |
 | [analyze_ed.ipynb](notebooks/analysis/analyze_ed.ipynb) | ED dataset, folds, signals, tokenization and completed character baselines | Extracted ED data; saved results for recognition summaries |
 | [analyze_onhw.ipynb](notebooks/analysis/analyze_onhw.ipynb) | OnHW writer and character distributions and supplied folds | Prepared OnHW datasets |
 | [analyze_handwriting_predictions.ipynb](notebooks/analysis/analyze_handwriting_predictions.ipynb) | One recording's predicted token IDs, CTC decisions and decoded text | Extracted ED data and a saved checkpoint |

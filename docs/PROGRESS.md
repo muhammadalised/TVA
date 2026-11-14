@@ -17,8 +17,8 @@ and link it from this log.
   character baselines across five folds, main linguistic/handwriting tokenizer
   comparisons on fold 0, compression-matched controls, and three matched
   bigram draws. These are recorded results, not rerun during workflow setup.
-- **Current task:** shared Codex/Claude workflow covers TVA and DTLR. No new
-  research implementation or recognition training was started in this session.
+- **Current task:** the dedicated dataset token-distribution notebook is
+  implemented and verified on local labels. No recognition training was started.
 - **Current policy:** [DECISIONS.md](DECISIONS.md#d026--language-specific-construction-and-evaluation)
   records English IAM -> ED and planned German dataset -> OnHW. READ is
   retired from future experiments; historical records remain.
@@ -32,6 +32,47 @@ and link it from this log.
 - **Resume:** read [../AGENTS.md](../AGENTS.md), this snapshot, current decisions,
   and the relevant experiment entries. Keep research results and pending work
   distinct when updating this snapshot.
+
+## 2026-11-14 — Simple dataset token-distribution comparison
+
+- Added [compare_dataset_token_distributions.ipynb](../notebooks/analysis/compare_dataset_token_distributions.ipynb)
+  after user approval. It uses existing loaders and frozen files. It compares
+  IAM training text with ED training/validation labels under all six current
+  English tokenizers. OnHW-Words500 right-handed character charts remain
+  separate; German subword construction is still pending under D026.
+- Four figure sets show common characters, common tokens and cumulative
+  coverage, common-to-rare token curves, and merging/vocabulary use.
+  Bigram is the default detailed view; BPE and Unigram are simple settings.
+  Added the notebook to both existing indexes.
+- Counting preserves case, spaces, punctuation and repeated recordings.
+  Percentages use each source's own total. One selected fold is used; WD/WI
+  copies and repeated folds are not pooled. English token charts use 5,612
+  of 5,694 IAM lines, excluding 82 with symbols outside the ED alphabet.
+  Raw IAM character charts retain all lines. No vocabulary is fitted or
+  selected from these findings.
+- Default outputs (ED WI fold 0) are in
+  [results/dataset_token_distributions/wi_fold0_bigram/](../results/dataset_token_distributions/wi_fold0_bigram/).
+  The folder contains four PNG/PDF pairs, exact character and token CSVs,
+  18 tokenizer/source summaries, and a JSON report with the source checksums,
+  code revision, uncommitted paths, notebook source hash and package versions.
+  Outputs are local and Git-ignored; the notebook includes executed charts.
+- Verification: all seven code cells ran headlessly with PYTHONHASHSEED=42
+  in the installed WSL TVA environment (Python 3.11.15, tokenizers 0.23.1).
+  Setup documentation names tva-thesis, but this machine's installed environment
+  is /home/artellisys/miniconda3/envs/tva. No packages were added.
+  nbformat/nbclient are absent, so cells were executed directly with IPython
+  output capture, not through a Jupyter frontend.
+- The default run verifies label round-trips, no blank/out-of-range tokens,
+  character reconstruction and all 4,014 exported token rows. All 13 input
+  checksums still match. All 236 OnHW fold-0 character counts match the
+  existing distribution export. BPE WD fold 1 and Unigram WI fold 4 also
+  passed all cells from the notebook directory with EXPORT=False and wrote
+  no exports. Figure layouts were inspected; index links and git diff --check
+  pass. No full test suite or recognition training was needed.
+- Next: review the exported charts for the thesis. Other folds can be viewed
+  with the settings. These descriptive charts do not establish recognition
+  gains. No dataset, frozen tokenizer, saved experiment or recognition metric
+  changed.
 
 ## 2026-11-14 — Removed the redundant TVA machine handoff
 

@@ -7,6 +7,7 @@ Existing outputs stay under the repository's `results/` directory.
 
 | Notebook | Purpose |
 | --- | --- |
+| [compare_dataset_token_distributions.ipynb](compare_dataset_token_distributions.ipynb) | IAM/ED token distributions and separate OnHW character charts; no checkpoint needed |
 | [analyze_ed.ipynb](analyze_ed.ipynb) | ED dataset, folds, signals, tokenization and character-baseline results |
 | [analyze_onhw.ipynb](analyze_onhw.ipynb) | OnHW writer/character distributions and fold structure |
 | [analyze_ed_compression.ipynb](analyze_ed_compression.ipynb) | Tokenizer compression, recognition-error trends and compression-matched controls |
@@ -20,3 +21,12 @@ Data and checkpoints are local and are not bundled with the notebooks. See
 [tokenizer artifact index](../../artifacts/tokenizers/README.md).
 These notebooks do not train tokenizers or recognizers. Training and dataset
 preparation notebooks remain in the repository root.
+
+For a simple dataset comparison, start with
+[compare_dataset_token_distributions.ipynb](compare_dataset_token_distributions.ipynb).
+Run All in the TVA kernel. The default is ED WI fold 0 with detailed Bigram charts;
+change FAMILY to bpe or unigram for those views. The final summary covers all six
+current English tokenizers. Exports go to results/dataset_token_distributions/.
+English token counts use the IAM lines compatible with the ED alphabet; excluded
+lines are reported. German subword comparisons wait for an approved construction
+dataset. No model or tokenizer is trained.
