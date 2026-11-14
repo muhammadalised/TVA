@@ -33,6 +33,21 @@ and link it from this log.
   and the relevant experiment entries. Keep research results and pending work
   distinct when updating this snapshot.
 
+## 2026-11-14 — Removed the redundant TVA machine handoff
+
+- Removed the local, Git-ignored docs/PROJECT_HANDOFF_RTX.md September snapshot
+  and its unused ignore rule. Current agent instructions, setup guidance,
+  experiment records, and all seven recorded SHA-256 values remain in the
+  existing documents; no experiment or decision record was removed.
+- Updated AGENTS.md to refer to the remaining historical proposal/scope notes.
+  Start new TVA sessions with AGENTS.md and docs/PROGRESS.md.
+- Kept [DTLR's technical handoff](../../DTLR/PROJECT_HANDOFF.md): it still
+  contains evidence-export instructions, verification history, and provenance.
+  TVA remains the main thesis context.
+- Verification: documentation links resolve; previous progress entries are
+  unchanged and newest-first; git diff --check passes. No code, datasets,
+  frozen evidence, or results changed. Runtime tests are unnecessary here.
+
 ## 2026-11-14 — DTLR joined the shared thesis workflow
 
 - Added DTLR AGENTS.md and CLAUDE.md, with the shared policy in TVA and local

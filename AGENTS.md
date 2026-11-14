@@ -18,8 +18,8 @@ role framework are required.
 5. Check Git status and existing changes. Preserve work from the user or
    another session; do not overwrite or revert unrelated changes.
 
-Older proposal and machine-handoff notes describe earlier stages. Some are
-local and Git-ignored. They are historical context, not required entry points.
+Older proposal and scope notes describe earlier stages. Some are local and
+Git-ignored. They are historical context, not required entry points.
 Use explicit user instructions and recorded decision supersessions to resolve
 known differences. Flag any unresolved scope or method conflict before work
 that depends on it. Do not infer progress or approval from an old to-do list.
