@@ -17,7 +17,7 @@ and link it from this log.
   character baselines across five folds, main linguistic/handwriting tokenizer
   comparisons on fold 0, compression-matched controls, and three matched
   bigram draws. These are recorded results, not rerun during workflow setup.
-- **Current task:** shared Codex/Claude workflow setup is complete. No new
+- **Current task:** shared Codex/Claude workflow covers TVA and DTLR. No new
   research implementation or recognition training was started in this session.
 - **Current policy:** [DECISIONS.md](DECISIONS.md#d026--language-specific-construction-and-evaluation)
   records English IAM -> ED and planned German dataset -> OnHW. READ is
@@ -32,6 +32,26 @@ and link it from this log.
 - **Resume:** read [../AGENTS.md](../AGENTS.md), this snapshot, current decisions,
   and the relevant experiment entries. Keep research results and pending work
   distinct when updating this snapshot.
+
+## 2026-11-14 — DTLR joined the shared thesis workflow
+
+- Added DTLR AGENTS.md and CLAUDE.md, with the shared policy in TVA and local
+  environment, evidence checks, handoff, and publishing guidance in DTLR.
+- Updated [DTLR's existing handoff](../../DTLR/PROJECT_HANDOFF.md) with current
+  scope and marked the previous session limits as historical context.
+- Both repositories' agent instructions now state the ownership explicitly:
+  DTLR generates and exports connectivity evidence; TVA consumes that evidence
+  to construct tokenizers, train recognizers, and evaluate results.
+- TVA remains the main thesis context. DTLR keeps technical progress in its
+  existing handoff. Dataset policy is unchanged; German data selection stays
+  deferred, and READ records remain historical.
+- Checked DTLR's configured destinations: GitHub uses origin; GitLab uses
+  gitlab. A commit-and-push request covers both unless the user limits it.
+- Verification: all 29 local links/anchors across the two repositories
+  resolve; previous handoff/progress entries are preserved; dates remain
+  newest first; whitespace checks pass.
+- This update changes documentation only. No implementation tests, training,
+  evidence regeneration, or dataset changes are part of it.
 
 ## 2026-11-14 — Shared workflow preferences finalized
 

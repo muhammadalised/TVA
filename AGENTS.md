@@ -24,6 +24,22 @@ Use explicit user instructions and recorded decision supersessions to resolve
 known differences. Flag any unresolved scope or method conflict before work
 that depends on it. Do not infer progress or approval from an old to-do list.
 
+## Repository responsibilities
+
+TVA is the main thesis context. DTLR is a separate evidence-producing repository:
+
+- **DTLR:** handwriting images and transcriptions -> character localization,
+  alignment, ink-connectivity measurements -> versioned evidence export.
+- **TVA:** that evidence and the declared construction corpus -> tokenizer
+  vocabularies -> recognition training and evaluation.
+- The evidence handoff records source inputs, schema, code revision, and
+  checksums. Preserve frozen exports; validate new approved versions before
+  using them. See [the evidence index](artifacts/evidence/README.md).
+- For DTLR work, follow its [local instructions](../DTLR/AGENTS.md) and
+  [technical handoff](../DTLR/PROJECT_HANDOFF.md). Those sibling links assume
+  adjacent checkouts. TVA training needs the frozen evidence, not a DTLR
+  checkout. Overall thesis progress and scientific decisions remain here.
+
 ## Explanation style
 
 Use [ASD-STE100 Simplified Technical English](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf)
