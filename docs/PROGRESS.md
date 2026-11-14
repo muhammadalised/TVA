@@ -1,8 +1,9 @@
 # Thesis Progress Log
 
 This file records completed work, important observations, and immediate next
-steps. Add new entries chronologically. Do not remove failed attempts; they are
-part of the research record.
+steps. Keep dated entries in descending order, newest first, below the current
+status snapshot. For the same date, put the newest update first. Do not remove
+failed attempts; they are part of the research record.
 
 For thesis traceability, record every material compatibility finding,
 methodological decision, failed or negative result, data-quality issue,
@@ -10,1350 +11,137 @@ experimental caveat, frozen parameter, and reproducibility identifier as the
 work occurs. Put detailed evidence in a focused tracked document when needed
 and link it from this log.
 
-## 2026-08-01 — Initial setup and dataset preparation
-
-### Completed
-
-- Corrected the thesis direction: raw IMU remains the model input, while
-  handwriting-informed tokens are used as text-label outputs.
-- Confirmed the dataset scope with the supervisor: right-handed data only.
-- Created the `tva-thesis` Conda environment with Python 3.11 and installed the
-  repository dependencies.
-- Prepared the right-handed writer-dependent (WD) and writer-independent (WI)
-  OnHW-Words500 datasets in the TVA CSV/JSON format.
-- Normalized repository-relative dataset paths in the YAML configurations.
-
-### Dataset validation
-
-Both processed datasets report 13 channels, a 100 Hz target rate, five folds,
-and the correct WD/WI metadata flag.
-
-| Dataset | Train samples by fold | Validation samples by fold | Writer check |
-| --- | --- | --- | --- |
-| WD/RH | 20,163; 20,160; 20,160; 20,158; 20,161 | 5,036; 5,039; 5,039; 5,041; 5,038 | All 53 writers occur in both splits, as expected for WD |
-| WI/RH | 19,907; 20,078; 20,202; 20,520; 20,089 | 5,292; 5,121; 4,997; 4,679; 5,110 | Zero train/validation writer overlap in every fold |
-
-For each dataset:
-
-- 125,995 CSV files are referenced and present;
-- no annotation references are missing or duplicated;
-- annotation IDs are contiguous within every fold and split;
-- no label is empty or contains a character outside the configured alphabet;
-- 501 unique word labels occur across the complete dataset; and
-- a deterministic sample of 200 CSV files contained 13 numeric, finite columns
-  and valid sequence lengths.
-
-The CSV content check was sampled rather than a complete scan of all 251,990
-files. The structural and annotation-reference checks covered the complete
-datasets.
-
-### Immediate next steps
-
-1. Create the fold-specific character tokenizer files for WD and WI.
-2. Add dedicated, committed B0 character-baseline configurations.
-3. Make the training code's mixed-precision context follow the selected device
-   instead of assuming CUDA.
-4. Add a true small-sample smoke-test option; two full CPU epochs are not a
-   genuinely quick smoke test with roughly 20,000 training samples per fold.
-5. Run a tiny local pipeline test, followed by the full fold-0 B0 baseline on
-   an NVIDIA training machine.
-
-## 2026-08-01 — Character tokenizer validation
-
-- WD/RH character tokenizer files exist for folds 0–4.
-- Each file contains 60 contiguous IDs, with the CTC blank assigned to ID 0.
-- All five WD files have the same SHA-256 hash, as expected because the
-  character vocabulary is fixed rather than learned from fold frequencies.
-- Encode/decode round trips succeeded for all 25,199 train-plus-validation
-  labels in every WD fold.
-- The tokenizer notebook also generated WD Bigram, BPE, and Unigram variants;
-  these are not yet needed for the B0 character baseline.
-- WI/RH character tokenizer files were subsequently generated for folds 0–4.
-  They use the same valid 60-token vocabulary and passed encode/decode checks
-  for all 25,199 train-plus-validation labels in every fold.
-- Character-tokenizer preparation for both WD/RH and WI/RH is complete.
-
-## 2026-08-01 — B0 configurations and local CPU smoke test
-
-### Completed
-
-- Added dedicated fold-0 B0 character-baseline configurations for the WD/RH
-  and WI/RH datasets under `configs/thesis/`.
-- Made mixed precision device-aware: CUDA training uses mixed precision, while
-  CPU training runs in normal precision.
-- Added optional `max_train_samples` and `max_val_samples` configuration keys.
-  Missing or zero values keep the complete dataset, so scientific experiment
-  configurations are unaffected.
-- Updated the ignored Mac-local configuration to use 16 training samples,
-  eight validation samples, batch size two, and one epoch.
-- Protected the learning-rate scheduler against a zero-length cosine phase in
-  a one-epoch development test.
-
-### Smoke-test result
-
-The complete WD/RH fold-0 pipeline ran successfully on the Mac CPU:
-
-- eight training batches and four validation batches completed;
-- the model received the raw 13-channel signals;
-- character tokenization and CTC loss worked;
-- backward propagation and optimizer updates completed;
-- validation decoding and CER/WER evaluation completed; and
-- metrics, predictions, a visualization, and a checkpoint were written under
-  `results/thesis/development/mac_cpu_smoke_char_wd/0/`.
-
-The smoke-test CER and WER were both 1.0. This is expected after one epoch on
-only 16 training examples and is not a thesis result.
-
-### Next step
-
-Set up the CUDA environment on the RTX 4060 laptop and run a short GPU test
-before starting the full WD/RH fold-0 B0 experiment.
-
-## 2026-08-02 — Resumable checkpointing
-
-- Extended the repository's model-only checkpoints to preserve the optimizer,
-  learning-rate scheduler, mixed-precision scaler, completed epoch, metric
-  history, random-number generators, and DataLoader shuffle generator.
-- Training now writes `latest.pth` atomically after every completed epoch.
-  Numbered milestone checkpoints continue to follow `freq_save`.
-- Older model-only checkpoint files remain usable for loading weights, but are
-  clearly logged as non-resumable.
-- A controlled CPU test trained epochs 0 and 1, then launched a fresh process
-  from the saved epoch-0 checkpoint. The new process correctly began at epoch
-  1 and reproduced the uninterrupted run's learning rates and batch losses
-  exactly. This validates deterministic continuation for the tested setup.
-- The first CUDA resume attempt exposed that loading the whole checkpoint
-  directly onto the GPU also moved RNG state tensors to CUDA, while PyTorch
-  requires CPU `ByteTensor` RNG states. Checkpoints now load through CPU and
-  defensively convert RNG and DataLoader generator states to CPU before
-  restoration. The existing checkpoint remains valid.
-
-## 2026-08-02 — Validation-selected checkpoints
-
-- Added automatic `best_cer.pth` and `best_wer.pth` checkpoints.
-- Each file is replaced only for a strict improvement over all previous
-  validation epochs. Restored metric history makes this rule resume-aware.
-- `latest.pth` remains the recovery checkpoint.
-
-## 2026-08-02 — Tokenizer-family scope clarification
-
-- Clarified that the thesis plans handwriting-aware Bigram, BPE, and Unigram
-  tokenizers, not only one pair vocabulary.
-- Each proposed variant will be compared with its linguistic counterpart at a
-  matched vocabulary size; the character baseline remains the common reference.
-- Image-derived ink connectivity is the primary handwriting evidence.
-  Frequency, occurrence count, and writer coverage are retained as reliability
-  conditions.
-- Implementation remains staged: establish the handwriting-aware Bigram first,
-  then extend the evidence to BPE and Unigram if the Bigram is promising.
-- Added method, decision, and proposal-planning documents so this clarification
-  is carried into the formal thesis proposal.
-
-## 2026-08-02 — WD/RH fold-0 character baseline
-
-- Completed 300 epochs of B0 character training on the RTX 4060 laptop.
-- Best validation CER was 0.127563 (12.76%) at epoch 286.
-- Best validation WER was 0.359809 (35.98%) at epoch 289.
-- The complete run was archived and backed up by the researcher. The final
-  `latest.pth` checkpoint was retained for reproducibility and recovery.
-- This run preceded automatic best-model checkpointing, so the exact weights
-  from epochs 286 and 289 are not available. This limitation is recorded in
-  `docs/EXPERIMENTS.md`.
-
-## 2026-08-02 — WI/RH fold-0 character baseline
-
-- Completed 300 epochs of B0 character training on the RTX 4060 laptop.
-- Best validation CER was 0.156041 (15.60%) at epoch 244.
-- Best validation WER was 0.279478 (27.95%) at epoch 269.
-- The WI run used automatic best-model checkpointing. Retain `best_cer.pth`
-  and `best_wer.pth` for recognition comparisons and `latest.pth` for
-  resumable recovery.
-- WD/RH and WI/RH fold-0 character baselines are complete.
-
-
-## 2026-09-15 — Approved proposal makes image connectivity primary
-
-- Reconciled the repository documentation with the approved proposal,
-  *Handwriting-Aware Tokenization for IMU-Based Online Handwriting Recognition*.
-- The primary evidence pipeline now uses IAM and READ separately, pretrained
-  DTLR character identities and boxes, transcript matching with uncertainty
-  rejection, binarization, and connected-component labelling.
-- Static connected ink is documented as a cross-modal handwriting prior for
-  OnHW IMU recognition, not as proof of continuous IMU pen motion.
-- Bigram is the required first tokenizer experiment. BPE and Unigram are
-  conditional extensions if Bigram results are promising. Individual
-  characters always remain fallback tokens.
-- The core evaluation remains separate right-handed WD and WI OnHW-Words500
-  recognition with fixed BLConv-B + BiLSTM-B + CTC models, matched linguistic
-  baselines, fresh training per tokenizer, and CER/WER on reconstructed text.
-- Added the proposal's explicit hypothesis that any benefit will be larger in
-  WI than WD; this must be tested rather than assumed.
-- Optional image-domain recognition remains distinct from the primary use of
-  image data to construct tokenizers.
-
-### Immediate next steps
-
-1. Prepare IAM and READ as separate evidence datasets.
-2. Integrate the pretrained DTLR model and define auditable
-   detection-to-transcription matching and rejection rules.
-3. Pilot binarization, CCL, box-to-component association, and pair scoring on a
-   small manually reviewed subset from each dataset.
-4. Freeze the first connectivity definition and build matched handwriting- and
-   frequency-based Bigram vocabularies before recognition training.
-
-## 2026-09-15 — Combined tokenizer compatibility audit
-
-- Inspected TVA's tokenizer classes, OnHW label loader, fold-specific
-  vocabulary construction, CTC blank convention, decoder, and output-head
-  sizing before changing implementation code.
-- Pinned the combined IAM+READ artifact
-  `iam-read-combined-v1` at SHA-256
-  `5c5d9f1689a4802fc5e9451e5afe8abdfb090562587ab78ddd343211feb94dd4`.
-  It contains 494 classes: blank ID 0, 91 non-empty single characters, and 402
-  handwriting bigrams.
-- Submitted every OnHW training label in all five WD and all five WI folds to
-  the unmodified combined tokenizer. Every successful encoding round-tripped
-  to the NFC label, and NFC changed no OnHW label.
-- Complete coverage failed because uppercase `Ä` and `Ü` are absent. In each
-  complete 25,199-sample train-plus-validation partition, 608 samples (2.41%)
-  contain one of these characters. Every WD and WI fold is affected.
-- Confirmed that TVA's current Bigram tokenizer cannot be reused for this
-  artifact: it applies greedy left-to-right matching, whereas the frozen model
-  maximizes total handwriting utility with dynamic programming. The two
-  segmentations differed for 9,009 of 24,591 otherwise encodable labels
-  (36.64%).
-- Confirmed that TVA correctly passes `tokenizer.size`, including blank, to the
-  training output head. Found a separate reporting issue: `evaluate.py`
-  hard-codes 500 classes for complexity calculation.
-- Designed a leakage-safe adapter option using only the fixed OnHW alphabet:
-  blank + all 59 OnHW characters + 359 frozen in-alphabet bigrams, for 419
-  classes. A 496-class full-artifact-plus-fallback form remains a possible
-  sensitivity condition. The primary policy must be frozen before training.
-- Recorded the complete evidence, per-fold failure counts, methodological
-  implications, and required conformance tests in this progress log and
-  `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
-
-### Immediate next steps
-
-1. Implement a dedicated handwriting-bigram tokenizer that exactly preserves
-   the DTLR NFC and dynamic-programming behavior.
-2. Implement and checksum the now-frozen deterministic 419-class OnHW
-   compatibility adapter.
-3. Add complete coverage, round-trip, blank, ID, provenance, and DTLR-reference
-   conformance tests before any recognition training.
-4. Build matched fold-specific linguistic Bigram vocabularies from OnHW
-   training labels only.
-
-## 2026-09-17 — Primary handwriting adapter policy frozen
-
-- Froze policy `onhw-words500-rh-iam-read-v1` at 419 output classes: blank ID
-  0, the exact pre-existing 59-character OnHW alphabet at IDs 1–59, and the
-  359 source bigrams whose two characters are in that alphabet at IDs 60–418.
-- The construction preserves source-vocabulary order, utilities, NFC, and the
-  DTLR maximum-total-utility dynamic program. It adds `Ä` and `Ü` only as
-  fallback singles and derives no new bigrams from OnHW labels.
-- Excluded the 496-class full-artifact extension from the primary experiment.
-  It may be used only as a separately named, predeclared sensitivity analysis.
-- Validated an in-memory reference construction against every train and
-  validation label in all five WD and all five WI folds. All 20 fold/split
-  checks passed coverage, non-empty target, no-blank target, ID-range, and NFC
-  encode/decode round-trip invariants.
-- This was a compatibility validation, not vocabulary selection: construction
-  used the fixed task alphabet and frozen source only, without OnHW label
-  frequencies, validation membership, or recognition results.
-- Recorded a comparator-design caveat: a size-matched linguistic vocabulary
-  does not isolate token membership if it uses greedy segmentation while the
-  handwriting tokenizer uses utility-maximizing dynamic programming. This
-  segmentation-policy choice must be predeclared before comparative training.
-- Full policy: `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
-
-### Immediate next steps
-
-1. Implement the deterministic adapter builder and canonical artifact, then
-   record the derived artifact SHA-256.
-2. Implement the dedicated tokenizer and DTLR-reference conformance tests.
-3. Add complete coverage, round-trip, blank, ID, and provenance tests.
-4. Resolve and predeclare the linguistic comparator's segmentation policy.
-5. Correct `evaluate.py`'s hard-coded 500-class complexity head before model
-   size or MAC reporting.
-
-## 2026-09-17 — Canonical 419-class adapter implemented
-
-- Added a deterministic builder and CLI in
-  `tva/handwriting_bigram_adapter.py` and
-  `build_handwriting_bigram_adapter.py`.
-- The builder authenticates the source checksum and audited schema/model
-  invariants before projection. It rejects changed provenance, non-contiguous
-  mappings, invalid blank conventions, altered DP policy, and unexpected
-  source or output counts. It also checks the completed canonical bytes against
-  the frozen adapter checksum, preventing silent regeneration drift under the
-  same policy ID.
-- Generated the canonical artifact at
-  `artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json` with SHA-256
-  `12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2bfe`.
-- Confirmed that rebuilding from the pinned source produces byte-identical
-  canonical JSON. The artifact records that no annotation files were read.
-- Ran the canonical artifact through the independent DTLR reference tokenizer
-  on every WD/WI train and validation label. All 251,990 fold/split label
-  instances across the 20 checks passed coverage, non-empty target, no-blank
-  target, ID-range, and NFC round-trip assertions.
-- Added six unit/integration tests covering alphabet-only projection, source
-  order and metadata preservation, duplicate-alphabet rejection, source hash
-  rejection, canonical UTF-8 serialization, frozen mapping invariants, and a
-  byte-identical rebuild when the external source is available.
-
-### Immediate next steps
-
-1. Implement TVA's dedicated handwriting-bigram tokenizer using the artifact's
-   NFC and maximum-total-utility DP policy.
-2. Add DTLR-reference segmentation conformance and complete OnHW label tests
-   for that runtime tokenizer.
-3. Resolve and predeclare the matched linguistic comparator's segmentation
-   policy.
-4. Correct `evaluate.py`'s hard-coded 500-class complexity head.
-
-## 2026-09-18 — TVA handwriting-bigram runtime implemented
-
-- Added `HandwritingBigramTokenizer` in
-  `tva/handwriting_bigram_tokenizer.py` and exposed it through
-  `get_tokenizer('handwriting_bigram')`.
-- Updated tokenizer-path resolution so the canonical shared artifact can be
-  supplied directly through the existing `dir_tokenizer` configuration field;
-  legacy per-fold tokenizer directories retain their previous behavior. The
-  shared resolver is used consistently by training, evaluation, and token
-  counting.
-- The training load path authenticates the entire canonical adapter SHA-256,
-  then validates schema, inverse and contiguous mappings, blank ID 0,
-  normalization, overlap policy, finite utility values, output size, bigram
-  count, source checksum, policy ID, and the leakage-safe construction flag.
-- Reimplemented the DTLR right-to-left maximum-total-utility dynamic program,
-  including its preference for more bigrams and its deterministic pair choice
-  when utility and bigram count tie. NFC normalization occurs before
-  segmentation.
-- Confirmed exact TVA-versus-DTLR equality of both segmentation dictionaries
-  and encoded IDs for all 501 unique OnHW words, including the previously
-  documented overlap cases.
-- Confirmed complete runtime coverage on all 251,990 WD/WI fold/split label
-  instances: targets were non-empty, used IDs 1–418 only, and decoded to the
-  NFC-normalized label.
-- Removed `evaluate.py`'s hard-coded 500-class complexity head. Training and
-  complexity reporting now both size the output head from `tokenizer.size`, so
-  the frozen condition uses exactly 419 logits including blank.
-- The complete suite now has 16 passing tests: six adapter tests and ten
-  runtime/integration tests. No recognition training was run.
-
-### Immediate next steps
-
-1. Resolve and predeclare the matched linguistic comparator's segmentation
-   policy before constructing its fold-specific vocabularies.
-2. Add a thesis experiment configuration using tokenizer key
-   `handwriting_bigram` and the canonical shared artifact, then run a small
-   pipeline smoke test before full training.
-
-## 2026-09-18 — Matched linguistic Bigram baseline frozen and generated
-
-- Froze D016: the linguistic baseline uses the same NFC and
-  maximum-total-utility dynamic program as the handwriting condition. Its pair
-  membership and utilities come only from fold-specific OnHW training text.
-- Preserved TVA's existing distinct-word convention so repeated writers and
-  samples do not dominate language frequency. Pairs are ranked by descending
-  adjacency count and lexical tie-breaking; utilities are counts divided by
-  the fold maximum.
-- Generated ten 419-class artifacts: five WD/RH and five WI/RH, each containing
-  blank ID 0, the same 59 characters, and 359 training-derived bigrams. Full
-  checksums are recorded in per-dataset manifests and
-  `docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
-- Runtime loading verifies the pinned dataset-manifest checksum and its
-  per-fold artifact checksum before accepting a linguistic tokenizer.
-- Confirmed the builder accepts only `train.json`; no validation annotation or
-  recognition result participates in vocabulary construction.
-- Found an important baseline limitation before training: every fold reaches a
-  frequency cutoff of one. Between 87 and 97 selected pairs per fold come from
-  a larger 147–155-pair count-one tie, resolved deterministically by token.
-- The linguistic and handwriting vocabularies share 223–225 of 359 pairs.
-  Their DP segmentations differ on 52.28%–53.29% of complete fold samples, and
-  their mean target lengths are approximately 3.221 and 3.321 tokens,
-  respectively. These are composition measurements, not recognition results.
-- Every linguistic artifact passed train/validation coverage, no-blank target,
-  ID-range, and round-trip checks over 251,990 fold/split label instances.
-- The suite now has 22 passing tests. No recognition training was run.
-- Predeclared a possible greedy-for-both fallback as a secondary segmentation
-  ablation if DP training is unsuccessful. It must retain both DP results and
-  cannot be promoted post hoc based on validation performance.
-
-### Immediate next steps
-
-1. Add matched fold-0 WD and WI experiment configurations for handwriting and
-   linguistic Bigram conditions.
-2. Run bounded pipeline smoke tests in the `tva` environment.
-3. Verify saved model heads contain 419 outputs and preserve smoke-test logs.
-4. Only after smoke tests pass, begin the predeclared fold-0 development runs.
-
-## 2026-09-18 — Matched fold-0 Bigram configurations and smoke tests
-
-- Added four fold-0 experiment configurations under `configs/thesis/`: the
-  handwriting-aware and matched linguistic Bigram conditions for WD/RH and
-  WI/RH. Architecture, augmentation, optimizer schedule, epoch budget, batch
-  size, seed, and evaluation settings match across all four conditions.
-- Loaded each frozen tokenizer through its production configuration and
-  confirmed `tokenizer.size == 419` and a 419-output model head.
-- Ran a bounded end-to-end CPU smoke test for every condition with 16 training
-  and eight validation samples, one epoch, batch size two, and seed 42. All
-  four completed data loading, augmentation, encoding, CTC loss, backward
-  updates, validation decoding, evaluation, and checkpoint saving.
-- Inspected each saved `latest.pth`: `decoder.fc.weight` has shape `(419, 256)`
-  and `decoder.fc.bias` has shape `(419,)` in all four runs.
-- Smoke logs, resolved configuration snapshots, metrics, predictions,
-  visualizations, and checkpoints are preserved under
-  `results/thesis/development/smoke_bigram_*/0/`. These bounded CPU results
-  (CER/WER both 1.0 after one tiny epoch) are software checks, not thesis
-  recognition results.
-- The initial sandboxed process could not see CUDA, but a permitted local run
-  detected the NVIDIA GeForce RTX 4060 Laptop GPU and completed the same
-  bounded handwriting-WD smoke test with CUDA mixed precision enabled.
-- Added regression tests that keep the four non-tokenizer configurations
-  matched and require every configured tokenizer and output head to have 419
-  classes. The complete suite passes 25 tests.
-- A manual full-data, one-epoch timing run of the handwriting-aware WD/RH
-  fold-0 configuration on the RTX 4060 measured 29 seconds for training and
-  four seconds for validation. This implies approximately 2 hours 45 minutes
-  per 300-epoch fold and about 11 hours for the four fold-0 Bigram development
-  runs when executed sequentially. It is a runtime measurement, not a
-  recognition result.
-
-### Immediate next steps
-
-1. Start the four predeclared fold-0 development runs from
-   scratch; do not initialize them from character or smoke checkpoints.
-2. Compare CER/WER only after all matched fold-0 runs finish, preserving each
-   configuration, log, checkpoint, prediction file, and commit identifier.
-
-## 2026-09-18 — Handwriting-aware tokenizer notebook
-
-- Added `train_handwriting_tokenizer.ipynb` as the handwriting-aware
-  counterpart to TVA's baseline `train_tokenizers.ipynb`.
-- The notebook explicitly distinguishes external IAM+READ tokenizer training
-  from the deterministic OnHW compatibility projection: it does not train or
-  select handwriting bigrams from OnHW labels.
-- It authenticates the pinned DTLR source checksum, reproduces the frozen
-  419-class adapter in memory, verifies byte identity with the canonical
-  artifact, demonstrates production DP segmentation, and runs the complete
-  post-construction WD/WI label compatibility audit.
-- Canonical writes are disabled by default. Enabling the write flag can only
-  emit the already-frozen artifact because the builder rejects any unexpected
-  source checksum, schema, class count, bigram count, or final artifact hash.
-
-## 2026-09-18 — Handwriting-aware Bigram WI/RH fold-0 result
-
-- Completed all 300 epochs of the frozen 419-class handwriting-aware Bigram
-  condition on WI/RH fold 0 using BLConv-B + BiLSTM-B + CTC and seed 42.
-- Best validation CER is 0.159850 (15.99%) at epoch 272. Best validation WER is
-  0.246221 (24.62%) at epoch 274. These optima are from different checkpoints:
-  epoch 272 has WER 24.81%, while epoch 274 has CER 16.03%.
-- Relative to the existing WI/RH fold-0 character baseline, independently best
-  WER improves by 3.33 percentage points (11.9% relative error reduction),
-  while CER worsens by 0.38 percentage points. This mixed single-fold result
-  must not be generalized before the matched linguistic run and five-fold
-  evaluation.
-- A Tkinter/Matplotlib GUI-backend cleanup failure interrupted the first
-  process after training epoch 233 and before validation. The complete epoch
-  232 checkpoint was resumed with `MPLBACKEND=Agg`, causing epoch 233 to be
-  repeated safely. The resumed metrics contain a complete epoch 0–299 series.
-- Verified `best_cer.pth`, `best_wer.pth`, and `latest.pth` all have 419-output
-  heads and complete resumable training state. Exact checkpoint hashes and the
-  recovery record are in `docs/EXPERIMENTS.md`.
-
-## 2026-09-18 — Matched linguistic Bigram WI/RH fold-0 result
-
-- Completed all 300 epochs of the fold-specific 419-class linguistic Bigram
-  condition on WI/RH fold 0 with the matched DP segmentation algorithm and the
-  same recognition settings as the handwriting condition.
-- Best CER and WER occur together at epoch 262: CER 0.159712 (15.97%) and WER
-  0.249055 (24.91%). All checkpoint invariants pass; exact hashes are recorded
-  in `docs/EXPERIMENTS.md`.
-- Against the character fold-0 baseline, linguistic Bigram improves WER by
-  3.04 percentage points (10.9% relative) while worsening CER by 0.37 points.
-- Handwriting Bigram has 0.28-point lower WER than linguistic Bigram, whereas
-  linguistic has 0.014-point lower CER. Handwriting recognizes 15 additional
-  words exactly among 5,292 validation samples.
-- An exploratory paired exact comparison of word correctness gives `p =
-  0.497`. Because both checkpoints were selected on the same validation fold,
-  this is descriptive post-selection analysis. The small fold-0 difference is
-  not reliable evidence that either Bigram evidence source is superior; the
-  remaining folds are required.
-
-## 2026-09-18 — Handwriting-aware Bigram WD/RH fold-0 result
-
-- Completed all 300 epochs of the frozen 419-class handwriting-aware Bigram
-  condition on WD/RH fold 0. Best CER is 20.24% at epoch 276 and best WER is
-  39.87% at epoch 281; the optima belong to different checkpoints.
-- Compared with the WD/RH character fold-0 baseline, handwriting Bigram is
-  worse by 7.49 CER percentage points and 3.89 WER points. At the respective
-  best-WER checkpoints it recognizes 196 fewer of 5,036 words exactly.
-- An exploratory paired exact comparison gives `p = 6.02e-13`. Although this
-  is post-selection validation analysis, the fold-0 WD effect is large and
-  negative rather than a marginal tie.
-- The contrast between negative WD and positive WI WER changes is
-  directionally consistent with the proposed larger WI benefit, but no claim
-  should be made until the matched linguistic WD run and remaining folds are
-  complete.
-- The run completed uninterrupted; all three principal checkpoints have
-  419-output heads and complete state. Exact hashes are in
-  `docs/EXPERIMENTS.md`.
-
-## 2026-09-19 — Matched linguistic Bigram WD/RH fold-0 result
-
-- Completed all 300 epochs of the fold-specific 419-class linguistic Bigram
-  condition on WD/RH fold 0. Best CER is 20.02% at epoch 282 and best WER is
-  40.07% at epoch 278.
-- Linguistic Bigram is worse than the WD character baseline by 7.26 CER points
-  and 4.09 WER points. Both matched Bigram conditions therefore underperform
-  character recognition on WD fold 0.
-- Between Bigram conditions, linguistic has a 0.22-point CER advantage and
-  handwriting has a 0.20-point WER advantage. Handwriting recognizes only ten
-  more of 5,036 words exactly. An exploratory paired exact test gives `p =
-  0.716`, providing no reliable fold-0 difference between evidence sources.
-- Combined fold-0 interpretation: both Bigram conditions improve WER relative
-  to character in WI, both degrade WD, and handwriting versus linguistic is a
-  near-tie in both settings. The proposed handwriting-specific advantage is
-  not supported by fold 0; remaining folds are required.
-- The run completed uninterrupted with complete 419-output checkpoints. Exact
-  hashes are in `docs/EXPERIMENTS.md`.
-
-## 2026-09-21 — ED external-evaluation intake audit
-
-- Located the supervisor-supplied dataset in
-  `/mnt/c/Users/Ali/Downloads/ed-dataset/`; it consists of separately
-  packaged five-fold WD and WI splits over the same 2,550 recordings from 102
-  writers.
-- Confirmed this is a sentence-level seven-channel, 100 Hz IMU dataset with a
-  78-character English alphabet, rather than an IAM-related image dataset or a
-  direct replacement for OnHW's 13-channel word recordings.
-- Verified every supplied fold has disjoint train/validation sample IDs and
-  complete coverage. WD has writer overlap but disjoint label sets; WI has no
-  writer overlap but substantial repeated-prompt label overlap.
-- Recorded the two source-archive hashes, fold counts, and detailed
-  compatibility results in `docs/EXPERIMENTS.md`.
-- Supervisor direction: use English handwriting tokenizers first; do not use
-  the combined IAM+READ tokenizer for this initial ED evaluation.
-- The IAM-only demonstration tokenizer has 145 handwriting bigrams and 222
-  total classes, but its singleton alphabet lacks `%`, `(`, and `=`. This
-  affects 906/2,550 labels. Deleting symbols or dropping samples is not an
-  acceptable workaround.
-- Proposed next step: formalize a frozen ED adapter that retains the 145 IAM
-  bigrams and uses the declared ED 78-character singleton alphabet, giving
-  224 CTC classes including blank. Freeze a matched English comparator and the
-  evaluation protocol before changing the loader or starting training.
-- Audited DTLR DP against TVA greedy segmentation on all ED labels using the
-  same IAM bigram vocabulary. Token identities differ for 1,778/2,550 samples
-  (69.73%), although both yield 85,153 target tokens. Greedy is therefore a
-  meaningful experimental policy, not an implementation-equivalent rewrite;
-  whichever policy is selected must be used for both compared vocabularies.
-- Corrected the repository boundary before implementation: DTLR must construct
-  the generic English handwriting vocabulary from IAM training evidence only
-  and must not consume ED labels. TVA will own the ED alphabet projection,
-  greedy runtime segmentation, post-freeze label compatibility audit, and
-  recognition experiment. The declared ED `categories` schema may define
-  singleton coverage, but label frequencies and validation results may not
-  influence handwriting-token construction.
-- Verified the finalized generic DTLR source artifact from commit `d2f4631`:
-  SHA-256 `2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`,
-  145 exactly preserved IAM bigrams, 76 singletons, 222 total classes, and
-  IAM-train-only provenance. DTLR reports 43/43 tests passing and byte-identical
-  reconstruction of the earlier model. The frozen count-20/rate-0.5 policy is
-  reproducible but remains provisional rather than statistically optimal.
-
-## 2026-09-21 — ED IAM-handwriting greedy adapter frozen and audited
-
-- Pinned the exact DTLR IAM-only source artifact inside TVA at
-  `artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json`; its
-  SHA-256 remains
-  `2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`.
-- Built and froze the 224-class ED adapter at
-  `artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json`.
-  Its SHA-256 is
-  `d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7`.
-- Preserved all 145 IAM handwriting bigrams and their evidence rows. The only
-  vocabulary projection is from 76 IAM singletons to the declared 78-character
-  ED alphabet: remove unused `*`; add `%`, `(`, and `=`. Blank remains ID 0.
-- Added the separate `handwriting_bigram_greedy` runtime. It consumes the
-  leftmost available pair and does not alter the existing DP
-  `handwriting_bigram` runtime or any completed OnHW experiment.
-- Froze greedy left-to-right as the primary ED segmentation policy. The
-  matched comparator must use the same policy; DP is permitted only as a
-  separately named, symmetric ablation.
-- Ran the post-freeze audit across the canonical 2,550 annotations in both WD
-  and WI archives: 5,100 encodings and 170,306 target tokens, with zero blank
-  IDs and zero round-trip failures. The archives contain identical record-label
-  mappings and their declared alphabets match the frozen adapter.
-- Focused tests passed: 21 applicable tests passed and two unrelated optional
-  external-reference checks were skipped. No recognizer training was started.
-
-At this stage, the next step was to freeze the matched English linguistic
-comparator; that milestone is recorded immediately below.
-
-## 2026-09-21 — Matched ED IAM-text linguistic comparator frozen
-
-- Authenticated the exact IAM training labels and complete 5,694-line selection
-  manifest used by DTLR. No IAM validation/test text or ED labels contributed
-  to vocabulary construction.
-- Froze case-sensitive ASCII-letter adjacent-pair counts from IAM train:
-  861 candidates and 153,350 occurrences. Evidence SHA-256:
-  `7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb`.
-- Selected exactly 145 pairs by descending count and lexical tie-breaking. The
-  boundary is unambiguous: selected `bu` has count 273 and excluded `tu` has
-  count 270.
-- Froze the matched comparator at
-  `artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json`,
-  SHA-256
-  `1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd`.
-- Added tokenizer key `linguistic_bigram_greedy`. Both ED conditions have the
-  same blank and singleton IDs, 224 classes, 145 bigrams, NFC normalization,
-  and greedy left-to-right segmentation. They share 72 bigrams and each has 73
-  condition-specific pairs.
-- Audited all 2,550 labels in both archives: 5,100 encodings, 158,156 emitted
-  tokens, zero blank IDs, and zero round-trip failures. Per archive, linguistic
-  produces 79,078 tokens versus handwriting's 85,153, a 7.13% shorter target
-  sequence total that must be considered in result interpretation.
-- No recognition training was started.
-- Complete TVA regression suite: 40 tests run, 38 passed and two unrelated
-  optional external-reference tests skipped.
-
-Next step: implement the dedicated seven-channel ED loader/configuration path
-and run bounded matched smoke tests before full training.
-
-## 2026-09-21 — ED seven-channel loader and matched smoke tests complete
-
-- Added an authenticated ZIP-backed loader for the supervisor-supplied ED
-  data. It validates archive hash, WD/WI identity, five-fold metadata, 100 Hz
-  sample rate, seven-channel shape, declared alphabet, member availability,
-  and finite signal values without extracting or modifying the archives.
-- Added portable environment override `TVA_ED_DATASET_DIR`; committed configs
-  contain no machine-specific dataset path.
-- Updated the main training path and cross-validation launcher to support
-  `dataset_format: ed-zip` and explicit `ed_distribution: wd|wi` while
-  retaining the legacy JSON-directory behavior.
-- Added four strictly matched fold-0 smoke configurations under
-  `configs/thesis/ed/`: handwriting/linguistic × WD/WI. Each uses eight train
-  samples, four validation samples, one CPU epoch, BLConv-S + BiLSTM-S, no
-  augmentation, and the correct 224-class frozen tokenizer.
-- All four smoke runs completed end to end, including decoding, CER/WER,
-  visualization, and resumable checkpoint saving. Every decoder head has 224
-  outputs. The diagnostic CER/WER of 1.0 is not scientific evidence.
-- Exact checkpoint hashes are recorded in `docs/EXPERIMENTS.md`.
-- Complete TVA regression suite: 46 tests run, 44 passed and two unrelated
-  optional external-reference tests skipped.
-- No full-data or research-result training was started.
-
-Next step: freeze production ED training settings, add the four full fold-0
-configs using BLConv-B + BiLSTM-B, and run one bounded CUDA timing check before
-launching any 300-epoch experiment.
-
-## 2026-09-23 — ED fold-0 production settings frozen
-
-- Added four matched production configurations for handwriting/linguistic
-  Bigram × WD/WI under `configs/thesis/ed/`.
-- Froze BLConv-B + BiLSTM-B, seven input channels, 224 outputs, 300 epochs,
-  30 warmup epochs, AdamW at 0.001, augmentation enabled, seed 42, and batch
-  size 8. All conditions start from scratch.
-- The batch choice accounts for sentence-level sequence lengths: mean 2,138,
-  median 2,055, and maximum 7,314 samples. Fold 0 contains 2,047 WD or 2,025
-  WI training recordings.
-- Added a one-complete-epoch handwriting-WD timing configuration using the
-  same production architecture and batch. It writes only to the development
-  result tree and its checkpoint is excluded from production initialization.
-- Added regression checks that require strict matching across all four
-  production configs, validate the frozen tokenizer/output invariants, and
-  ensure the timing config differs only in its declared diagnostic settings.
-- Complete TVA regression suite: 49 tests run, 47 passed and two unrelated
-  optional external-reference checks skipped.
-- Ran the complete one-epoch WD timing configuration on the RTX 4060 with CUDA
-  mixed precision. Batch size 8 completed without an out-of-memory error: 256
-  training batches took 82 seconds and 63 validation batches took 4 seconds.
-  One-time dataset caching took approximately 16 seconds. Peak VRAM was not
-  captured.
-- The diagnostic latest checkpoint SHA-256 is
-  `c12625f50404673ccce98c514e782a841a37463894c18fcf293e521aeef47a53`.
-  Its CER/WER of 1.0 is not recognition evidence and it must not initialize a
-  production run.
-- Runtime projection on the same RTX 4060 is about 7 hours 10 minutes per
-  300-epoch condition or 28 hours 40 minutes for all four fold-0 conditions,
-  excluding startup and backup overhead.
-- No full 300-epoch ED training has started.
-
-Next step: commit this frozen configuration/timing milestone, then launch the
-four fold-0 production jobs from scratch, one at a time. Record actual runtime,
-best CER/WER epochs, checkpoint hashes, and the code commit for every run.
-
-## 2026-09-23 — A6000 batch-8 timing shows low utilization
-
-- Repeated the complete WD fold-0 timing condition on the 48 GB RTX A6000.
-- Training took 100 seconds and validation took 2 seconds. Dataset caching
-  took approximately 13 seconds in total.
-- Observed GPU memory peaked at 2,234 MiB; one-second utilization samples were
-  between 0% and 43%. The run completed without an out-of-memory error.
-- Batch 8 was slower on this workstation than in the RTX 4060 timing run and
-  left most A6000 memory unused. This is a systems observation, not a tokenizer
-  or recognition result.
-- No production fold has started. Batch selection is reopened before training
-  so larger physical batches can be compared using runtime, memory, and the
-  resulting optimizer-step budget only. Diagnostic CER/WER must be ignored.
-
-Next step: benchmark larger A6000 batches, freeze one setting identically for
-all 20 five-fold runs, then commit it before launching production training.
-
-## 2026-09-23 — A6000 batch 64 selected for production
-
-- The complete WD fold-0 batch-64 timing run finished without an out-of-memory
-  error in 16 seconds training plus 1 second validation.
-- Maximum observed GPU memory was 7,248 MiB of 48 GB; sampled utilization
-  reached 47%. Training was 5.9 times faster than batch 8 on the same A6000.
-- Froze batch size 64 in all four production configurations and the canonical
-  timing configuration. This matches TVA's established production batch size.
-- Recorded the optimization tradeoff: 32 updates per WD/WI fold-0 epoch and
-  9,600 updates over 300 epochs, versus 256 and 76,800 under the provisional
-  batch-8 setting. Epoch count, warmup, learning rate, and augmentation remain
-  unchanged. Diagnostic CER/WER played no role in the choice.
-- Projected sequential A6000 budget: about 1 hour 25 minutes per run, 5 hours
-  40 minutes for four fold-0 runs, and 28 hours 20 minutes for all 20 five-fold
-  runs, excluding caching and backup overhead.
-- No production training has started.
-
-Next step: run regression tests, commit and push the A6000 deployment setting,
-then use the committed configuration to launch the five-fold matrix.
-
-## 2026-09-23 — RTX 4060 batch-32 fallback timing passed
-
-- Ran the complete WD fold-0 timing condition on the RTX 4060 laptop using a
-  temporary batch-32 configuration; the committed A6000 configs were unchanged.
-- Training took 26 seconds and validation took 2 seconds. Maximum observed GPU
-  memory was 5,211 MiB, and the run completed without an out-of-memory error.
-- The resulting projection is about 2 hours 20 minutes for 300 epochs,
-  excluding caching and checkpoint overhead.
-- Batch 32 gives 64 WD fold-0 optimizer updates per epoch. It can support a
-  controlled laptop fold-0 comparison only when every compared condition uses
-  batch 32. It cannot be mixed with batch-64 folds in a five-fold aggregate;
-  fold 0 must later be rerun at batch 64 for the frozen A6000 matrix.
-- The diagnostic CER/WER is not recognition evidence, and its checkpoints must
-  not initialize production training.
-
-Next step: if the workstation remains unavailable, launch handwriting-WD fold
-0 from scratch on the laptop with a temporary batch-32 config and use batch 32
-for every paired laptop fold-0 condition.
-
-## 2026-09-24 — ED handwriting-aware WD fold 0 completed on laptop
-
-- Completed all 300 epochs using the frozen IAM handwriting-aware Bigram
-  tokenizer on ED WD fold 0, with greedy segmentation, batch 32,
-  seed 42, and CUDA mixed precision.
-- The run used code commit `9761142e491dc631c2411763fae3677edbfa861a`
-  and took approximately 1 hour 9 minutes 25 seconds including initial caching.
-- Best validation CER was 0.2427056328 at epoch 206; best validation WER was
-  0.6480386889 at epoch 245.
-- Best-CER checkpoint SHA-256:
-  `35a1f5ce12362bfbb9e2e50ccba249b5e09d517f974b667dcf5cfccf25c4db7b`.
-- Best-WER checkpoint SHA-256:
-  `83f583c05d13d8b1972b880e58311294df35eab332fc623e24a2ccd26e07f993`.
-- Final epoch CER/WER (0.2484091/0.6552929) were slightly worse than the
-  metric-specific best values, so final reporting must use the corresponding
-  best checkpoints rather than the latest checkpoint.
-- This result alone does not establish a handwriting-aware advantage and must
-  not be mixed with batch-64 folds in the planned five-fold aggregate.
-
-Next step: run the matched IAM linguistic-Bigram tokenizer on ED WD
-fold 0 with the identical laptop batch-32 protocol, then compare CER and WER.
-
-## 2026-09-24 — Matched ED WD fold-0 comparison completed
-
-- Completed the matched IAM linguistic-Bigram run on ED WD fold 0
-  using the same code commit, architecture, split, batch 32, seed 42, 300-epoch
-  schedule, augmentation, greedy segmentation, and CUDA mixed precision as the
-  handwriting-aware condition.
-- Linguistic best validation CER was 0.3219891586 at epoch 203; best validation
-  WER was 0.7117141322 at epoch 270. Runtime was approximately 1 hour 9 minutes
-  36 seconds including startup.
-- Handwriting-aware versus linguistic: CER 0.2427056328 versus 0.3219891586,
-  an absolute 7.93-point and relative 24.62% reduction; WER 0.6480386889 versus
-  0.7117141322, an absolute 6.37-point and relative 8.95% reduction.
-- Linguistic best-CER checkpoint SHA-256:
-  `6a3270ac9e7b3733a941a6e9177d51b90a7f266282123e2b3594ea8d0dd8bc53`.
-- Linguistic best-WER checkpoint SHA-256:
-  `35d1f0dd9fef8677822407e83c62e1481c915b70bea63799612cdbde1ce99c7f`.
-- This is positive one-fold evidence only. It does not yet demonstrate
-  five-fold generalization or statistical significance, and the batch-32 fold
-  must not be mixed into a batch-64 five-fold aggregate.
-
-Next step: complete the matched WI fold-0 pair at batch 32 if continuing the
-laptop study, or restore the workstation and run the complete frozen batch-64
-five-fold matrix, including a new batch-64 fold 0.
-
-## 2026-09-24 — Matched ED WI fold-0 comparison completed
-
-- Handwriting-aware best validation CER/WER was 0.1642117744/0.4483709273 at
-  epochs 264/265. Runtime was approximately 1 hour 11 minutes 7 seconds.
-- Linguistic best validation CER/WER was 0.1859637922/0.4749373434, both at
-  epoch 262. Runtime was approximately 1 hour 10 minutes 38 seconds.
-- Both used commit `9761142e491dc631c2411763fae3677edbfa861a`, ED WI
-  fold 0, batch 32, seed 42, 300 epochs, the same architecture and augmentation,
-  and greedy segmentation. Only the frozen IAM bigram-selection strategy
-  differed.
-- Handwriting-aware reduced CER by 2.18 percentage points (11.70% relative)
-  and WER by 2.66 points (5.59% relative). It now leads the linguistic control
-  on both WD and WI fold 0, with a larger effect on WD.
-- Linguistic best-CER and best-WER checkpoint SHA-256:
-  `25ccf0c05377e0f2157c589874646716162ae72e7fb07c77b8ea69151e708365`.
-- This remains one-fold, one-seed evidence and is not yet a five-fold or
-  statistically significant conclusion.
-
-Next step: freeze one hardware/batch protocol for the complete five-fold study.
-If using the A6000 batch-64 protocol, rerun fold 0 and run folds 1--4 for all
-four conditions; do not mix these laptop batch-32 results into that aggregate.
-
-## 2026-09-24 — Batch-32 laptop protocol frozen for five folds
-
-- Selected batch 32 on the RTX 4060 laptop for the complete ED five-fold
-  matrix. This retains the four matched fold-0 results and requires 16
-  remaining runs across folds 1--4.
-- Recorded D022, which supersedes the A6000 batch-64 deployment choice for this
-  final matrix while retaining the A6000 measurements as systems evidence.
-- Added `run_ed_matrix.py`. Its defaults are all four tokenizer/distribution
-  conditions, folds 1--4, batch 32, seed 42, and sequential execution.
-- The launcher reads the frozen base configs and overrides only fold and batch,
-  validates critical invariants and the ED archives, preflights every output
-  directory before launch, refuses overwrites, stops on the first failure, and
-  offers a no-training `--dry-run` preview.
-- Added five focused launcher tests. The complete suite ran 54 tests: 52 passed
-  and two optional external-reference checks were skipped. The dry run
-  previewed all 16 expected runs and started no training.
-- Estimated remaining sequential laptop time is approximately 18--19 hours
-  based on the four observed fold-0 runtimes.
-
-Next step: commit and push the launcher milestone, then run
-`python run_ed_matrix.py --dry-run` once on the training checkout and launch
-the matrix without `--dry-run` while the laptop is powered and sleep-disabled.
-
-## 2026-09-25 — ED WD five-fold comparison completed
-
-- All handwriting-aware and matched linguistic WD runs for folds 0--4 reached
-  epoch 299 under the frozen batch-32, seed-42 protocol. Each run retained its
-  resumable latest and metric-specific best checkpoints.
-- Handwriting-aware five-fold mean ± sample SD: CER 24.13 ± 1.06% and WER
-  64.26 ± 2.10%.
-- Linguistic five-fold mean ± sample SD: CER 30.04 ± 2.39% and WER 68.56 ±
-  2.84%.
-- Handwriting-aware bigrams reduced the unweighted mean CER by 5.91 percentage
-  points (19.69% relative) and WER by 4.30 points (6.27% relative). They led
-  on both CER and WER in every fold.
-- Linguistic fold 2 was interrupted by host OOM after epoch 208 and resumed
-  from its saved `latest.pth`; it then completed normally through epoch 299.
-- The full per-fold metrics, best epochs, checkpoint hashes, recovery note,
-  and interpretation are recorded in `docs/EXPERIMENTS.md` under “ED WD
-  five-fold comparison completed.”
-- This is one-seed writer-dependent evidence. It supports a consistent ED WD
-  advantage for the IAM handwriting-aware bigram selection over its matched
-  linguistic control, but does not establish the WI result.
-
-Next step: preserve and back up the WD result directories, then run the matched
-ED WI folds 1--4 under the same frozen batch-32 protocol.
-
-## 2026-09-25 — ED terminology migration completed
-
-- Renamed the supervisor-supplied English Dataset identifier consistently to
-  `ED` across runtime code, loader APIs, tokenizer builders and auditors,
-  configs, tests, artifact metadata and filenames, experiment documentation,
-  launcher tooling, and the analysis notebook.
-- The runtime interface is now `dataset_format: ed-zip`,
-  `ed_distribution: wd|wi`, and `TVA_ED_DATASET_DIR`. Production configs live
-  under `configs/thesis/ed/`, and the matrix entry point is
-  `run_ed_matrix.py`.
-- Renamed local result directories without rewriting historical logs or
-  checkpoint payloads. This preserves the original execution evidence while
-  ensuring future runs resolve to the ED directory layout.
-- Recomputed the canonical hashes required by the metadata-only artifact
-  migration: IAM frequency evidence
-  `7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb`,
-  handwriting adapter
-  `d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7`,
-  and linguistic adapter
-  `1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd`.
-- Vocabulary contents, token IDs, folds, experimental settings, checkpoints,
-  and reported CER/WER values did not change.
-- Full suite: 54 tests ran successfully; seven optional tests were skipped
-  because their external local data was unavailable to the test process.
-
-## 2026-09-25 — ED WD fold-0 character baseline prepared
-
-- Added `configs/thesis/ed/character_wd.yaml` for a fresh ED WD fold-0
-  character-baseline run under the completed study's batch-32 protocol.
-- The character vocabulary is defined explicitly by configuration as blank ID
-  0 plus the 78-character ED alphabet, producing a 79-class CTC head. It does
-  not learn token statistics from ED labels and therefore cannot leak
-  validation-label frequencies during tokenizer construction.
-- Added validated configuration-based character-tokenizer initialization and
-  regression coverage for protocol matching, blank handling, round-trip label
-  encoding, and output-head size.
-- Full suite: 58 tests ran successfully; seven optional tests were skipped
-  because their external local data was unavailable to the test process.
-
-Next step: run the WD fold-0 character baseline from scratch and record its
-independently best validation CER and WER.
-
-## 2026-09-25 — ED WD fold-0 character baseline completed
-
-- Completed all 300 epochs under the matched batch-32, seed-42 WD protocol.
-- Best validation CER was 0.1583313693 at epoch 241; best validation WER was
-  0.5464803869 at epoch 199.
-- Character beat handwriting-aware Bigram by 8.44 absolute CER points and
-  10.16 WER points, and beat linguistic Bigram by 16.37 CER points and 16.52
-  WER points.
-- Best-CER checkpoint SHA-256:
-  `de86cac7b3c89966344d62bb8b1dc6d12b31df4bc5da3712ba3949543613d122`.
-- Best-WER checkpoint SHA-256:
-  `df8e3a2d5c52314bc2367fd3392a46d4ab3545c2c1c34e45280079aa1569011d`.
-- This establishes a clear character advantage on fold 0 only. Complete the
-  remaining WD character folds before comparing five-fold means or making a
-  general claim about tokenizer effectiveness on ED.
-
-Next step: prepare and run the ED WD character baseline for folds 1--4 using
-the same frozen batch-32 protocol.
-
-## 2026-09-25 — ED WI fold-0 character baseline prepared
-
-- Added `configs/thesis/ed/character_wi.yaml` with the same batch-32,
-  seed-42, 300-epoch protocol used by the completed WI Bigram fold-0 pair.
-- The only scientific split change from the WD character configuration is
-  `ed_distribution: wi`; the 79-class vocabulary, architecture, optimizer,
-  schedule, and augmentation remain matched.
-- The result directory is isolated at `results/thesis/ed/character_wi/0/`.
-
-Next step: run the WI character baseline through epoch 299 and record its
-independently best validation CER and WER.
-
-## 2026-09-25 — ED WI fold-0 character baseline completed
-
-- Completed all 300 epochs under the matched batch-32, seed-42 WI protocol.
-- Best validation CER was 0.1377171782 at epoch 276; best validation WER was
-  0.4230576441 at epoch 285.
-- Character beat handwriting-aware Bigram by 2.65 absolute CER points and
-  2.53 WER points, and beat linguistic Bigram by 4.82 CER points and 5.19 WER
-  points.
-- Best-CER checkpoint SHA-256:
-  `d8831121878ab80f6639a9eee8e9b0a2d26a337293e75b9205324eb64698c548`.
-- Best-WER checkpoint SHA-256:
-  `6fd88eac1f4274b41904e628cf7b797f2c0aecb92627f2aee1995aa4486d68fa`.
-- Character now leads both frozen Bigram systems on both WD and WI fold 0.
-  This is still one-fold evidence for each split and must be confirmed across
-  the remaining character folds.
-
-Next step: run the character baseline on folds 1--4, beginning with WD, under
-the same frozen batch-32 protocol.
-
-## 2026-10-03 — Original TVA-on-IAM tokenizer notebook completed
-
-- Created and executed `train_iam_tva_bigram_tokenizer.ipynb`, using the same
-  factory/train/load pattern as TVA's original tokenizer notebook.
-- Authenticated the complete IAM training split (5,694 lines; 5,337 unique
-  complete labels) and called the existing `BigramTokenizer.train()` without
-  changing its counting, candidate, ranking, or greedy-encoding rules.
-- Fixed the subprocess hash seed at 42 and recorded Python/trainer provenance;
-  repeated training was byte-identical. Existing frozen outputs are accepted
-  only when byte-identical, protecting them on notebook reruns.
-- Saved a native TVA tokenizer with 145 bigrams, the same 78 ED singleton
-  characters, and blank ID 0 (224 classes), plus provenance and audit sidecars.
-- Vocabulary overlap is 58 pairs with handwriting and 109 with the custom
-  linguistic comparator. Original TVA selects 36 non-letter pairs.
-- All 2,550 records in each authenticated ED archive round-trip exactly for
-  all three tokenizers. Original TVA uses 70,766 targets per archive, compared
-  with 79,078 custom linguistic and 85,153 handwriting targets. These are
-  segmentation diagnostics, not CER/WER results.
-- Detailed methodology, limitations, hashes, and comparisons are recorded in
-  `docs/EXPERIMENTS.md`. Existing conditions and results remain separate.
-
-Next step: prepare a separate original-TVA-on-IAM recognition condition under
-the saved batch-32 ED protocol, then run recognition training manually. No
-recognition run, commit, or push was performed for this notebook task.
-## 2026-10-03 — Superseded linguistic construction code removed
-
-- Removed both custom linguistic builder modules and their CLI scripts.
-- The current linguistic training entry point is
-  `train_iam_tva_bigram_tokenizer.ipynb`, using original TVA
-  `BigramTokenizer.train()`.
-- Retained frozen historical artifacts, experiments, configs, and compatibility
-  loaders required by completed ED/OnHW experiments and the analysis notebook.
-- Removed builder-only tests and retained artifact authentication and runtime
-  regression coverage. The full suite completed: 55 tests, seven optional skips.
-- Re-executed the complete IAM notebook after cleanup; frozen tokenizer,
-  provenance, and ED comparison outputs remained identical.
-- Preserved the existing uncommitted character-baseline work. No recognition
-  training, commit, or push was performed.
-
-Next step remains a separately named, manually launched original-TVA-on-IAM
-recognition experiment under the matched ED batch-32 protocol.
-## 2026-10-03 — Redundant configs and artifacts pruned
-
-- Removed 11 superseded/duplicate YAML templates and nine unused artifacts.
-  Historical result configs and artifacts needed by completed experiments
-  remain intact. Only completed OnHW linguistic fold 0 remains locally, with
-  the unchanged original manifests; unrun folds 1–4 are recoverable from Git.
-- Current ED configs cover character, handwriting, and original TVA-on-IAM
-  in WD/WI. New original-TVA configs use the native frozen artifact, batch 32,
-  and separate result directories. Current handwriting templates also use
-  batch 32. Existing character-baseline files were preserved.
-- Updated the matrix launcher to explicit `tva_original_wd|wi` condition
-  names, avoiding reuse of completed custom linguistic output directories.
-- Removed tests of deleted templates; kept historical artifact/runtime checks
-  and derived bounded ED smoke settings from active production configs.
-- Regression suite: 52 tests completed successfully, seven optional skips.
-
-Next step: manually run the new original-TVA recognition condition, explicitly
-including fold 0. No recognition training was launched during cleanup.
-## 2026-10-03 — Fold-0 bigram comparison ready for manual runs
-
-- Verified existing handwriting fold-0 metrics and their matched saved protocol
-  for ED WD/WI; those completed runs remain the comparison reference.
-- Verified a dry run of `run_ed_matrix.py --conditions tva_original_wd
-  tva_original_wi --folds 0`, preparing only the two new linguistic recognizers.
-- Original TVA-on-IAM recognition results are pending. The tokenizer artifacts
-  already exist. No recognition training was launched automatically.
-
-Next step: run the supplied WSL command manually, then compare independently
-best validation CER/WER with the recorded handwriting fold-0 results.
-
-## 2026-10-04 — Original TVA linguistic ED fold 0 completed and verified
-
-- Both manual recognition runs completed all 300 epochs. Verified the saved
-  result/config files and recorded result, config, and best-checkpoint hashes
-  in `docs/EXPERIMENTS.md`.
-- WD independently best CER: 35.9556917% at epoch 191; WER: 79.2315959% at
-  epoch 224.
-- WI independently best CER: 20.9311870% at epoch 250; WER: 52.4310777% at
-  epoch 258.
-- Handwriting beats original TVA by 11.69 CER / 14.43 WER percentage points
-  on WD and 4.51 CER / 7.59 WER points on WI.
-- Character remains best on both splits; original TVA also trails the earlier
-  custom linguistic condition. Shorter targets did not improve recognition
-  in these fold-0 runs.
-- These are single-fold, seed-42 results. No tokenizer/settings changes were
-  made in response to the scores. No extra recognition training was launched.
-
-Next step: complete remaining ED original-TVA linguistic and character folds
-under the same frozen protocol before drawing five-fold conclusions.
-Handwriting WD already has five completed folds; WI handwriting still needs
-its remaining folds if a full WI comparison is pursued.
-
-## 2026-10-04 — Simplified tokenizer layout and ED notebook
-
-The ED entry point is now train_ed_tokenizers.ipynb: declare categories and
-source paths, import classes, call train, and inspect an encoding example.
-The original train_tokenizers.ipynb remains unchanged for OnHW. The historical
-IAM+READ notebook is now train_onhw_handwriting_tokenizer.ipynb.
-
-Runtime handwriting classes live in tva/handwriting_tokenizers.py. Source
-validation, vocabulary preparation, IAM training, and optional audits live
-in tva/handwriting/. The old root builder/audit scripts and scattered
-handwriting modules were replaced by this package; their consumers were
-updated. Original TVA training and segmentation algorithms are unchanged.
-
-Executed the new ED notebook and reproduced the existing tokenizer/provenance
-bytes. The relocated full comparison audit reproduced the existing audit
-report exactly. Frozen artifacts, recognition configs, and saved results
-remain unchanged. No recognition training was launched.
-
-Validation: both simplified notebooks executed successfully; unittest discovery
-ran 56 tests (49 passed, 7 skipped for optional external inputs).
-
-### Original TVA tokenizer module restored
-
-Restored tva/tokenizers.py byte for byte from the initial TVA commit cff221c.
-All thesis extensions (IAM training wrapper, explicit character alphabet,
-handwriting/historical linguistic classes, extended factory, and shared-file
-path resolution) live in tva/handwriting_tokenizers.py. Recognition entry
-points, the ED notebook, audits, and tests import the extensions there.
-Original tokenizer algorithms are inherited or called through the original
-factory. Existing configuration keys and artifact formats remain unchanged.
-
-Verified both notebooks and the byte-identical comparison audit after restoring
-the upstream file. All 56 tests completed: 49 passed, 7 optional skips.
-
-## 2026-10-08 — Handwriting BPE/Unigram ready for ED fold 0
-
-Verified and bundled both frozen IAM-only DTLR releases and their manifest.
-Prepared separately versioned ED adapters with 224 classes, retaining all 145
-pieces, BPE merge order and Unigram learned scores. `%`/`=` use forced singleton
-fallback; ED labels were read only after construction for compatibility checks.
-The original TVA tokenizer module and existing experiments remain unchanged.
-
-Updated the simple ED notebook and added four matched WD/WI fold-0 configs.
-Files are already prepared; the notebook is optional. Recognition training is
-manual and has not started. No commit or push was performed in this integration.
-
-Validation: 54/61 TVA tests passed, 7 optional skips; notebook executed;
-5,612 common-alphabet IAM lines matched DTLR segmentation; each tokenizer
-round-tripped all 5,100 ED encodings; eight real ED CPU batches yielded finite
-224-class outputs/CTC loss. See [the experiment record](EXPERIMENTS.md#2026-10-08--frozen-iam-handwriting-bpeunigram-integrated-for-ed-fold-0)
-for pinned hashes, inference policy, scientific scope and manual commands.
-
-Next: manually run handwriting BPE and Unigram fold 0 for WD and WI, then compare
-their independent best CER/WER metrics with the existing character/bigram runs.
-
-## 2026-10-08 — Handwriting BPE WD fold 0 completed
-
-The user's manual BPE WD run completed all 300 epochs. Verified run
-`20261008183405`, saved settings and 503 validation predictions per epoch.
-Best CER: 24.45439547% at epoch 185; best WER: 63.40677055% at epoch 261.
-These are independent validation minima from different checkpoints.
-
-Against handwriting bigram fold 0, BPE CER is 0.18383219 percentage points
-higher and WER is 1.39709833 points lower. Character remains better on both
-metrics; one fold/seed is insufficient for a general ranking. No training,
-vocabulary change, commit or push was performed while recording this result.
-See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-bpe-ed-wd-fold-0-completed)
-for the comparison, checkpoint-specific metrics and saved file hashes.
-
-Next: manually complete BPE WI and Unigram WD/WI fold-0 runs.
-
-## 2026-10-08 — Handwriting BPE WI fold 0 completed
-
-Verified all 300 epochs of run `20261008194420`, its matched saved config and
-525 validation labels. Best CER: 17.17816590% first at epoch 248;
-best WER: 44.73684211% at epoch 257. Epoch 257 also ties the minimum CER.
-
-Against handwriting bigram WI fold 0, BPE CER is 0.75698846 percentage
-points higher and WER is 0.10025063 points lower. Character remains lower
-on both metrics. BPE WD and WI fold 0 are complete; Unigram WD/WI is next.
-See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-bpe-ed-wi-fold-0-completed)
-for the comparison, checkpoint metrics and file hashes. No recognition training,
-commit or push was performed while recording the result.
-
-## 2026-10-08 — Handwriting Unigram WD fold 0 completed
-
-Verified all 300 epochs of run `20261008210048`, the matched saved config and
-503 validation labels. Best CER: 24.06787650% at epoch 265;
-best WER: 63.78291241% at epoch 229, from separate checkpoints.
-Unigram has the lowest CER among the three handwriting methods on WD fold 0;
-BPE has the lowest WER. Character remains lower on both metrics.
-
-See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-unigram-ed-wd-fold-0-completed)
-for comparisons, checkpoint-specific metrics and saved evidence hashes.
-Next: manually complete Unigram WI fold 0. Matched linguistic BPE/Unigram
-controls remain separate pending work. No training, commit or push was performed
-while recording this result.
-
-## 2026-10-08 — Handwriting Unigram WI fold 0 completed
-
-Verified all 300 epochs of run `20261008221323`, matched saved settings and
-525 validation labels. Best CER: 16.84071321% at epoch 277;
-best WER: 45.41353383% at epoch 261, from separate checkpoints.
-
-Handwriting BPE/Unigram fold 0 is now complete for WD and WI. Character remains
-lowest on both metrics in both distributions. Among handwriting methods,
-Unigram has lowest WD CER, bigram lowest WI CER, and BPE lowest WER in both.
-These one-fold/one-seed comparisons do not establish a general ranking.
-See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-unigram-ed-wi-fold-0-completed)
-for the complete comparison, checkpoint-specific metrics and file hashes.
-
-Next planned work: freeze and integrate matched IAM text-only BPE/Unigram
-controls, then manually evaluate ED fold 0. No training, commit or push was
-performed while recording this result.
-
-
-## 2026-10-10 — Artifact navigation
-
-Grouped current ED tokenizer artifacts under `artifacts/tokenizers/ed/`
-(handwriting and linguistic) and historical conditions under
-`artifacts/tokenizers/archive/`. Added `artifacts/tokenizers/README.md` with direct
-links and explanations. Updated active references and retained saved-config path
-compatibility. All 17 frozen JSON files retain their exact bytes and checksums.
-Recognition results stay in their existing directories.
-
-Validation: 64 tests passed, 7 optional tests skipped; ED preparation notebook
-executed successfully and all frozen artifact hashes remained unchanged.
-
-
-## 2026-10-10 — TVA owns handwriting vocabulary training
-
-Moved bigram selection, supported BPE merge learning, and Unigram EM/pruning
-from DTLR into `tva/handwriting/training.py`. Current handwriting `.train()` APIs
-fit from `artifacts/evidence/iam/iam_connectivity_v1.json.gz`; `.prepare()` and
-`.load()` remain separate ways to adapt/reuse frozen models. The simple ED
-notebook now trains all three from the same portable evidence input.
-DTLR exports evidence independently and retains historical trainer compatibility
-through lazy wrappers; its former training CLIs direct users to TVA.
-
-All three full fits reproduce the native and ED frozen artifacts exactly, so
-completed recognition runs retain their tokenizer identity. No ED labels are
-used for fitting. Original TVA tokenizers and recognition training outputs are
-unchanged. New TVA fitting reports record current code/evidence hashes while
-preserving historical frozen provenance. TVA: 86 tests passed, 7 optional skips;
-DTLR: 78 tests passed. The entire ED preparation/training notebook executed;
-all 17 existing artifact checksums stayed unchanged. No commit or push yet.
-
-### 2026-10-10 — Separate linguistic helpers from handwriting tokenizers
-
-Moved authenticated IAM input preparation and `IAMBigramTokenizer` to
-`tva/iam_tokenizers.py`. It still delegates vocabulary selection and text
-encoding to the unchanged original `tva/tokenizers.py` implementation.
-Moved the load-only historical OnHW and ED custom linguistic classes and their
-frozen identities to `tva/tokenizer_compatibility.py`; saved experiment keys
-and artifacts remain supported. `tva/tokenizer_factory.py` now supplies the
-shared factory, artifact path resolution, and explicit character alphabet
-initialization for recognition and analysis. Updated entry points, tests, ED
-notebooks, and README imports. `tva/handwriting_tokenizers.py` now contains only
-handwriting-aware tokenizer classes. Tokenizer files and training algorithms
-are unchanged; no recognition experiments were launched.
-
-Validation: TVA unittest suite passed (93 tests: 86 passed, 7 optional checks
-skipped). Verified all 17 frozen tokenizer artifacts remain byte-identical
-and `tva/tokenizers.py` matches the original TVA commit `cff221c`. Updated
-Python modules and ED notebook cells parse successfully.
-
-## 2026-10-11 — OnHW WI/RH character baseline: all five folds completed
-
-Verified all five fresh OnHW WI/RH character runs completed 300 epochs.
-Saved configs match across folds except the fold index; train/validation
-writers are disjoint. Recomputed selected-checkpoint metrics from predictions
-and confirmed all validation labels and 300 prediction sets per fold.
-Mean independently best CER: **7.3069%**; WER: **15.2473%**.
-Population fold standard deviations: 6.1204 / 9.0592 percentage points.
-The TVA paper reports 7.41% / 15.40%, a close aggregate reproduction.
-WER at each fold's best-CER checkpoint averages 15.3823%.
-See [the experiment record](EXPERIMENTS.md#2026-10-11--onhw-wirh-character-baseline-all-five-folds-completed)
-for per-fold results, selected epochs, dataset counts, scope and evidence hashes.
-Next: complete the five-fold WD baseline for its separate paper comparison.
-No training, tokenizer modification, commit or push was performed while
-recording these results.
-
-## 2026-10-18 — Matched linguistic BPE/Unigram controls prepared
-
-Trained and froze IAM text-only BPE/Unigram controls (145 pieces, 224 ED classes)
-using the shared trainers with handwriting evidence disabled. The complete
-ordered IAM corpus, duplicate handling, NFC, boundaries, budgets and fitting
-parameters match the handwriting setup. Both families now share identical
-segmentation code in `tva/subword_tokenizers.py`; existing handwriting artifacts
-and training rules are unchanged.
-
-Added `LinguisticBPETokenizer`/`LinguisticUnigramTokenizer`, four matched ED
-fold-0 configs, simple ED notebook sections, frozen native/ED artifacts, training
-reports and a compatibility audit. Recognition training is manual and has not
-started. No handwriting retraining is needed.
-
-Validation: 92 tests passed, seven optional skips; the complete ED tokenizer
-notebook executed; each control round-tripped 5,100 ED encodings and 5,612 IAM
-lines; eight production-architecture CPU batches yielded finite CTC loss.
-See the latest entry in `EXPERIMENTS.md` for hashes and the four training commands.
-No commit or push performed.
-
-## 2026-10-19 — Linguistic subword recognition uses extracted ED files
-
-Switched the four new linguistic BPE/Unigram configs to the verified extracted
-ED directories. Their training commands now require no ZIP environment setting.
-Validated annotation byte identity and 160 ZIP/extracted raw-signal, label and
-processed-tensor comparisons across all folds and both cache modes. Six focused
-tests passed. Tokenizers and recognition settings are unchanged; no training
-was started.
-
-## 2026-10-19 — Matched linguistic BPE/Unigram ED fold 0 completed
-
-Verified all four matched text-only BPE/Unigram recognition runs completed
-300 epochs, with full predictions, correct validation labels, unchanged frozen
-tokenizers and matching saved configs. Recomputed selected metrics directly
-from predictions. Independent best CER/WER:
-
-- BPE WD: **28.9748% CER / 67.2757% WER**, at epochs 214 / 280.
-- BPE WI: **18.0081% CER / 45.2130% WER**, at epochs 245 / 278.
-- Unigram WD: **30.1249% CER / 70.0430% WER**, at epochs 260 / 241.
-- Unigram WI: **18.7104% CER / 46.5915% WER**, at epochs 279 / 264.
-
-Handwriting-aware counterparts have lower CER and WER in all four fold-0
-comparisons. These remain single-fold, seed-42 findings. CER/WER minima are
-selected independently, generally from different checkpoints. The failed
-pre-training BPE WD ZIP-path attempt is excluded. See the latest experiment
-entry for checkpoint-specific metrics, differences and saved evidence hashes.
-No recognition training, artifact changes, commit or push performed.
-
-## 2026-10-19 — Original TVA character configs and ED equivalence verified
-
-Generated the standard 79-class character file with TVA's own `.train()` and
-verified exact equality to the previous subclass on all IDs and 5,100 WD/WI
-label encodings/decodings. Added explicit `character_tva_wd.yaml` and
-`character_tva_wi.yaml` configs plus a comparison report. Removed the subclass;
-the factory returns original TVA directly, with old null-path ED configs
-remaining compatible through the same shared JSON. Existing scores remain
-valid. Validation: 94 tests passed, seven optional skips; extracted-data,
-five-fold preflight and notebook syntax checks passed. No recognition training,
-commit or push performed.
-
-
-## 2026-10-22 — TVA-style ED tokenizer folders
-
-Organized character, linguistic and handwriting ED tokenizers into per-method
-folders with `0.json` through `4.json`. Fold copies preserve the existing frozen
-IAM vocabularies and IDs; no ED fold fitting or recognition retraining occurred.
-Updated configs, tokenizer preparation and analysis notebooks, compatibility
-aliases and CV validation. Source models and shared reports remain accessible
-beside the fold files; historical run snapshots and scores are preserved.
-
-Validation: 96 tests passed, seven optional skips; the complete tokenizer
-notebook reproduced its outputs exactly, and 14 configs passed all five fold
-input checks. Original TVA tokenizer code is unchanged. No commit or push.
-
-
-## 2026-10-22 — Token-distribution notebook historical path fix
-
-Reproduced the notebook's default run failing on
-`fau_english_iam_handwriting_bigram_greedy_v1.json`. Added explicit aliases for
-that original filename and the corresponding historical linguistic bigram to
-the current canonical tokenizer files. Saved run snapshots remain unchanged.
-The notebook now documents restarting its kernel after resolver updates.
-
-Validation: five artifact-path tests passed; all 36 saved ED run configs load
-their tokenizers. Executed every analysis cell with headless plotting and all
-503 real WD fold-0 validation predictions, plus one prediction from the
-historical linguistic bigram checkpoint. No training or recorded-score changes.
-
-
-## 2026-10-25 — Group analysis notebooks in one directory
-
-Moved all seven analysis/inspection notebooks to `notebooks/analysis/`:
-ED overview, OnHW overview, compression, linguistic bigram usage, token
-distributions, handwriting predictions and tokenizer inspection. Added a
-notebook index and updated README/setup links. Each notebook locates the
-repository before importing TVA, so imports and data paths work from the
-repository root or the notebook folder. Analysis outputs still go to their
-existing `results/` locations.
-
-Validation: all notebook code passes syntax checks; all seven setup cells ran
-successfully in fresh processes from both launch directories (14 checks).
-Saved outputs, settings and every cell after setup were preserved. Tokenizer
-artifacts and training/preparation notebooks are byte-identical to their
-pre-move state, including pre-existing user edits. No training, commit or push.
-
-
-## 2026-10-25 — One handwriting bigram class with two policies
-
-Merged the handwriting bigram implementations into `HandwritingBigramTokenizer`
-with `policy='greedy'` or `policy='utility-based'`. The latter retains the
-maximum-total-utility dynamic program and tie breaking. The historical default
-is utility-based; ED notebook examples explicitly select greedy. Removed the
-separate greedy handwriting class and updated its callers. Saved recognition
-config names still select their original policies through the factory.
-Historical linguistic loaders retain their original behavior.
-
-Both policies can load the same authenticated ED or OnHW vocabulary. Training
-input selection follows the declared task alphabet, independently of runtime
-segmentation policy. Frozen vocabulary files, IDs, evidence and provenance
-remain unchanged; artifact policy metadata describes its original experiment,
-while the constructor selects runtime behavior.
-
-Validation: exact segmentation metadata and token IDs match pre-refactor outputs
-for 2,004 unique-label cases across handwriting and historical linguistic
-conditions. Five new tests cover supported policy names, overlapping pairs,
-both frozen vocabularies, legacy factory defaults and identical ED fitting under
-both policies. The full suite ran 109 tests: 97 passed, seven optional skips and
-the same five pre-existing failures as the baseline. Those failures are strict
-byte comparisons against the independently reformatted linguistic bigram
-`0.json`; that user edit was preserved. No recognition training, commit or push.
-
+## Current status — updated 2026-11-14
+
+- **Completed research:** the latest experiment records (2026-11-03) report ED
+  character baselines across five folds, main linguistic/handwriting tokenizer
+  comparisons on fold 0, compression-matched controls, and three matched
+  bigram draws. These are recorded results, not rerun during workflow setup.
+- **Current task:** shared Codex/Claude workflow setup is complete. No new
+  research implementation or recognition training was started in this session.
+- **Current policy:** [DECISIONS.md](DECISIONS.md#d026--language-specific-construction-and-evaluation)
+  records English IAM -> ED and planned German dataset -> OnHW. READ is
+  retired from future experiments; historical records remain.
+- **Open issues:** the German construction dataset is undecided. DHSD versus
+  FH-SWF comparison is deferred to a later session; neither is adopted.
+  Older scope/method notes may describe the earlier OnHW/READ plan.
+- **Next research work:** rerun the current compression analysis, confirm the
+  final comparison set against D024/D025 and the existing metric rule, then
+  extend the approved main comparisons across five folds. Propose any
+  experimental-design change before execution; this list does not start runs.
+- **Resume:** read [../AGENTS.md](../AGENTS.md), this snapshot, current decisions,
+  and the relevant experiment entries. Keep research results and pending work
+  distinct when updating this snapshot.
+
+## 2026-11-14 — Shared workflow preferences finalized
+
+- Both agents use ASD-STE100 writing principles and Cavemen-style simplicity,
+  especially for implementation explanations; technical meaning stays exact.
+- Progress entries now appear newest first below the status snapshot. All 65
+  pre-existing dated entries retain their text, including failed attempts.
+- The user's "commit and push" request means both GitHub (origin) and GitLab
+  (gitlab), unless the user limits the destination. Verify both remote tips
+  after publication and report a partial failure explicitly.
+- Only workflow documentation is being published; no research implementation,
+  training, dataset adoption, or experimental result changes are included.
+
+## 2026-11-14 — Shared Codex and Claude thesis workflow established
+
+- Added root AGENTS.md with the shared reading order, approval boundaries,
+  Understand -> Plan -> Get Approval -> Execute -> Verify -> Update Progress
+  workflow, research-integrity rules, and verification/handoff guidance.
+  CLAUDE.md imports the same instructions.
+- Added the concise current-status snapshot above without replacing the
+  chronological record. Progress, decisions, and experiments keep their
+  existing separate purposes; no additional context system was introduced.
+- Recorded the user's language/dataset clarification as D026: English IAM ->
+  ED; German construction dataset pending -> OnHW; READ retired with history
+  preserved. DHSD versus FH-SWF remains deferred, with neither adopted.
+- Removed only the docs/DECISIONS.md ignore rule so the existing decision log
+  can accompany the shared instructions in version control.
+- Verification: all 13 local links/anchors in the new instructions and status
+  snapshot resolve; Claude's AGENTS.md reference is present; the decision log
+  is not ignored; original progress history is preserved; git diff --check
+  passes. Git scope is exactly the five approved documentation files.
+- No implementation, configs, dependencies, datasets, tokenizer artifacts, or
+  experiment results changed. No model training or implementation tests were
+  run for this documentation-only task; no commit or push was performed.
+- Next: start either agent from the shared instructions and choose the next
+  research task from the current snapshot. Dataset comparison stays deferred.
+
+## 2026-11-03 — All six size-and-compression-matched bigram draws completed
+
+All three vocabulary draws completed WD and WI fold 0, each with 300 epochs,
+recognition seed 42, batch size 32, 145 letter bigrams and 224 classes.
+Both scores below come from the selected minimum-CER epoch.
+
+| Draw | Setting | Selected epoch | CER (%) | WER (%) |
+| --- | --- | ---: | ---: | ---: |
+| 0 | WD | 142 | 26.8489 | 68.5116 |
+| 0 | WI | 283 | 17.8804 | 47.7694 |
+| 1 | WD | 257 | 26.4153 | 67.1413 |
+| 1 | WI | 285 | 17.0414 | 46.0902 |
+| 2 | WD | 239 | 27.2402 | 67.9205 |
+| 2 | WI | 284 | 17.9169 | 47.5439 |
+
+Handwriting bigram has lower CER and same-checkpoint WER than all three draws
+in WD and WI, but these are one-fold, one-recognition-seed findings. Drawing
+seeds 2, 3 and 4 produce the three vocabularies; they are not training-seed
+repeats. Full scores, independent minima, matching metadata, source files
+and hashes are in
+[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-03--size-and-compression-matched-bigram-draws-completed).
+
+The scheduled fold-0 screening sequence is complete. Next, rerun
+`notebooks/analysis/analyze_ed_compression.ipynb` with the current results,
+confirm the final comparison set and checkpoint-reporting rule, then extend
+main comparisons across five folds as Phase 0 of `docs/ABLATION_PLAN.md`.
+No training or analysis notebook was started while recording these results.
+
+## 2026-11-02 — Compression-matched v3 BPE/Unigram completed
+
+All four runs completed 300 epochs with the frozen configs (fold 0, seed 42,
+batch size 32). BPE has 71 pieces / 150 classes; Unigram has 36 pieces / 115
+classes. Both scores below are from the minimum-CER epoch.
+
+| Tokenizer | Setting | Selected epoch | CER (%) | WER (%) |
+| --- | --- | ---: | ---: | ---: |
+| BPE | WD | 161 | 24.3884 | 64.6964 |
+| BPE | WI | 276 | 16.5990 | 44.7619 |
+| Unigram | WD | 265 | 21.0747 | 61.2305 |
+| Unigram | WI | 242 | 15.6870 | 44.1103 |
+
+The current compression-matched table is complete, including the retained
+bigram runs. Saved configs, metrics, independent minima, hashes and partner
+comparisons are recorded in
+[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-02--compression-matched-v3-bpe-and-unigram-fold-0-completed).
+
+Next: the six `size_and_compression_matched/bigram_linguistic_drawn{0,1,2}`
+WD/WI runs. After recording them, rerun the compression notebook and extend
+comparisons across five folds. The smaller compression-matched controls do
+not hold vocabulary size constant, so they cannot establish a compression-only
+explanation. No training was launched while recording these results.
+
+## 2026-11-02 — All handwriting v3 fold-0 runs completed
+
+Completed all six Bigram/BPE/Unigram × WD/WI runs with the frozen D024
+construction. Each has 300 epochs, seed 42, batch size 32 and 224 classes.
+Both metrics below are from the best-CER epoch.
+
+| Tokenizer | WD CER / WER (%) | WI CER / WER (%) |
+| --- | ---: | ---: |
+| Bigram | 26.0665 / 66.8726 | 16.8772 / 45.7644 |
+| BPE | 25.4160 / 65.0457 | 16.7632 / 44.1604 |
+| Unigram | 23.8699 / 65.1531 | 15.3313 / 43.0576 |
+
+Sources, selected epochs, independent minima and hashes are in
+[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-02--handwriting-v3-bigram-bpe-and-unigram-fold-0-completed).
+The current overview now has every main fold-0 linguistic/handwriting result.
+Corrected the earlier linguistic Unigram WD CER transcription to 29.5310%.
+
+Next: four BPE/Unigram compression-matched `v3` runs, then the six drawn
+bigram WD/WI runs. Keep the completed 62-piece matched bigram runs. After
+recording the controls, rerun the compression notebook and extend the main
+comparison across five folds. No training was started while recording scores.
 
 ## 2026-11-01 — Tokenizer construction frozen; next fold-0 runs
 
@@ -1451,76 +239,1342 @@ byte comparisons against the independently reformatted linguistic bigram
 language, so that people new to the project (and the supervisor) can follow
 them.
 
-## 2026-11-02 — All handwriting v3 fold-0 runs completed
+## 2026-10-25 — One handwriting bigram class with two policies
 
-Completed all six Bigram/BPE/Unigram × WD/WI runs with the frozen D024
-construction. Each has 300 epochs, seed 42, batch size 32 and 224 classes.
-Both metrics below are from the best-CER epoch.
+Merged the handwriting bigram implementations into `HandwritingBigramTokenizer`
+with `policy='greedy'` or `policy='utility-based'`. The latter retains the
+maximum-total-utility dynamic program and tie breaking. The historical default
+is utility-based; ED notebook examples explicitly select greedy. Removed the
+separate greedy handwriting class and updated its callers. Saved recognition
+config names still select their original policies through the factory.
+Historical linguistic loaders retain their original behavior.
 
-| Tokenizer | WD CER / WER (%) | WI CER / WER (%) |
-| --- | ---: | ---: |
-| Bigram | 26.0665 / 66.8726 | 16.8772 / 45.7644 |
-| BPE | 25.4160 / 65.0457 | 16.7632 / 44.1604 |
-| Unigram | 23.8699 / 65.1531 | 15.3313 / 43.0576 |
+Both policies can load the same authenticated ED or OnHW vocabulary. Training
+input selection follows the declared task alphabet, independently of runtime
+segmentation policy. Frozen vocabulary files, IDs, evidence and provenance
+remain unchanged; artifact policy metadata describes its original experiment,
+while the constructor selects runtime behavior.
 
-Sources, selected epochs, independent minima and hashes are in
-[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-02--handwriting-v3-bigram-bpe-and-unigram-fold-0-completed).
-The current overview now has every main fold-0 linguistic/handwriting result.
-Corrected the earlier linguistic Unigram WD CER transcription to 29.5310%.
+Validation: exact segmentation metadata and token IDs match pre-refactor outputs
+for 2,004 unique-label cases across handwriting and historical linguistic
+conditions. Five new tests cover supported policy names, overlapping pairs,
+both frozen vocabularies, legacy factory defaults and identical ED fitting under
+both policies. The full suite ran 109 tests: 97 passed, seven optional skips and
+the same five pre-existing failures as the baseline. Those failures are strict
+byte comparisons against the independently reformatted linguistic bigram
+`0.json`; that user edit was preserved. No recognition training, commit or push.
 
-Next: four BPE/Unigram compression-matched `v3` runs, then the six drawn
-bigram WD/WI runs. Keep the completed 62-piece matched bigram runs. After
-recording the controls, rerun the compression notebook and extend the main
-comparison across five folds. No training was started while recording scores.
+## 2026-10-25 — Group analysis notebooks in one directory
 
-## 2026-11-02 — Compression-matched v3 BPE/Unigram completed
+Moved all seven analysis/inspection notebooks to `notebooks/analysis/`:
+ED overview, OnHW overview, compression, linguistic bigram usage, token
+distributions, handwriting predictions and tokenizer inspection. Added a
+notebook index and updated README/setup links. Each notebook locates the
+repository before importing TVA, so imports and data paths work from the
+repository root or the notebook folder. Analysis outputs still go to their
+existing `results/` locations.
 
-All four runs completed 300 epochs with the frozen configs (fold 0, seed 42,
-batch size 32). BPE has 71 pieces / 150 classes; Unigram has 36 pieces / 115
-classes. Both scores below are from the minimum-CER epoch.
+Validation: all notebook code passes syntax checks; all seven setup cells ran
+successfully in fresh processes from both launch directories (14 checks).
+Saved outputs, settings and every cell after setup were preserved. Tokenizer
+artifacts and training/preparation notebooks are byte-identical to their
+pre-move state, including pre-existing user edits. No training, commit or push.
 
-| Tokenizer | Setting | Selected epoch | CER (%) | WER (%) |
-| --- | --- | ---: | ---: | ---: |
-| BPE | WD | 161 | 24.3884 | 64.6964 |
-| BPE | WI | 276 | 16.5990 | 44.7619 |
-| Unigram | WD | 265 | 21.0747 | 61.2305 |
-| Unigram | WI | 242 | 15.6870 | 44.1103 |
+## 2026-10-22 — Token-distribution notebook historical path fix
 
-The current compression-matched table is complete, including the retained
-bigram runs. Saved configs, metrics, independent minima, hashes and partner
-comparisons are recorded in
-[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-02--compression-matched-v3-bpe-and-unigram-fold-0-completed).
+Reproduced the notebook's default run failing on
+`fau_english_iam_handwriting_bigram_greedy_v1.json`. Added explicit aliases for
+that original filename and the corresponding historical linguistic bigram to
+the current canonical tokenizer files. Saved run snapshots remain unchanged.
+The notebook now documents restarting its kernel after resolver updates.
 
-Next: the six `size_and_compression_matched/bigram_linguistic_drawn{0,1,2}`
-WD/WI runs. After recording them, rerun the compression notebook and extend
-comparisons across five folds. The smaller compression-matched controls do
-not hold vocabulary size constant, so they cannot establish a compression-only
-explanation. No training was launched while recording these results.
+Validation: five artifact-path tests passed; all 36 saved ED run configs load
+their tokenizers. Executed every analysis cell with headless plotting and all
+503 real WD fold-0 validation predictions, plus one prediction from the
+historical linguistic bigram checkpoint. No training or recorded-score changes.
 
-## 2026-11-03 — All six size-and-compression-matched bigram draws completed
+## 2026-10-22 — TVA-style ED tokenizer folders
 
-All three vocabulary draws completed WD and WI fold 0, each with 300 epochs,
-recognition seed 42, batch size 32, 145 letter bigrams and 224 classes.
-Both scores below come from the selected minimum-CER epoch.
+Organized character, linguistic and handwriting ED tokenizers into per-method
+folders with `0.json` through `4.json`. Fold copies preserve the existing frozen
+IAM vocabularies and IDs; no ED fold fitting or recognition retraining occurred.
+Updated configs, tokenizer preparation and analysis notebooks, compatibility
+aliases and CV validation. Source models and shared reports remain accessible
+beside the fold files; historical run snapshots and scores are preserved.
 
-| Draw | Setting | Selected epoch | CER (%) | WER (%) |
-| --- | --- | ---: | ---: | ---: |
-| 0 | WD | 142 | 26.8489 | 68.5116 |
-| 0 | WI | 283 | 17.8804 | 47.7694 |
-| 1 | WD | 257 | 26.4153 | 67.1413 |
-| 1 | WI | 285 | 17.0414 | 46.0902 |
-| 2 | WD | 239 | 27.2402 | 67.9205 |
-| 2 | WI | 284 | 17.9169 | 47.5439 |
+Validation: 96 tests passed, seven optional skips; the complete tokenizer
+notebook reproduced its outputs exactly, and 14 configs passed all five fold
+input checks. Original TVA tokenizer code is unchanged. No commit or push.
 
-Handwriting bigram has lower CER and same-checkpoint WER than all three draws
-in WD and WI, but these are one-fold, one-recognition-seed findings. Drawing
-seeds 2, 3 and 4 produce the three vocabularies; they are not training-seed
-repeats. Full scores, independent minima, matching metadata, source files
-and hashes are in
-[EXPERIMENTS.md](EXPERIMENTS.md#2026-11-03--size-and-compression-matched-bigram-draws-completed).
+## 2026-10-19 — Original TVA character configs and ED equivalence verified
 
-The scheduled fold-0 screening sequence is complete. Next, rerun
-`notebooks/analysis/analyze_ed_compression.ipynb` with the current results,
-confirm the final comparison set and checkpoint-reporting rule, then extend
-main comparisons across five folds as Phase 0 of `docs/ABLATION_PLAN.md`.
-No training or analysis notebook was started while recording these results.
+Generated the standard 79-class character file with TVA's own `.train()` and
+verified exact equality to the previous subclass on all IDs and 5,100 WD/WI
+label encodings/decodings. Added explicit `character_tva_wd.yaml` and
+`character_tva_wi.yaml` configs plus a comparison report. Removed the subclass;
+the factory returns original TVA directly, with old null-path ED configs
+remaining compatible through the same shared JSON. Existing scores remain
+valid. Validation: 94 tests passed, seven optional skips; extracted-data,
+five-fold preflight and notebook syntax checks passed. No recognition training,
+commit or push performed.
+
+## 2026-10-19 — Matched linguistic BPE/Unigram ED fold 0 completed
+
+Verified all four matched text-only BPE/Unigram recognition runs completed
+300 epochs, with full predictions, correct validation labels, unchanged frozen
+tokenizers and matching saved configs. Recomputed selected metrics directly
+from predictions. Independent best CER/WER:
+
+- BPE WD: **28.9748% CER / 67.2757% WER**, at epochs 214 / 280.
+- BPE WI: **18.0081% CER / 45.2130% WER**, at epochs 245 / 278.
+- Unigram WD: **30.1249% CER / 70.0430% WER**, at epochs 260 / 241.
+- Unigram WI: **18.7104% CER / 46.5915% WER**, at epochs 279 / 264.
+
+Handwriting-aware counterparts have lower CER and WER in all four fold-0
+comparisons. These remain single-fold, seed-42 findings. CER/WER minima are
+selected independently, generally from different checkpoints. The failed
+pre-training BPE WD ZIP-path attempt is excluded. See the latest experiment
+entry for checkpoint-specific metrics, differences and saved evidence hashes.
+No recognition training, artifact changes, commit or push performed.
+
+## 2026-10-19 — Linguistic subword recognition uses extracted ED files
+
+Switched the four new linguistic BPE/Unigram configs to the verified extracted
+ED directories. Their training commands now require no ZIP environment setting.
+Validated annotation byte identity and 160 ZIP/extracted raw-signal, label and
+processed-tensor comparisons across all folds and both cache modes. Six focused
+tests passed. Tokenizers and recognition settings are unchanged; no training
+was started.
+
+## 2026-10-18 — Matched linguistic BPE/Unigram controls prepared
+
+Trained and froze IAM text-only BPE/Unigram controls (145 pieces, 224 ED classes)
+using the shared trainers with handwriting evidence disabled. The complete
+ordered IAM corpus, duplicate handling, NFC, boundaries, budgets and fitting
+parameters match the handwriting setup. Both families now share identical
+segmentation code in `tva/subword_tokenizers.py`; existing handwriting artifacts
+and training rules are unchanged.
+
+Added `LinguisticBPETokenizer`/`LinguisticUnigramTokenizer`, four matched ED
+fold-0 configs, simple ED notebook sections, frozen native/ED artifacts, training
+reports and a compatibility audit. Recognition training is manual and has not
+started. No handwriting retraining is needed.
+
+Validation: 92 tests passed, seven optional skips; the complete ED tokenizer
+notebook executed; each control round-tripped 5,100 ED encodings and 5,612 IAM
+lines; eight production-architecture CPU batches yielded finite CTC loss.
+See the latest entry in `EXPERIMENTS.md` for hashes and the four training commands.
+No commit or push performed.
+
+## 2026-10-11 — OnHW WI/RH character baseline: all five folds completed
+
+Verified all five fresh OnHW WI/RH character runs completed 300 epochs.
+Saved configs match across folds except the fold index; train/validation
+writers are disjoint. Recomputed selected-checkpoint metrics from predictions
+and confirmed all validation labels and 300 prediction sets per fold.
+Mean independently best CER: **7.3069%**; WER: **15.2473%**.
+Population fold standard deviations: 6.1204 / 9.0592 percentage points.
+The TVA paper reports 7.41% / 15.40%, a close aggregate reproduction.
+WER at each fold's best-CER checkpoint averages 15.3823%.
+See [the experiment record](EXPERIMENTS.md#2026-10-11--onhw-wirh-character-baseline-all-five-folds-completed)
+for per-fold results, selected epochs, dataset counts, scope and evidence hashes.
+Next: complete the five-fold WD baseline for its separate paper comparison.
+No training, tokenizer modification, commit or push was performed while
+recording these results.
+
+## 2026-10-10 — TVA owns handwriting vocabulary training
+
+Moved bigram selection, supported BPE merge learning, and Unigram EM/pruning
+from DTLR into `tva/handwriting/training.py`. Current handwriting `.train()` APIs
+fit from `artifacts/evidence/iam/iam_connectivity_v1.json.gz`; `.prepare()` and
+`.load()` remain separate ways to adapt/reuse frozen models. The simple ED
+notebook now trains all three from the same portable evidence input.
+DTLR exports evidence independently and retains historical trainer compatibility
+through lazy wrappers; its former training CLIs direct users to TVA.
+
+All three full fits reproduce the native and ED frozen artifacts exactly, so
+completed recognition runs retain their tokenizer identity. No ED labels are
+used for fitting. Original TVA tokenizers and recognition training outputs are
+unchanged. New TVA fitting reports record current code/evidence hashes while
+preserving historical frozen provenance. TVA: 86 tests passed, 7 optional skips;
+DTLR: 78 tests passed. The entire ED preparation/training notebook executed;
+all 17 existing artifact checksums stayed unchanged. No commit or push yet.
+
+### 2026-10-10 — Separate linguistic helpers from handwriting tokenizers
+
+Moved authenticated IAM input preparation and `IAMBigramTokenizer` to
+`tva/iam_tokenizers.py`. It still delegates vocabulary selection and text
+encoding to the unchanged original `tva/tokenizers.py` implementation.
+Moved the load-only historical OnHW and ED custom linguistic classes and their
+frozen identities to `tva/tokenizer_compatibility.py`; saved experiment keys
+and artifacts remain supported. `tva/tokenizer_factory.py` now supplies the
+shared factory, artifact path resolution, and explicit character alphabet
+initialization for recognition and analysis. Updated entry points, tests, ED
+notebooks, and README imports. `tva/handwriting_tokenizers.py` now contains only
+handwriting-aware tokenizer classes. Tokenizer files and training algorithms
+are unchanged; no recognition experiments were launched.
+
+Validation: TVA unittest suite passed (93 tests: 86 passed, 7 optional checks
+skipped). Verified all 17 frozen tokenizer artifacts remain byte-identical
+and `tva/tokenizers.py` matches the original TVA commit `cff221c`. Updated
+Python modules and ED notebook cells parse successfully.
+
+## 2026-10-10 — Artifact navigation
+
+Grouped current ED tokenizer artifacts under `artifacts/tokenizers/ed/`
+(handwriting and linguistic) and historical conditions under
+`artifacts/tokenizers/archive/`. Added `artifacts/tokenizers/README.md` with direct
+links and explanations. Updated active references and retained saved-config path
+compatibility. All 17 frozen JSON files retain their exact bytes and checksums.
+Recognition results stay in their existing directories.
+
+Validation: 64 tests passed, 7 optional tests skipped; ED preparation notebook
+executed successfully and all frozen artifact hashes remained unchanged.
+
+## 2026-10-08 — Handwriting Unigram WI fold 0 completed
+
+Verified all 300 epochs of run `20261008221323`, matched saved settings and
+525 validation labels. Best CER: 16.84071321% at epoch 277;
+best WER: 45.41353383% at epoch 261, from separate checkpoints.
+
+Handwriting BPE/Unigram fold 0 is now complete for WD and WI. Character remains
+lowest on both metrics in both distributions. Among handwriting methods,
+Unigram has lowest WD CER, bigram lowest WI CER, and BPE lowest WER in both.
+These one-fold/one-seed comparisons do not establish a general ranking.
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-unigram-ed-wi-fold-0-completed)
+for the complete comparison, checkpoint-specific metrics and file hashes.
+
+Next planned work: freeze and integrate matched IAM text-only BPE/Unigram
+controls, then manually evaluate ED fold 0. No training, commit or push was
+performed while recording this result.
+
+## 2026-10-08 — Handwriting Unigram WD fold 0 completed
+
+Verified all 300 epochs of run `20261008210048`, the matched saved config and
+503 validation labels. Best CER: 24.06787650% at epoch 265;
+best WER: 63.78291241% at epoch 229, from separate checkpoints.
+Unigram has the lowest CER among the three handwriting methods on WD fold 0;
+BPE has the lowest WER. Character remains lower on both metrics.
+
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-unigram-ed-wd-fold-0-completed)
+for comparisons, checkpoint-specific metrics and saved evidence hashes.
+Next: manually complete Unigram WI fold 0. Matched linguistic BPE/Unigram
+controls remain separate pending work. No training, commit or push was performed
+while recording this result.
+
+## 2026-10-08 — Handwriting BPE WI fold 0 completed
+
+Verified all 300 epochs of run `20261008194420`, its matched saved config and
+525 validation labels. Best CER: 17.17816590% first at epoch 248;
+best WER: 44.73684211% at epoch 257. Epoch 257 also ties the minimum CER.
+
+Against handwriting bigram WI fold 0, BPE CER is 0.75698846 percentage
+points higher and WER is 0.10025063 points lower. Character remains lower
+on both metrics. BPE WD and WI fold 0 are complete; Unigram WD/WI is next.
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-bpe-ed-wi-fold-0-completed)
+for the comparison, checkpoint metrics and file hashes. No recognition training,
+commit or push was performed while recording the result.
+
+## 2026-10-08 — Handwriting BPE WD fold 0 completed
+
+The user's manual BPE WD run completed all 300 epochs. Verified run
+`20261008183405`, saved settings and 503 validation predictions per epoch.
+Best CER: 24.45439547% at epoch 185; best WER: 63.40677055% at epoch 261.
+These are independent validation minima from different checkpoints.
+
+Against handwriting bigram fold 0, BPE CER is 0.18383219 percentage points
+higher and WER is 1.39709833 points lower. Character remains better on both
+metrics; one fold/seed is insufficient for a general ranking. No training,
+vocabulary change, commit or push was performed while recording this result.
+See [the experiment record](EXPERIMENTS.md#2026-10-08--handwriting-bpe-ed-wd-fold-0-completed)
+for the comparison, checkpoint-specific metrics and saved file hashes.
+
+Next: manually complete BPE WI and Unigram WD/WI fold-0 runs.
+
+## 2026-10-08 — Handwriting BPE/Unigram ready for ED fold 0
+
+Verified and bundled both frozen IAM-only DTLR releases and their manifest.
+Prepared separately versioned ED adapters with 224 classes, retaining all 145
+pieces, BPE merge order and Unigram learned scores. `%`/`=` use forced singleton
+fallback; ED labels were read only after construction for compatibility checks.
+The original TVA tokenizer module and existing experiments remain unchanged.
+
+Updated the simple ED notebook and added four matched WD/WI fold-0 configs.
+Files are already prepared; the notebook is optional. Recognition training is
+manual and has not started. No commit or push was performed in this integration.
+
+Validation: 54/61 TVA tests passed, 7 optional skips; notebook executed;
+5,612 common-alphabet IAM lines matched DTLR segmentation; each tokenizer
+round-tripped all 5,100 ED encodings; eight real ED CPU batches yielded finite
+224-class outputs/CTC loss. See [the experiment record](EXPERIMENTS.md#2026-10-08--frozen-iam-handwriting-bpeunigram-integrated-for-ed-fold-0)
+for pinned hashes, inference policy, scientific scope and manual commands.
+
+Next: manually run handwriting BPE and Unigram fold 0 for WD and WI, then compare
+their independent best CER/WER metrics with the existing character/bigram runs.
+
+## 2026-10-04 — Simplified tokenizer layout and ED notebook
+
+The ED entry point is now train_ed_tokenizers.ipynb: declare categories and
+source paths, import classes, call train, and inspect an encoding example.
+The original train_tokenizers.ipynb remains unchanged for OnHW. The historical
+IAM+READ notebook is now train_onhw_handwriting_tokenizer.ipynb.
+
+Runtime handwriting classes live in tva/handwriting_tokenizers.py. Source
+validation, vocabulary preparation, IAM training, and optional audits live
+in tva/handwriting/. The old root builder/audit scripts and scattered
+handwriting modules were replaced by this package; their consumers were
+updated. Original TVA training and segmentation algorithms are unchanged.
+
+Executed the new ED notebook and reproduced the existing tokenizer/provenance
+bytes. The relocated full comparison audit reproduced the existing audit
+report exactly. Frozen artifacts, recognition configs, and saved results
+remain unchanged. No recognition training was launched.
+
+Validation: both simplified notebooks executed successfully; unittest discovery
+ran 56 tests (49 passed, 7 skipped for optional external inputs).
+
+### Original TVA tokenizer module restored
+
+Restored tva/tokenizers.py byte for byte from the initial TVA commit cff221c.
+All thesis extensions (IAM training wrapper, explicit character alphabet,
+handwriting/historical linguistic classes, extended factory, and shared-file
+path resolution) live in tva/handwriting_tokenizers.py. Recognition entry
+points, the ED notebook, audits, and tests import the extensions there.
+Original tokenizer algorithms are inherited or called through the original
+factory. Existing configuration keys and artifact formats remain unchanged.
+
+Verified both notebooks and the byte-identical comparison audit after restoring
+the upstream file. All 56 tests completed: 49 passed, 7 optional skips.
+
+## 2026-10-04 — Original TVA linguistic ED fold 0 completed and verified
+
+- Both manual recognition runs completed all 300 epochs. Verified the saved
+  result/config files and recorded result, config, and best-checkpoint hashes
+  in `docs/EXPERIMENTS.md`.
+- WD independently best CER: 35.9556917% at epoch 191; WER: 79.2315959% at
+  epoch 224.
+- WI independently best CER: 20.9311870% at epoch 250; WER: 52.4310777% at
+  epoch 258.
+- Handwriting beats original TVA by 11.69 CER / 14.43 WER percentage points
+  on WD and 4.51 CER / 7.59 WER points on WI.
+- Character remains best on both splits; original TVA also trails the earlier
+  custom linguistic condition. Shorter targets did not improve recognition
+  in these fold-0 runs.
+- These are single-fold, seed-42 results. No tokenizer/settings changes were
+  made in response to the scores. No extra recognition training was launched.
+
+Next step: complete remaining ED original-TVA linguistic and character folds
+under the same frozen protocol before drawing five-fold conclusions.
+Handwriting WD already has five completed folds; WI handwriting still needs
+its remaining folds if a full WI comparison is pursued.
+
+## 2026-10-03 — Fold-0 bigram comparison ready for manual runs
+
+- Verified existing handwriting fold-0 metrics and their matched saved protocol
+  for ED WD/WI; those completed runs remain the comparison reference.
+- Verified a dry run of `run_ed_matrix.py --conditions tva_original_wd
+  tva_original_wi --folds 0`, preparing only the two new linguistic recognizers.
+- Original TVA-on-IAM recognition results are pending. The tokenizer artifacts
+  already exist. No recognition training was launched automatically.
+
+Next step: run the supplied WSL command manually, then compare independently
+best validation CER/WER with the recorded handwriting fold-0 results.
+
+## 2026-10-03 — Redundant configs and artifacts pruned
+
+- Removed 11 superseded/duplicate YAML templates and nine unused artifacts.
+  Historical result configs and artifacts needed by completed experiments
+  remain intact. Only completed OnHW linguistic fold 0 remains locally, with
+  the unchanged original manifests; unrun folds 1–4 are recoverable from Git.
+- Current ED configs cover character, handwriting, and original TVA-on-IAM
+  in WD/WI. New original-TVA configs use the native frozen artifact, batch 32,
+  and separate result directories. Current handwriting templates also use
+  batch 32. Existing character-baseline files were preserved.
+- Updated the matrix launcher to explicit `tva_original_wd|wi` condition
+  names, avoiding reuse of completed custom linguistic output directories.
+- Removed tests of deleted templates; kept historical artifact/runtime checks
+  and derived bounded ED smoke settings from active production configs.
+- Regression suite: 52 tests completed successfully, seven optional skips.
+
+Next step: manually run the new original-TVA recognition condition, explicitly
+including fold 0. No recognition training was launched during cleanup.
+
+## 2026-10-03 — Superseded linguistic construction code removed
+
+- Removed both custom linguistic builder modules and their CLI scripts.
+- The current linguistic training entry point is
+  `train_iam_tva_bigram_tokenizer.ipynb`, using original TVA
+  `BigramTokenizer.train()`.
+- Retained frozen historical artifacts, experiments, configs, and compatibility
+  loaders required by completed ED/OnHW experiments and the analysis notebook.
+- Removed builder-only tests and retained artifact authentication and runtime
+  regression coverage. The full suite completed: 55 tests, seven optional skips.
+- Re-executed the complete IAM notebook after cleanup; frozen tokenizer,
+  provenance, and ED comparison outputs remained identical.
+- Preserved the existing uncommitted character-baseline work. No recognition
+  training, commit, or push was performed.
+
+Next step remains a separately named, manually launched original-TVA-on-IAM
+recognition experiment under the matched ED batch-32 protocol.
+
+## 2026-10-03 — Original TVA-on-IAM tokenizer notebook completed
+
+- Created and executed `train_iam_tva_bigram_tokenizer.ipynb`, using the same
+  factory/train/load pattern as TVA's original tokenizer notebook.
+- Authenticated the complete IAM training split (5,694 lines; 5,337 unique
+  complete labels) and called the existing `BigramTokenizer.train()` without
+  changing its counting, candidate, ranking, or greedy-encoding rules.
+- Fixed the subprocess hash seed at 42 and recorded Python/trainer provenance;
+  repeated training was byte-identical. Existing frozen outputs are accepted
+  only when byte-identical, protecting them on notebook reruns.
+- Saved a native TVA tokenizer with 145 bigrams, the same 78 ED singleton
+  characters, and blank ID 0 (224 classes), plus provenance and audit sidecars.
+- Vocabulary overlap is 58 pairs with handwriting and 109 with the custom
+  linguistic comparator. Original TVA selects 36 non-letter pairs.
+- All 2,550 records in each authenticated ED archive round-trip exactly for
+  all three tokenizers. Original TVA uses 70,766 targets per archive, compared
+  with 79,078 custom linguistic and 85,153 handwriting targets. These are
+  segmentation diagnostics, not CER/WER results.
+- Detailed methodology, limitations, hashes, and comparisons are recorded in
+  `docs/EXPERIMENTS.md`. Existing conditions and results remain separate.
+
+Next step: prepare a separate original-TVA-on-IAM recognition condition under
+the saved batch-32 ED protocol, then run recognition training manually. No
+recognition run, commit, or push was performed for this notebook task.
+
+## 2026-09-25 — ED WI fold-0 character baseline completed
+
+- Completed all 300 epochs under the matched batch-32, seed-42 WI protocol.
+- Best validation CER was 0.1377171782 at epoch 276; best validation WER was
+  0.4230576441 at epoch 285.
+- Character beat handwriting-aware Bigram by 2.65 absolute CER points and
+  2.53 WER points, and beat linguistic Bigram by 4.82 CER points and 5.19 WER
+  points.
+- Best-CER checkpoint SHA-256:
+  `d8831121878ab80f6639a9eee8e9b0a2d26a337293e75b9205324eb64698c548`.
+- Best-WER checkpoint SHA-256:
+  `6fd88eac1f4274b41904e628cf7b797f2c0aecb92627f2aee1995aa4486d68fa`.
+- Character now leads both frozen Bigram systems on both WD and WI fold 0.
+  This is still one-fold evidence for each split and must be confirmed across
+  the remaining character folds.
+
+Next step: run the character baseline on folds 1--4, beginning with WD, under
+the same frozen batch-32 protocol.
+
+## 2026-09-25 — ED WI fold-0 character baseline prepared
+
+- Added `configs/thesis/ed/character_wi.yaml` with the same batch-32,
+  seed-42, 300-epoch protocol used by the completed WI Bigram fold-0 pair.
+- The only scientific split change from the WD character configuration is
+  `ed_distribution: wi`; the 79-class vocabulary, architecture, optimizer,
+  schedule, and augmentation remain matched.
+- The result directory is isolated at `results/thesis/ed/character_wi/0/`.
+
+Next step: run the WI character baseline through epoch 299 and record its
+independently best validation CER and WER.
+
+## 2026-09-25 — ED WD fold-0 character baseline completed
+
+- Completed all 300 epochs under the matched batch-32, seed-42 WD protocol.
+- Best validation CER was 0.1583313693 at epoch 241; best validation WER was
+  0.5464803869 at epoch 199.
+- Character beat handwriting-aware Bigram by 8.44 absolute CER points and
+  10.16 WER points, and beat linguistic Bigram by 16.37 CER points and 16.52
+  WER points.
+- Best-CER checkpoint SHA-256:
+  `de86cac7b3c89966344d62bb8b1dc6d12b31df4bc5da3712ba3949543613d122`.
+- Best-WER checkpoint SHA-256:
+  `df8e3a2d5c52314bc2367fd3392a46d4ab3545c2c1c34e45280079aa1569011d`.
+- This establishes a clear character advantage on fold 0 only. Complete the
+  remaining WD character folds before comparing five-fold means or making a
+  general claim about tokenizer effectiveness on ED.
+
+Next step: prepare and run the ED WD character baseline for folds 1--4 using
+the same frozen batch-32 protocol.
+
+## 2026-09-25 — ED WD fold-0 character baseline prepared
+
+- Added `configs/thesis/ed/character_wd.yaml` for a fresh ED WD fold-0
+  character-baseline run under the completed study's batch-32 protocol.
+- The character vocabulary is defined explicitly by configuration as blank ID
+  0 plus the 78-character ED alphabet, producing a 79-class CTC head. It does
+  not learn token statistics from ED labels and therefore cannot leak
+  validation-label frequencies during tokenizer construction.
+- Added validated configuration-based character-tokenizer initialization and
+  regression coverage for protocol matching, blank handling, round-trip label
+  encoding, and output-head size.
+- Full suite: 58 tests ran successfully; seven optional tests were skipped
+  because their external local data was unavailable to the test process.
+
+Next step: run the WD fold-0 character baseline from scratch and record its
+independently best validation CER and WER.
+
+## 2026-09-25 — ED terminology migration completed
+
+- Renamed the supervisor-supplied English Dataset identifier consistently to
+  `ED` across runtime code, loader APIs, tokenizer builders and auditors,
+  configs, tests, artifact metadata and filenames, experiment documentation,
+  launcher tooling, and the analysis notebook.
+- The runtime interface is now `dataset_format: ed-zip`,
+  `ed_distribution: wd|wi`, and `TVA_ED_DATASET_DIR`. Production configs live
+  under `configs/thesis/ed/`, and the matrix entry point is
+  `run_ed_matrix.py`.
+- Renamed local result directories without rewriting historical logs or
+  checkpoint payloads. This preserves the original execution evidence while
+  ensuring future runs resolve to the ED directory layout.
+- Recomputed the canonical hashes required by the metadata-only artifact
+  migration: IAM frequency evidence
+  `7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb`,
+  handwriting adapter
+  `d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7`,
+  and linguistic adapter
+  `1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd`.
+- Vocabulary contents, token IDs, folds, experimental settings, checkpoints,
+  and reported CER/WER values did not change.
+- Full suite: 54 tests ran successfully; seven optional tests were skipped
+  because their external local data was unavailable to the test process.
+
+## 2026-09-25 — ED WD five-fold comparison completed
+
+- All handwriting-aware and matched linguistic WD runs for folds 0--4 reached
+  epoch 299 under the frozen batch-32, seed-42 protocol. Each run retained its
+  resumable latest and metric-specific best checkpoints.
+- Handwriting-aware five-fold mean ± sample SD: CER 24.13 ± 1.06% and WER
+  64.26 ± 2.10%.
+- Linguistic five-fold mean ± sample SD: CER 30.04 ± 2.39% and WER 68.56 ±
+  2.84%.
+- Handwriting-aware bigrams reduced the unweighted mean CER by 5.91 percentage
+  points (19.69% relative) and WER by 4.30 points (6.27% relative). They led
+  on both CER and WER in every fold.
+- Linguistic fold 2 was interrupted by host OOM after epoch 208 and resumed
+  from its saved `latest.pth`; it then completed normally through epoch 299.
+- The full per-fold metrics, best epochs, checkpoint hashes, recovery note,
+  and interpretation are recorded in `docs/EXPERIMENTS.md` under “ED WD
+  five-fold comparison completed.”
+- This is one-seed writer-dependent evidence. It supports a consistent ED WD
+  advantage for the IAM handwriting-aware bigram selection over its matched
+  linguistic control, but does not establish the WI result.
+
+Next step: preserve and back up the WD result directories, then run the matched
+ED WI folds 1--4 under the same frozen batch-32 protocol.
+
+## 2026-09-24 — Batch-32 laptop protocol frozen for five folds
+
+- Selected batch 32 on the RTX 4060 laptop for the complete ED five-fold
+  matrix. This retains the four matched fold-0 results and requires 16
+  remaining runs across folds 1--4.
+- Recorded D022, which supersedes the A6000 batch-64 deployment choice for this
+  final matrix while retaining the A6000 measurements as systems evidence.
+- Added `run_ed_matrix.py`. Its defaults are all four tokenizer/distribution
+  conditions, folds 1--4, batch 32, seed 42, and sequential execution.
+- The launcher reads the frozen base configs and overrides only fold and batch,
+  validates critical invariants and the ED archives, preflights every output
+  directory before launch, refuses overwrites, stops on the first failure, and
+  offers a no-training `--dry-run` preview.
+- Added five focused launcher tests. The complete suite ran 54 tests: 52 passed
+  and two optional external-reference checks were skipped. The dry run
+  previewed all 16 expected runs and started no training.
+- Estimated remaining sequential laptop time is approximately 18--19 hours
+  based on the four observed fold-0 runtimes.
+
+Next step: commit and push the launcher milestone, then run
+`python run_ed_matrix.py --dry-run` once on the training checkout and launch
+the matrix without `--dry-run` while the laptop is powered and sleep-disabled.
+
+## 2026-09-24 — Matched ED WI fold-0 comparison completed
+
+- Handwriting-aware best validation CER/WER was 0.1642117744/0.4483709273 at
+  epochs 264/265. Runtime was approximately 1 hour 11 minutes 7 seconds.
+- Linguistic best validation CER/WER was 0.1859637922/0.4749373434, both at
+  epoch 262. Runtime was approximately 1 hour 10 minutes 38 seconds.
+- Both used commit `9761142e491dc631c2411763fae3677edbfa861a`, ED WI
+  fold 0, batch 32, seed 42, 300 epochs, the same architecture and augmentation,
+  and greedy segmentation. Only the frozen IAM bigram-selection strategy
+  differed.
+- Handwriting-aware reduced CER by 2.18 percentage points (11.70% relative)
+  and WER by 2.66 points (5.59% relative). It now leads the linguistic control
+  on both WD and WI fold 0, with a larger effect on WD.
+- Linguistic best-CER and best-WER checkpoint SHA-256:
+  `25ccf0c05377e0f2157c589874646716162ae72e7fb07c77b8ea69151e708365`.
+- This remains one-fold, one-seed evidence and is not yet a five-fold or
+  statistically significant conclusion.
+
+Next step: freeze one hardware/batch protocol for the complete five-fold study.
+If using the A6000 batch-64 protocol, rerun fold 0 and run folds 1--4 for all
+four conditions; do not mix these laptop batch-32 results into that aggregate.
+
+## 2026-09-24 — Matched ED WD fold-0 comparison completed
+
+- Completed the matched IAM linguistic-Bigram run on ED WD fold 0
+  using the same code commit, architecture, split, batch 32, seed 42, 300-epoch
+  schedule, augmentation, greedy segmentation, and CUDA mixed precision as the
+  handwriting-aware condition.
+- Linguistic best validation CER was 0.3219891586 at epoch 203; best validation
+  WER was 0.7117141322 at epoch 270. Runtime was approximately 1 hour 9 minutes
+  36 seconds including startup.
+- Handwriting-aware versus linguistic: CER 0.2427056328 versus 0.3219891586,
+  an absolute 7.93-point and relative 24.62% reduction; WER 0.6480386889 versus
+  0.7117141322, an absolute 6.37-point and relative 8.95% reduction.
+- Linguistic best-CER checkpoint SHA-256:
+  `6a3270ac9e7b3733a941a6e9177d51b90a7f266282123e2b3594ea8d0dd8bc53`.
+- Linguistic best-WER checkpoint SHA-256:
+  `35d1f0dd9fef8677822407e83c62e1481c915b70bea63799612cdbde1ce99c7f`.
+- This is positive one-fold evidence only. It does not yet demonstrate
+  five-fold generalization or statistical significance, and the batch-32 fold
+  must not be mixed into a batch-64 five-fold aggregate.
+
+Next step: complete the matched WI fold-0 pair at batch 32 if continuing the
+laptop study, or restore the workstation and run the complete frozen batch-64
+five-fold matrix, including a new batch-64 fold 0.
+
+## 2026-09-24 — ED handwriting-aware WD fold 0 completed on laptop
+
+- Completed all 300 epochs using the frozen IAM handwriting-aware Bigram
+  tokenizer on ED WD fold 0, with greedy segmentation, batch 32,
+  seed 42, and CUDA mixed precision.
+- The run used code commit `9761142e491dc631c2411763fae3677edbfa861a`
+  and took approximately 1 hour 9 minutes 25 seconds including initial caching.
+- Best validation CER was 0.2427056328 at epoch 206; best validation WER was
+  0.6480386889 at epoch 245.
+- Best-CER checkpoint SHA-256:
+  `35a1f5ce12362bfbb9e2e50ccba249b5e09d517f974b667dcf5cfccf25c4db7b`.
+- Best-WER checkpoint SHA-256:
+  `83f583c05d13d8b1972b880e58311294df35eab332fc623e24a2ccd26e07f993`.
+- Final epoch CER/WER (0.2484091/0.6552929) were slightly worse than the
+  metric-specific best values, so final reporting must use the corresponding
+  best checkpoints rather than the latest checkpoint.
+- This result alone does not establish a handwriting-aware advantage and must
+  not be mixed with batch-64 folds in the planned five-fold aggregate.
+
+Next step: run the matched IAM linguistic-Bigram tokenizer on ED WD
+fold 0 with the identical laptop batch-32 protocol, then compare CER and WER.
+
+## 2026-09-23 — RTX 4060 batch-32 fallback timing passed
+
+- Ran the complete WD fold-0 timing condition on the RTX 4060 laptop using a
+  temporary batch-32 configuration; the committed A6000 configs were unchanged.
+- Training took 26 seconds and validation took 2 seconds. Maximum observed GPU
+  memory was 5,211 MiB, and the run completed without an out-of-memory error.
+- The resulting projection is about 2 hours 20 minutes for 300 epochs,
+  excluding caching and checkpoint overhead.
+- Batch 32 gives 64 WD fold-0 optimizer updates per epoch. It can support a
+  controlled laptop fold-0 comparison only when every compared condition uses
+  batch 32. It cannot be mixed with batch-64 folds in a five-fold aggregate;
+  fold 0 must later be rerun at batch 64 for the frozen A6000 matrix.
+- The diagnostic CER/WER is not recognition evidence, and its checkpoints must
+  not initialize production training.
+
+Next step: if the workstation remains unavailable, launch handwriting-WD fold
+0 from scratch on the laptop with a temporary batch-32 config and use batch 32
+for every paired laptop fold-0 condition.
+
+## 2026-09-23 — A6000 batch 64 selected for production
+
+- The complete WD fold-0 batch-64 timing run finished without an out-of-memory
+  error in 16 seconds training plus 1 second validation.
+- Maximum observed GPU memory was 7,248 MiB of 48 GB; sampled utilization
+  reached 47%. Training was 5.9 times faster than batch 8 on the same A6000.
+- Froze batch size 64 in all four production configurations and the canonical
+  timing configuration. This matches TVA's established production batch size.
+- Recorded the optimization tradeoff: 32 updates per WD/WI fold-0 epoch and
+  9,600 updates over 300 epochs, versus 256 and 76,800 under the provisional
+  batch-8 setting. Epoch count, warmup, learning rate, and augmentation remain
+  unchanged. Diagnostic CER/WER played no role in the choice.
+- Projected sequential A6000 budget: about 1 hour 25 minutes per run, 5 hours
+  40 minutes for four fold-0 runs, and 28 hours 20 minutes for all 20 five-fold
+  runs, excluding caching and backup overhead.
+- No production training has started.
+
+Next step: run regression tests, commit and push the A6000 deployment setting,
+then use the committed configuration to launch the five-fold matrix.
+
+## 2026-09-23 — A6000 batch-8 timing shows low utilization
+
+- Repeated the complete WD fold-0 timing condition on the 48 GB RTX A6000.
+- Training took 100 seconds and validation took 2 seconds. Dataset caching
+  took approximately 13 seconds in total.
+- Observed GPU memory peaked at 2,234 MiB; one-second utilization samples were
+  between 0% and 43%. The run completed without an out-of-memory error.
+- Batch 8 was slower on this workstation than in the RTX 4060 timing run and
+  left most A6000 memory unused. This is a systems observation, not a tokenizer
+  or recognition result.
+- No production fold has started. Batch selection is reopened before training
+  so larger physical batches can be compared using runtime, memory, and the
+  resulting optimizer-step budget only. Diagnostic CER/WER must be ignored.
+
+Next step: benchmark larger A6000 batches, freeze one setting identically for
+all 20 five-fold runs, then commit it before launching production training.
+
+## 2026-09-23 — ED fold-0 production settings frozen
+
+- Added four matched production configurations for handwriting/linguistic
+  Bigram × WD/WI under `configs/thesis/ed/`.
+- Froze BLConv-B + BiLSTM-B, seven input channels, 224 outputs, 300 epochs,
+  30 warmup epochs, AdamW at 0.001, augmentation enabled, seed 42, and batch
+  size 8. All conditions start from scratch.
+- The batch choice accounts for sentence-level sequence lengths: mean 2,138,
+  median 2,055, and maximum 7,314 samples. Fold 0 contains 2,047 WD or 2,025
+  WI training recordings.
+- Added a one-complete-epoch handwriting-WD timing configuration using the
+  same production architecture and batch. It writes only to the development
+  result tree and its checkpoint is excluded from production initialization.
+- Added regression checks that require strict matching across all four
+  production configs, validate the frozen tokenizer/output invariants, and
+  ensure the timing config differs only in its declared diagnostic settings.
+- Complete TVA regression suite: 49 tests run, 47 passed and two unrelated
+  optional external-reference checks skipped.
+- Ran the complete one-epoch WD timing configuration on the RTX 4060 with CUDA
+  mixed precision. Batch size 8 completed without an out-of-memory error: 256
+  training batches took 82 seconds and 63 validation batches took 4 seconds.
+  One-time dataset caching took approximately 16 seconds. Peak VRAM was not
+  captured.
+- The diagnostic latest checkpoint SHA-256 is
+  `c12625f50404673ccce98c514e782a841a37463894c18fcf293e521aeef47a53`.
+  Its CER/WER of 1.0 is not recognition evidence and it must not initialize a
+  production run.
+- Runtime projection on the same RTX 4060 is about 7 hours 10 minutes per
+  300-epoch condition or 28 hours 40 minutes for all four fold-0 conditions,
+  excluding startup and backup overhead.
+- No full 300-epoch ED training has started.
+
+Next step: commit this frozen configuration/timing milestone, then launch the
+four fold-0 production jobs from scratch, one at a time. Record actual runtime,
+best CER/WER epochs, checkpoint hashes, and the code commit for every run.
+
+## 2026-09-21 — ED seven-channel loader and matched smoke tests complete
+
+- Added an authenticated ZIP-backed loader for the supervisor-supplied ED
+  data. It validates archive hash, WD/WI identity, five-fold metadata, 100 Hz
+  sample rate, seven-channel shape, declared alphabet, member availability,
+  and finite signal values without extracting or modifying the archives.
+- Added portable environment override `TVA_ED_DATASET_DIR`; committed configs
+  contain no machine-specific dataset path.
+- Updated the main training path and cross-validation launcher to support
+  `dataset_format: ed-zip` and explicit `ed_distribution: wd|wi` while
+  retaining the legacy JSON-directory behavior.
+- Added four strictly matched fold-0 smoke configurations under
+  `configs/thesis/ed/`: handwriting/linguistic × WD/WI. Each uses eight train
+  samples, four validation samples, one CPU epoch, BLConv-S + BiLSTM-S, no
+  augmentation, and the correct 224-class frozen tokenizer.
+- All four smoke runs completed end to end, including decoding, CER/WER,
+  visualization, and resumable checkpoint saving. Every decoder head has 224
+  outputs. The diagnostic CER/WER of 1.0 is not scientific evidence.
+- Exact checkpoint hashes are recorded in `docs/EXPERIMENTS.md`.
+- Complete TVA regression suite: 46 tests run, 44 passed and two unrelated
+  optional external-reference tests skipped.
+- No full-data or research-result training was started.
+
+Next step: freeze production ED training settings, add the four full fold-0
+configs using BLConv-B + BiLSTM-B, and run one bounded CUDA timing check before
+launching any 300-epoch experiment.
+
+## 2026-09-21 — Matched ED IAM-text linguistic comparator frozen
+
+- Authenticated the exact IAM training labels and complete 5,694-line selection
+  manifest used by DTLR. No IAM validation/test text or ED labels contributed
+  to vocabulary construction.
+- Froze case-sensitive ASCII-letter adjacent-pair counts from IAM train:
+  861 candidates and 153,350 occurrences. Evidence SHA-256:
+  `7808d5d7b58354be982b042c8f60db4d63bf2ee12aa03cbeca6c3fe628cd1ebb`.
+- Selected exactly 145 pairs by descending count and lexical tie-breaking. The
+  boundary is unambiguous: selected `bu` has count 273 and excluded `tu` has
+  count 270.
+- Froze the matched comparator at
+  `artifacts/tokenizers/ed_iam_linguistic_bigram_greedy_v1.json`,
+  SHA-256
+  `1da363e43fe9d300ece7ad5e3183d84a15fab4bdc6d5b2239b450c222b175abd`.
+- Added tokenizer key `linguistic_bigram_greedy`. Both ED conditions have the
+  same blank and singleton IDs, 224 classes, 145 bigrams, NFC normalization,
+  and greedy left-to-right segmentation. They share 72 bigrams and each has 73
+  condition-specific pairs.
+- Audited all 2,550 labels in both archives: 5,100 encodings, 158,156 emitted
+  tokens, zero blank IDs, and zero round-trip failures. Per archive, linguistic
+  produces 79,078 tokens versus handwriting's 85,153, a 7.13% shorter target
+  sequence total that must be considered in result interpretation.
+- No recognition training was started.
+- Complete TVA regression suite: 40 tests run, 38 passed and two unrelated
+  optional external-reference tests skipped.
+
+Next step: implement the dedicated seven-channel ED loader/configuration path
+and run bounded matched smoke tests before full training.
+
+## 2026-09-21 — ED IAM-handwriting greedy adapter frozen and audited
+
+- Pinned the exact DTLR IAM-only source artifact inside TVA at
+  `artifacts/tokenizers/source/iam-english-handwriting-bigram-v1.json`; its
+  SHA-256 remains
+  `2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`.
+- Built and froze the 224-class ED adapter at
+  `artifacts/tokenizers/ed_iam_handwriting_bigram_greedy_v1.json`.
+  Its SHA-256 is
+  `d79062a252ac1ce05e1a309dab9dd439ee06a06e497024cc9321ecce401e40b7`.
+- Preserved all 145 IAM handwriting bigrams and their evidence rows. The only
+  vocabulary projection is from 76 IAM singletons to the declared 78-character
+  ED alphabet: remove unused `*`; add `%`, `(`, and `=`. Blank remains ID 0.
+- Added the separate `handwriting_bigram_greedy` runtime. It consumes the
+  leftmost available pair and does not alter the existing DP
+  `handwriting_bigram` runtime or any completed OnHW experiment.
+- Froze greedy left-to-right as the primary ED segmentation policy. The
+  matched comparator must use the same policy; DP is permitted only as a
+  separately named, symmetric ablation.
+- Ran the post-freeze audit across the canonical 2,550 annotations in both WD
+  and WI archives: 5,100 encodings and 170,306 target tokens, with zero blank
+  IDs and zero round-trip failures. The archives contain identical record-label
+  mappings and their declared alphabets match the frozen adapter.
+- Focused tests passed: 21 applicable tests passed and two unrelated optional
+  external-reference checks were skipped. No recognizer training was started.
+
+At this stage, the next step was to freeze the matched English linguistic
+comparator; that milestone is recorded immediately below.
+
+## 2026-09-21 — ED external-evaluation intake audit
+
+- Located the supervisor-supplied dataset in
+  `/mnt/c/Users/Ali/Downloads/ed-dataset/`; it consists of separately
+  packaged five-fold WD and WI splits over the same 2,550 recordings from 102
+  writers.
+- Confirmed this is a sentence-level seven-channel, 100 Hz IMU dataset with a
+  78-character English alphabet, rather than an IAM-related image dataset or a
+  direct replacement for OnHW's 13-channel word recordings.
+- Verified every supplied fold has disjoint train/validation sample IDs and
+  complete coverage. WD has writer overlap but disjoint label sets; WI has no
+  writer overlap but substantial repeated-prompt label overlap.
+- Recorded the two source-archive hashes, fold counts, and detailed
+  compatibility results in `docs/EXPERIMENTS.md`.
+- Supervisor direction: use English handwriting tokenizers first; do not use
+  the combined IAM+READ tokenizer for this initial ED evaluation.
+- The IAM-only demonstration tokenizer has 145 handwriting bigrams and 222
+  total classes, but its singleton alphabet lacks `%`, `(`, and `=`. This
+  affects 906/2,550 labels. Deleting symbols or dropping samples is not an
+  acceptable workaround.
+- Proposed next step: formalize a frozen ED adapter that retains the 145 IAM
+  bigrams and uses the declared ED 78-character singleton alphabet, giving
+  224 CTC classes including blank. Freeze a matched English comparator and the
+  evaluation protocol before changing the loader or starting training.
+- Audited DTLR DP against TVA greedy segmentation on all ED labels using the
+  same IAM bigram vocabulary. Token identities differ for 1,778/2,550 samples
+  (69.73%), although both yield 85,153 target tokens. Greedy is therefore a
+  meaningful experimental policy, not an implementation-equivalent rewrite;
+  whichever policy is selected must be used for both compared vocabularies.
+- Corrected the repository boundary before implementation: DTLR must construct
+  the generic English handwriting vocabulary from IAM training evidence only
+  and must not consume ED labels. TVA will own the ED alphabet projection,
+  greedy runtime segmentation, post-freeze label compatibility audit, and
+  recognition experiment. The declared ED `categories` schema may define
+  singleton coverage, but label frequencies and validation results may not
+  influence handwriting-token construction.
+- Verified the finalized generic DTLR source artifact from commit `d2f4631`:
+  SHA-256 `2fbb81479211454d8ad028d8af76eb26e76b75b80408a1a1e1f4efa15ab26a92`,
+  145 exactly preserved IAM bigrams, 76 singletons, 222 total classes, and
+  IAM-train-only provenance. DTLR reports 43/43 tests passing and byte-identical
+  reconstruction of the earlier model. The frozen count-20/rate-0.5 policy is
+  reproducible but remains provisional rather than statistically optimal.
+
+## 2026-09-19 — Matched linguistic Bigram WD/RH fold-0 result
+
+- Completed all 300 epochs of the fold-specific 419-class linguistic Bigram
+  condition on WD/RH fold 0. Best CER is 20.02% at epoch 282 and best WER is
+  40.07% at epoch 278.
+- Linguistic Bigram is worse than the WD character baseline by 7.26 CER points
+  and 4.09 WER points. Both matched Bigram conditions therefore underperform
+  character recognition on WD fold 0.
+- Between Bigram conditions, linguistic has a 0.22-point CER advantage and
+  handwriting has a 0.20-point WER advantage. Handwriting recognizes only ten
+  more of 5,036 words exactly. An exploratory paired exact test gives `p =
+  0.716`, providing no reliable fold-0 difference between evidence sources.
+- Combined fold-0 interpretation: both Bigram conditions improve WER relative
+  to character in WI, both degrade WD, and handwriting versus linguistic is a
+  near-tie in both settings. The proposed handwriting-specific advantage is
+  not supported by fold 0; remaining folds are required.
+- The run completed uninterrupted with complete 419-output checkpoints. Exact
+  hashes are in `docs/EXPERIMENTS.md`.
+
+## 2026-09-18 — Handwriting-aware Bigram WD/RH fold-0 result
+
+- Completed all 300 epochs of the frozen 419-class handwriting-aware Bigram
+  condition on WD/RH fold 0. Best CER is 20.24% at epoch 276 and best WER is
+  39.87% at epoch 281; the optima belong to different checkpoints.
+- Compared with the WD/RH character fold-0 baseline, handwriting Bigram is
+  worse by 7.49 CER percentage points and 3.89 WER points. At the respective
+  best-WER checkpoints it recognizes 196 fewer of 5,036 words exactly.
+- An exploratory paired exact comparison gives `p = 6.02e-13`. Although this
+  is post-selection validation analysis, the fold-0 WD effect is large and
+  negative rather than a marginal tie.
+- The contrast between negative WD and positive WI WER changes is
+  directionally consistent with the proposed larger WI benefit, but no claim
+  should be made until the matched linguistic WD run and remaining folds are
+  complete.
+- The run completed uninterrupted; all three principal checkpoints have
+  419-output heads and complete state. Exact hashes are in
+  `docs/EXPERIMENTS.md`.
+
+## 2026-09-18 — Matched linguistic Bigram WI/RH fold-0 result
+
+- Completed all 300 epochs of the fold-specific 419-class linguistic Bigram
+  condition on WI/RH fold 0 with the matched DP segmentation algorithm and the
+  same recognition settings as the handwriting condition.
+- Best CER and WER occur together at epoch 262: CER 0.159712 (15.97%) and WER
+  0.249055 (24.91%). All checkpoint invariants pass; exact hashes are recorded
+  in `docs/EXPERIMENTS.md`.
+- Against the character fold-0 baseline, linguistic Bigram improves WER by
+  3.04 percentage points (10.9% relative) while worsening CER by 0.37 points.
+- Handwriting Bigram has 0.28-point lower WER than linguistic Bigram, whereas
+  linguistic has 0.014-point lower CER. Handwriting recognizes 15 additional
+  words exactly among 5,292 validation samples.
+- An exploratory paired exact comparison of word correctness gives `p =
+  0.497`. Because both checkpoints were selected on the same validation fold,
+  this is descriptive post-selection analysis. The small fold-0 difference is
+  not reliable evidence that either Bigram evidence source is superior; the
+  remaining folds are required.
+
+## 2026-09-18 — Handwriting-aware Bigram WI/RH fold-0 result
+
+- Completed all 300 epochs of the frozen 419-class handwriting-aware Bigram
+  condition on WI/RH fold 0 using BLConv-B + BiLSTM-B + CTC and seed 42.
+- Best validation CER is 0.159850 (15.99%) at epoch 272. Best validation WER is
+  0.246221 (24.62%) at epoch 274. These optima are from different checkpoints:
+  epoch 272 has WER 24.81%, while epoch 274 has CER 16.03%.
+- Relative to the existing WI/RH fold-0 character baseline, independently best
+  WER improves by 3.33 percentage points (11.9% relative error reduction),
+  while CER worsens by 0.38 percentage points. This mixed single-fold result
+  must not be generalized before the matched linguistic run and five-fold
+  evaluation.
+- A Tkinter/Matplotlib GUI-backend cleanup failure interrupted the first
+  process after training epoch 233 and before validation. The complete epoch
+  232 checkpoint was resumed with `MPLBACKEND=Agg`, causing epoch 233 to be
+  repeated safely. The resumed metrics contain a complete epoch 0–299 series.
+- Verified `best_cer.pth`, `best_wer.pth`, and `latest.pth` all have 419-output
+  heads and complete resumable training state. Exact checkpoint hashes and the
+  recovery record are in `docs/EXPERIMENTS.md`.
+
+## 2026-09-18 — Handwriting-aware tokenizer notebook
+
+- Added `train_handwriting_tokenizer.ipynb` as the handwriting-aware
+  counterpart to TVA's baseline `train_tokenizers.ipynb`.
+- The notebook explicitly distinguishes external IAM+READ tokenizer training
+  from the deterministic OnHW compatibility projection: it does not train or
+  select handwriting bigrams from OnHW labels.
+- It authenticates the pinned DTLR source checksum, reproduces the frozen
+  419-class adapter in memory, verifies byte identity with the canonical
+  artifact, demonstrates production DP segmentation, and runs the complete
+  post-construction WD/WI label compatibility audit.
+- Canonical writes are disabled by default. Enabling the write flag can only
+  emit the already-frozen artifact because the builder rejects any unexpected
+  source checksum, schema, class count, bigram count, or final artifact hash.
+
+## 2026-09-18 — Matched fold-0 Bigram configurations and smoke tests
+
+- Added four fold-0 experiment configurations under `configs/thesis/`: the
+  handwriting-aware and matched linguistic Bigram conditions for WD/RH and
+  WI/RH. Architecture, augmentation, optimizer schedule, epoch budget, batch
+  size, seed, and evaluation settings match across all four conditions.
+- Loaded each frozen tokenizer through its production configuration and
+  confirmed `tokenizer.size == 419` and a 419-output model head.
+- Ran a bounded end-to-end CPU smoke test for every condition with 16 training
+  and eight validation samples, one epoch, batch size two, and seed 42. All
+  four completed data loading, augmentation, encoding, CTC loss, backward
+  updates, validation decoding, evaluation, and checkpoint saving.
+- Inspected each saved `latest.pth`: `decoder.fc.weight` has shape `(419, 256)`
+  and `decoder.fc.bias` has shape `(419,)` in all four runs.
+- Smoke logs, resolved configuration snapshots, metrics, predictions,
+  visualizations, and checkpoints are preserved under
+  `results/thesis/development/smoke_bigram_*/0/`. These bounded CPU results
+  (CER/WER both 1.0 after one tiny epoch) are software checks, not thesis
+  recognition results.
+- The initial sandboxed process could not see CUDA, but a permitted local run
+  detected the NVIDIA GeForce RTX 4060 Laptop GPU and completed the same
+  bounded handwriting-WD smoke test with CUDA mixed precision enabled.
+- Added regression tests that keep the four non-tokenizer configurations
+  matched and require every configured tokenizer and output head to have 419
+  classes. The complete suite passes 25 tests.
+- A manual full-data, one-epoch timing run of the handwriting-aware WD/RH
+  fold-0 configuration on the RTX 4060 measured 29 seconds for training and
+  four seconds for validation. This implies approximately 2 hours 45 minutes
+  per 300-epoch fold and about 11 hours for the four fold-0 Bigram development
+  runs when executed sequentially. It is a runtime measurement, not a
+  recognition result.
+
+### Immediate next steps
+
+1. Start the four predeclared fold-0 development runs from
+   scratch; do not initialize them from character or smoke checkpoints.
+2. Compare CER/WER only after all matched fold-0 runs finish, preserving each
+   configuration, log, checkpoint, prediction file, and commit identifier.
+
+## 2026-09-18 — Matched linguistic Bigram baseline frozen and generated
+
+- Froze D016: the linguistic baseline uses the same NFC and
+  maximum-total-utility dynamic program as the handwriting condition. Its pair
+  membership and utilities come only from fold-specific OnHW training text.
+- Preserved TVA's existing distinct-word convention so repeated writers and
+  samples do not dominate language frequency. Pairs are ranked by descending
+  adjacency count and lexical tie-breaking; utilities are counts divided by
+  the fold maximum.
+- Generated ten 419-class artifacts: five WD/RH and five WI/RH, each containing
+  blank ID 0, the same 59 characters, and 359 training-derived bigrams. Full
+  checksums are recorded in per-dataset manifests and
+  `docs/LINGUISTIC_BIGRAM_BASELINE_V1.md`.
+- Runtime loading verifies the pinned dataset-manifest checksum and its
+  per-fold artifact checksum before accepting a linguistic tokenizer.
+- Confirmed the builder accepts only `train.json`; no validation annotation or
+  recognition result participates in vocabulary construction.
+- Found an important baseline limitation before training: every fold reaches a
+  frequency cutoff of one. Between 87 and 97 selected pairs per fold come from
+  a larger 147–155-pair count-one tie, resolved deterministically by token.
+- The linguistic and handwriting vocabularies share 223–225 of 359 pairs.
+  Their DP segmentations differ on 52.28%–53.29% of complete fold samples, and
+  their mean target lengths are approximately 3.221 and 3.321 tokens,
+  respectively. These are composition measurements, not recognition results.
+- Every linguistic artifact passed train/validation coverage, no-blank target,
+  ID-range, and round-trip checks over 251,990 fold/split label instances.
+- The suite now has 22 passing tests. No recognition training was run.
+- Predeclared a possible greedy-for-both fallback as a secondary segmentation
+  ablation if DP training is unsuccessful. It must retain both DP results and
+  cannot be promoted post hoc based on validation performance.
+
+### Immediate next steps
+
+1. Add matched fold-0 WD and WI experiment configurations for handwriting and
+   linguistic Bigram conditions.
+2. Run bounded pipeline smoke tests in the `tva` environment.
+3. Verify saved model heads contain 419 outputs and preserve smoke-test logs.
+4. Only after smoke tests pass, begin the predeclared fold-0 development runs.
+
+## 2026-09-18 — TVA handwriting-bigram runtime implemented
+
+- Added `HandwritingBigramTokenizer` in
+  `tva/handwriting_bigram_tokenizer.py` and exposed it through
+  `get_tokenizer('handwriting_bigram')`.
+- Updated tokenizer-path resolution so the canonical shared artifact can be
+  supplied directly through the existing `dir_tokenizer` configuration field;
+  legacy per-fold tokenizer directories retain their previous behavior. The
+  shared resolver is used consistently by training, evaluation, and token
+  counting.
+- The training load path authenticates the entire canonical adapter SHA-256,
+  then validates schema, inverse and contiguous mappings, blank ID 0,
+  normalization, overlap policy, finite utility values, output size, bigram
+  count, source checksum, policy ID, and the leakage-safe construction flag.
+- Reimplemented the DTLR right-to-left maximum-total-utility dynamic program,
+  including its preference for more bigrams and its deterministic pair choice
+  when utility and bigram count tie. NFC normalization occurs before
+  segmentation.
+- Confirmed exact TVA-versus-DTLR equality of both segmentation dictionaries
+  and encoded IDs for all 501 unique OnHW words, including the previously
+  documented overlap cases.
+- Confirmed complete runtime coverage on all 251,990 WD/WI fold/split label
+  instances: targets were non-empty, used IDs 1–418 only, and decoded to the
+  NFC-normalized label.
+- Removed `evaluate.py`'s hard-coded 500-class complexity head. Training and
+  complexity reporting now both size the output head from `tokenizer.size`, so
+  the frozen condition uses exactly 419 logits including blank.
+- The complete suite now has 16 passing tests: six adapter tests and ten
+  runtime/integration tests. No recognition training was run.
+
+### Immediate next steps
+
+1. Resolve and predeclare the matched linguistic comparator's segmentation
+   policy before constructing its fold-specific vocabularies.
+2. Add a thesis experiment configuration using tokenizer key
+   `handwriting_bigram` and the canonical shared artifact, then run a small
+   pipeline smoke test before full training.
+
+## 2026-09-17 — Canonical 419-class adapter implemented
+
+- Added a deterministic builder and CLI in
+  `tva/handwriting_bigram_adapter.py` and
+  `build_handwriting_bigram_adapter.py`.
+- The builder authenticates the source checksum and audited schema/model
+  invariants before projection. It rejects changed provenance, non-contiguous
+  mappings, invalid blank conventions, altered DP policy, and unexpected
+  source or output counts. It also checks the completed canonical bytes against
+  the frozen adapter checksum, preventing silent regeneration drift under the
+  same policy ID.
+- Generated the canonical artifact at
+  `artifacts/tokenizers/onhw_words500_rh_iam_read_v1.json` with SHA-256
+  `12ce25d8bedc552e6b3497ffb1d07e506b01b34296cc21b970f82a550cbf2bfe`.
+- Confirmed that rebuilding from the pinned source produces byte-identical
+  canonical JSON. The artifact records that no annotation files were read.
+- Ran the canonical artifact through the independent DTLR reference tokenizer
+  on every WD/WI train and validation label. All 251,990 fold/split label
+  instances across the 20 checks passed coverage, non-empty target, no-blank
+  target, ID-range, and NFC round-trip assertions.
+- Added six unit/integration tests covering alphabet-only projection, source
+  order and metadata preservation, duplicate-alphabet rejection, source hash
+  rejection, canonical UTF-8 serialization, frozen mapping invariants, and a
+  byte-identical rebuild when the external source is available.
+
+### Immediate next steps
+
+1. Implement TVA's dedicated handwriting-bigram tokenizer using the artifact's
+   NFC and maximum-total-utility DP policy.
+2. Add DTLR-reference segmentation conformance and complete OnHW label tests
+   for that runtime tokenizer.
+3. Resolve and predeclare the matched linguistic comparator's segmentation
+   policy.
+4. Correct `evaluate.py`'s hard-coded 500-class complexity head.
+
+## 2026-09-17 — Primary handwriting adapter policy frozen
+
+- Froze policy `onhw-words500-rh-iam-read-v1` at 419 output classes: blank ID
+  0, the exact pre-existing 59-character OnHW alphabet at IDs 1–59, and the
+  359 source bigrams whose two characters are in that alphabet at IDs 60–418.
+- The construction preserves source-vocabulary order, utilities, NFC, and the
+  DTLR maximum-total-utility dynamic program. It adds `Ä` and `Ü` only as
+  fallback singles and derives no new bigrams from OnHW labels.
+- Excluded the 496-class full-artifact extension from the primary experiment.
+  It may be used only as a separately named, predeclared sensitivity analysis.
+- Validated an in-memory reference construction against every train and
+  validation label in all five WD and all five WI folds. All 20 fold/split
+  checks passed coverage, non-empty target, no-blank target, ID-range, and NFC
+  encode/decode round-trip invariants.
+- This was a compatibility validation, not vocabulary selection: construction
+  used the fixed task alphabet and frozen source only, without OnHW label
+  frequencies, validation membership, or recognition results.
+- Recorded a comparator-design caveat: a size-matched linguistic vocabulary
+  does not isolate token membership if it uses greedy segmentation while the
+  handwriting tokenizer uses utility-maximizing dynamic programming. This
+  segmentation-policy choice must be predeclared before comparative training.
+- Full policy: `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
+
+### Immediate next steps
+
+1. Implement the deterministic adapter builder and canonical artifact, then
+   record the derived artifact SHA-256.
+2. Implement the dedicated tokenizer and DTLR-reference conformance tests.
+3. Add complete coverage, round-trip, blank, ID, and provenance tests.
+4. Resolve and predeclare the linguistic comparator's segmentation policy.
+5. Correct `evaluate.py`'s hard-coded 500-class complexity head before model
+   size or MAC reporting.
+
+## 2026-09-15 — Combined tokenizer compatibility audit
+
+- Inspected TVA's tokenizer classes, OnHW label loader, fold-specific
+  vocabulary construction, CTC blank convention, decoder, and output-head
+  sizing before changing implementation code.
+- Pinned the combined IAM+READ artifact
+  `iam-read-combined-v1` at SHA-256
+  `5c5d9f1689a4802fc5e9451e5afe8abdfb090562587ab78ddd343211feb94dd4`.
+  It contains 494 classes: blank ID 0, 91 non-empty single characters, and 402
+  handwriting bigrams.
+- Submitted every OnHW training label in all five WD and all five WI folds to
+  the unmodified combined tokenizer. Every successful encoding round-tripped
+  to the NFC label, and NFC changed no OnHW label.
+- Complete coverage failed because uppercase `Ä` and `Ü` are absent. In each
+  complete 25,199-sample train-plus-validation partition, 608 samples (2.41%)
+  contain one of these characters. Every WD and WI fold is affected.
+- Confirmed that TVA's current Bigram tokenizer cannot be reused for this
+  artifact: it applies greedy left-to-right matching, whereas the frozen model
+  maximizes total handwriting utility with dynamic programming. The two
+  segmentations differed for 9,009 of 24,591 otherwise encodable labels
+  (36.64%).
+- Confirmed that TVA correctly passes `tokenizer.size`, including blank, to the
+  training output head. Found a separate reporting issue: `evaluate.py`
+  hard-codes 500 classes for complexity calculation.
+- Designed a leakage-safe adapter option using only the fixed OnHW alphabet:
+  blank + all 59 OnHW characters + 359 frozen in-alphabet bigrams, for 419
+  classes. A 496-class full-artifact-plus-fallback form remains a possible
+  sensitivity condition. The primary policy must be frozen before training.
+- Recorded the complete evidence, per-fold failure counts, methodological
+  implications, and required conformance tests in this progress log and
+  `docs/HANDWRITING_BIGRAM_ADAPTER_V1.md`.
+
+### Immediate next steps
+
+1. Implement a dedicated handwriting-bigram tokenizer that exactly preserves
+   the DTLR NFC and dynamic-programming behavior.
+2. Implement and checksum the now-frozen deterministic 419-class OnHW
+   compatibility adapter.
+3. Add complete coverage, round-trip, blank, ID, provenance, and DTLR-reference
+   conformance tests before any recognition training.
+4. Build matched fold-specific linguistic Bigram vocabularies from OnHW
+   training labels only.
+
+## 2026-09-15 — Approved proposal makes image connectivity primary
+
+- Reconciled the repository documentation with the approved proposal,
+  *Handwriting-Aware Tokenization for IMU-Based Online Handwriting Recognition*.
+- The primary evidence pipeline now uses IAM and READ separately, pretrained
+  DTLR character identities and boxes, transcript matching with uncertainty
+  rejection, binarization, and connected-component labelling.
+- Static connected ink is documented as a cross-modal handwriting prior for
+  OnHW IMU recognition, not as proof of continuous IMU pen motion.
+- Bigram is the required first tokenizer experiment. BPE and Unigram are
+  conditional extensions if Bigram results are promising. Individual
+  characters always remain fallback tokens.
+- The core evaluation remains separate right-handed WD and WI OnHW-Words500
+  recognition with fixed BLConv-B + BiLSTM-B + CTC models, matched linguistic
+  baselines, fresh training per tokenizer, and CER/WER on reconstructed text.
+- Added the proposal's explicit hypothesis that any benefit will be larger in
+  WI than WD; this must be tested rather than assumed.
+- Optional image-domain recognition remains distinct from the primary use of
+  image data to construct tokenizers.
+
+### Immediate next steps
+
+1. Prepare IAM and READ as separate evidence datasets.
+2. Integrate the pretrained DTLR model and define auditable
+   detection-to-transcription matching and rejection rules.
+3. Pilot binarization, CCL, box-to-component association, and pair scoring on a
+   small manually reviewed subset from each dataset.
+4. Freeze the first connectivity definition and build matched handwriting- and
+   frequency-based Bigram vocabularies before recognition training.
+
+## 2026-08-02 — WI/RH fold-0 character baseline
+
+- Completed 300 epochs of B0 character training on the RTX 4060 laptop.
+- Best validation CER was 0.156041 (15.60%) at epoch 244.
+- Best validation WER was 0.279478 (27.95%) at epoch 269.
+- The WI run used automatic best-model checkpointing. Retain `best_cer.pth`
+  and `best_wer.pth` for recognition comparisons and `latest.pth` for
+  resumable recovery.
+- WD/RH and WI/RH fold-0 character baselines are complete.
+
+## 2026-08-02 — WD/RH fold-0 character baseline
+
+- Completed 300 epochs of B0 character training on the RTX 4060 laptop.
+- Best validation CER was 0.127563 (12.76%) at epoch 286.
+- Best validation WER was 0.359809 (35.98%) at epoch 289.
+- The complete run was archived and backed up by the researcher. The final
+  `latest.pth` checkpoint was retained for reproducibility and recovery.
+- This run preceded automatic best-model checkpointing, so the exact weights
+  from epochs 286 and 289 are not available. This limitation is recorded in
+  `docs/EXPERIMENTS.md`.
+
+## 2026-08-02 — Tokenizer-family scope clarification
+
+- Clarified that the thesis plans handwriting-aware Bigram, BPE, and Unigram
+  tokenizers, not only one pair vocabulary.
+- Each proposed variant will be compared with its linguistic counterpart at a
+  matched vocabulary size; the character baseline remains the common reference.
+- Image-derived ink connectivity is the primary handwriting evidence.
+  Frequency, occurrence count, and writer coverage are retained as reliability
+  conditions.
+- Implementation remains staged: establish the handwriting-aware Bigram first,
+  then extend the evidence to BPE and Unigram if the Bigram is promising.
+- Added method, decision, and proposal-planning documents so this clarification
+  is carried into the formal thesis proposal.
+
+## 2026-08-02 — Validation-selected checkpoints
+
+- Added automatic `best_cer.pth` and `best_wer.pth` checkpoints.
+- Each file is replaced only for a strict improvement over all previous
+  validation epochs. Restored metric history makes this rule resume-aware.
+- `latest.pth` remains the recovery checkpoint.
+
+## 2026-08-02 — Resumable checkpointing
+
+- Extended the repository's model-only checkpoints to preserve the optimizer,
+  learning-rate scheduler, mixed-precision scaler, completed epoch, metric
+  history, random-number generators, and DataLoader shuffle generator.
+- Training now writes `latest.pth` atomically after every completed epoch.
+  Numbered milestone checkpoints continue to follow `freq_save`.
+- Older model-only checkpoint files remain usable for loading weights, but are
+  clearly logged as non-resumable.
+- A controlled CPU test trained epochs 0 and 1, then launched a fresh process
+  from the saved epoch-0 checkpoint. The new process correctly began at epoch
+  1 and reproduced the uninterrupted run's learning rates and batch losses
+  exactly. This validates deterministic continuation for the tested setup.
+- The first CUDA resume attempt exposed that loading the whole checkpoint
+  directly onto the GPU also moved RNG state tensors to CUDA, while PyTorch
+  requires CPU `ByteTensor` RNG states. Checkpoints now load through CPU and
+  defensively convert RNG and DataLoader generator states to CPU before
+  restoration. The existing checkpoint remains valid.
+
+## 2026-08-01 — B0 configurations and local CPU smoke test
+
+### Completed
+
+- Added dedicated fold-0 B0 character-baseline configurations for the WD/RH
+  and WI/RH datasets under `configs/thesis/`.
+- Made mixed precision device-aware: CUDA training uses mixed precision, while
+  CPU training runs in normal precision.
+- Added optional `max_train_samples` and `max_val_samples` configuration keys.
+  Missing or zero values keep the complete dataset, so scientific experiment
+  configurations are unaffected.
+- Updated the ignored Mac-local configuration to use 16 training samples,
+  eight validation samples, batch size two, and one epoch.
+- Protected the learning-rate scheduler against a zero-length cosine phase in
+  a one-epoch development test.
+
+### Smoke-test result
+
+The complete WD/RH fold-0 pipeline ran successfully on the Mac CPU:
+
+- eight training batches and four validation batches completed;
+- the model received the raw 13-channel signals;
+- character tokenization and CTC loss worked;
+- backward propagation and optimizer updates completed;
+- validation decoding and CER/WER evaluation completed; and
+- metrics, predictions, a visualization, and a checkpoint were written under
+  `results/thesis/development/mac_cpu_smoke_char_wd/0/`.
+
+The smoke-test CER and WER were both 1.0. This is expected after one epoch on
+only 16 training examples and is not a thesis result.
+
+### Next step
+
+Set up the CUDA environment on the RTX 4060 laptop and run a short GPU test
+before starting the full WD/RH fold-0 B0 experiment.
+
+## 2026-08-01 — Character tokenizer validation
+
+- WD/RH character tokenizer files exist for folds 0–4.
+- Each file contains 60 contiguous IDs, with the CTC blank assigned to ID 0.
+- All five WD files have the same SHA-256 hash, as expected because the
+  character vocabulary is fixed rather than learned from fold frequencies.
+- Encode/decode round trips succeeded for all 25,199 train-plus-validation
+  labels in every WD fold.
+- The tokenizer notebook also generated WD Bigram, BPE, and Unigram variants;
+  these are not yet needed for the B0 character baseline.
+- WI/RH character tokenizer files were subsequently generated for folds 0–4.
+  They use the same valid 60-token vocabulary and passed encode/decode checks
+  for all 25,199 train-plus-validation labels in every fold.
+- Character-tokenizer preparation for both WD/RH and WI/RH is complete.
+
+## 2026-08-01 — Initial setup and dataset preparation
+
+### Completed
+
+- Corrected the thesis direction: raw IMU remains the model input, while
+  handwriting-informed tokens are used as text-label outputs.
+- Confirmed the dataset scope with the supervisor: right-handed data only.
+- Created the `tva-thesis` Conda environment with Python 3.11 and installed the
+  repository dependencies.
+- Prepared the right-handed writer-dependent (WD) and writer-independent (WI)
+  OnHW-Words500 datasets in the TVA CSV/JSON format.
+- Normalized repository-relative dataset paths in the YAML configurations.
+
+### Dataset validation
+
+Both processed datasets report 13 channels, a 100 Hz target rate, five folds,
+and the correct WD/WI metadata flag.
+
+| Dataset | Train samples by fold | Validation samples by fold | Writer check |
+| --- | --- | --- | --- |
+| WD/RH | 20,163; 20,160; 20,160; 20,158; 20,161 | 5,036; 5,039; 5,039; 5,041; 5,038 | All 53 writers occur in both splits, as expected for WD |
+| WI/RH | 19,907; 20,078; 20,202; 20,520; 20,089 | 5,292; 5,121; 4,997; 4,679; 5,110 | Zero train/validation writer overlap in every fold |
+
+For each dataset:
+
+- 125,995 CSV files are referenced and present;
+- no annotation references are missing or duplicated;
+- annotation IDs are contiguous within every fold and split;
+- no label is empty or contains a character outside the configured alphabet;
+- 501 unique word labels occur across the complete dataset; and
+- a deterministic sample of 200 CSV files contained 13 numeric, finite columns
+  and valid sequence lengths.
+
+The CSV content check was sampled rather than a complete scan of all 251,990
+files. The structural and annotation-reference checks covered the complete
+datasets.
+
+### Immediate next steps
+
+1. Create the fold-specific character tokenizer files for WD and WI.
+2. Add dedicated, committed B0 character-baseline configurations.
+3. Make the training code's mixed-precision context follow the selected device
+   instead of assuming CUDA.
+4. Add a true small-sample smoke-test option; two full CPU epochs are not a
+   genuinely quick smoke test with roughly 20,000 training samples per fold.
+5. Run a tiny local pipeline test, followed by the full fold-0 B0 baseline on
+   an NVIDIA training machine.

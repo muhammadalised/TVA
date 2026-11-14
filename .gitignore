@@ -76,7 +76,6 @@ docs/PROJECT_HANDOFF_RTX.md
 docs/PROPOSAL_PLAN.md
 docs/THESIS_PROJECT.md
 docs/TOKENIZER_COMPATIBILITY_AUDIT.md
-docs/DECISIONS.md
 
 # PyBuilder
 .pybuilder/
