@@ -149,3 +149,12 @@ If time and resources permit, use a fixed offline handwriting recognizer to
 evaluate the same frozen tokenizers on image data. This is a secondary test of
 whether handwriting-aware labels help directly in the image domain. It must
 not alter the primary IMU-recognition comparison after observing its results.
+
+## Secondary experiment: sensor forced alignment (OnHW)
+
+The proposal also names a secondary, sensor-based evidence source. A character
+CTC model is force-aligned to each OnHW training recording. Force and motion
+around each adjacent-character boundary give a per-pair continuity score. That
+ranking can replace the image evidence as the `allowed_pairs` list (D024).
+Scope and open settings are in D027. Algorithm, features, scoring, commands,
+and limitations are in [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md).

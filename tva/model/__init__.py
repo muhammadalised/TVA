@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from .bilstm import BiLSTM
 from .conv import BLConv
+from .unilstm import UniLSTM
 
 __all__ = ['BaseModel']
 
@@ -47,6 +48,8 @@ def build_decoder(
         arch: Decoder architecture key. Must be one of:
             * 'bilstm_b': Base BiLSTM (standard hidden size/layers).
             * 'bilstm_s': Small BiLSTM (reduced hidden size/layers).
+            * 'unilstm_b': Base unidirectional LSTM.
+            * 'unilstm_s': Small unidirectional LSTM.
         len_seq: Expected length of the input sequence.
             Defaults to 0 (unused by current LSTM implementations).
 
@@ -61,10 +64,15 @@ def build_decoder(
             return BiLSTM(dim_in, num_cls)
         case 'bilstm_s':
             return BiLSTM(dim_in, num_cls, 64, 2)
+        case 'unilstm_b':
+            return UniLSTM(dim_in, num_cls)
+        case 'unilstm_s':
+            return UniLSTM(dim_in, num_cls, 64, 2)
         case _:
             raise ValueError(
                 f'Unknown decoder architecture: "{arch}". '
-                'Supported: ["bilstm_b", "bilstm_s"]'
+                'Supported: ["bilstm_b", "bilstm_s", '
+                '"unilstm_b", "unilstm_s"]'
             )
 
 

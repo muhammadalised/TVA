@@ -31,6 +31,36 @@ the reason no longer valid.
   handwriting patterns instead of linguistic patterns, not merely to create a
   single pair vocabulary.
 
+## D004 — Use a character CTC model for forced alignment
+
+- Status: planned
+- Scope (2026-11-15): secondary forced-alignment experiment only; see D027.
+- Decision: Use target-constrained CTC Viterbi forced alignment from a trained
+  character baseline to estimate character intervals in training recordings.
+- Reason: Word labels are available, but true character timestamps are not.
+  Linguistic tokenizers are not required for this alignment stage.
+
+## D005 — Motion is primary; frequency is a reliability condition
+
+- Status: planned
+- Scope (2026-11-15): secondary forced-alignment experiment only; see D027.
+- Decision: Rank or merge candidates primarily by aligned motion continuity.
+  Use occurrence count and writer coverage to reject unreliable estimates.
+- Reason: Completely ignoring sample support would allow rare, noisy candidates
+  to dominate, while ranking primarily by frequency would revert to linguistic
+  tokenization.
+
+## D006 — Select a checkpoint within one architecture by validation CER
+
+- Status: revised on 2026-08-09
+- Scope (2026-11-15): secondary forced-alignment experiment only; see D027.
+- Decision: Prefer `best_cer.pth` when choosing among checkpoints from the same
+  alignment architecture. Use `latest.pth` when a best-CER model is unavailable
+  and document that exception. CER alone must not choose between architectures.
+- Reason: Character accuracy is relevant to forced alignment, but the WI timing
+  diagnostic showed that a highly confident bidirectional model can still place
+  character emissions too early to represent physical handwriting boundaries.
+
 ## D007 — Keep image-domain recognition evaluation optional
 
 - Status: revised by the September 2026 proposal
@@ -51,6 +81,59 @@ the reason no longer valid.
   method, but a large grid across three families, two dataset settings, and five
   folds would make the experiment matrix unnecessarily expensive.
 - Construction at other sizes and its limits: D024.
+
+## D009 — Validate a unidirectional recurrent decoder for alignment
+
+- Status: accepted for tokenizer-evidence development on 2026-08-13
+- Scope (2026-11-15): secondary forced-alignment experiment only; see D027.
+- Decision: Keep the BLConv-B + BiLSTM-B character model as the recognition
+  baseline. Use the separately trained BLConv-B + UniLSTM-B A0 model for
+  fold-0 alignment and tokenizer-evidence development.
+- Reason: In the reliable WI training subset, `only` and `first` boundaries had
+  a median centre time of 80 ms and were about 315 and 300 ms earlier than the
+  rough uniform references. Their median blank duration was zero. This makes
+  the current word-initial sensor windows unsuitable for continuity scoring.
+- Limitation: BLConv uses centred convolutions and sequence-wide instance
+  normalization, so A0 is not fully causal end to end. It is a controlled test
+  of recurrent direction.
+- Evidence: A0 changed reliable median timing offsets for `only`/`first`
+  boundaries from approximately -315/-300 ms to -65/-47 ms. It retained
+  78,953 reliable boundaries (89.4% of all 88,292), spanning all 42 writers.
+  Its validation CER was worse than B0, so A0 is an alignment model and does
+  not replace the recognition baseline.
+
+## D010 — Retain midpoint and whole-region boundary measurements
+
+- Status: implemented for comparison on 2026-08-13
+- Scope (2026-11-15): secondary forced-alignment experiment only; see D027.
+- Decision: Store the existing 50/100/150 ms midpoint windows and a second set
+  of features over the complete CTC candidate region. If the candidate region
+  is empty, use a clearly marked 100 ms midpoint fallback instead of silently
+  treating an empty array as physical continuity.
+- Reason: A0 provides plausible candidate regions, but their duration varies
+  substantially. A small window can miss a pen lift near one edge, while the
+  complete region can include unrelated motion. Keeping both makes this choice
+  testable through descriptive comparison and later ablation.
+
+## D011 — Correct provisional force scores for position and region duration
+
+- Status: implemented for fold-0 development on 2026-08-13
+- Scope (2026-11-15): secondary forced-alignment experiment only; see D027.
+- Decision: Use the corrected 100 ms contact-preservation component as the
+  primary force evidence and the corrected complete-region component as
+  secondary evidence. Estimate expected contact separately for boundary
+  position and broad region-duration groups, then aggregate residual evidence
+  with equal weight per writer.
+- Development defaults: 75% local and 25% complete-region evidence; at least
+  100 reliable occurrences from at least 30 writers; at least 100 occurrences
+  before a position-duration baseline is used.
+- Reason: Complete-region analysis finds pressure losses missed by a local
+  window, but longer regions and word-initial positions show lower apparent
+  continuity independent of pair identity. Directly ranking raw region rates
+  would therefore reward or penalize some pairs for alignment geometry.
+- Limitation: This is the first interpretable force-only baseline. Weighting,
+  force threshold, duration bins, support gates, motion components, and their
+  ablations remain development choices rather than frozen thesis settings.
 
 ## D012 — Use image connectivity as the primary handwriting prior
 
@@ -452,3 +535,29 @@ the reason no longer valid.
   vocabularies, runs, scores, or their original experimental meaning. Do not
   rewrite earlier records or apply ED's seven-channel settings to OnHW's
   thirteen-channel recordings.
+
+
+## D027 — Sensor forced alignment as a secondary OnHW experiment
+
+- Status: approved by the user on 2026-11-15 as the secondary experiment named
+  in the proposal. The primary method does not change (D012, D024–D026).
+- Decision: continue the August forced-alignment pipeline (D004–D006,
+  D009–D011) on right-handed OnHW-Words500. The evidence is a per-pair
+  continuity score from the sensor recordings of the fold's training split.
+- Construction: the pair ranking becomes an `allowed_pairs` list for TVA's
+  unchanged trainers, as D024 allows for a new evidence file. No construction
+  code changes.
+- Leakage rule: evidence comes only from the fold's training split. The scorer
+  already rejects other splits. Validation labels, frequencies, and scores must
+  not select pairs, thresholds, or weights.
+- Difference from D026: D026 builds German tokenizers from a separate German
+  handwriting dataset. This experiment takes evidence from OnHW's own training
+  recordings. It is a separate, named condition, not the German main track.
+- Pending (approve before runs): construction corpus, vocabulary sizes, number
+  of allowed pairs, support gate, force-only or force plus motion, and the
+  comparison set.
+- Review: the 2026-11-15 method review proposes a distinct-word gate, event-based
+  lift detection, a delayed-stroke correction, force as the primary evidence,
+  and three validation checks. See
+  [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md#method-review--2026-11-15).
+  These are proposals, not approved changes.

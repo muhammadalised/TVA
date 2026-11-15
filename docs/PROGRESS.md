@@ -11,14 +11,19 @@ experimental caveat, frozen parameter, and reproducibility identifier as the
 work occurs. Put detailed evidence in a focused tracked document when needed
 and link it from this log.
 
-## Current status — updated 2026-11-14
+## Current status — updated 2026-11-15
 
 - **Completed research:** the latest experiment records (2026-11-03) report ED
   character baselines across five folds, main linguistic/handwriting tokenizer
   comparisons on fold 0, compression-matched controls, and three matched
   bigram draws. These are recorded results, not rerun during workflow setup.
-- **Current task:** the dedicated dataset token-distribution notebook is
-  implemented and verified on local labels. No recognition training was started.
+- **Current task:** secondary experiment (D027): sensor forced alignment on
+  OnHW. The August pipeline is merged onto the current line on branch
+  `forced-alignment-onhw`. A method review with proposed fixes and
+  validation checks is in
+  [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md#method-review--2026-11-15).
+  Next: on the RTX/WSL machine, which holds the A0 export and checkpoint,
+  follow the review's proposed order. No run was started.
 - **Current policy:** [DECISIONS.md](DECISIONS.md#d026--language-specific-construction-and-evaluation)
   records English IAM -> ED and planned German dataset -> OnHW. READ is
   retired from future experiments; historical records remain.
@@ -32,6 +37,43 @@ and link it from this log.
 - **Resume:** read [../AGENTS.md](../AGENTS.md), this snapshot, current decisions,
   and the relevant experiment entries. Keep research results and pending work
   distinct when updating this snapshot.
+
+## 2026-11-15 — Forced-alignment work merged as a secondary OnHW experiment
+
+- The supervisor asked to continue the forced-alignment approach. The user
+  approved it as the secondary experiment named in the proposal, on OnHW
+  first. Recorded as [D027](DECISIONS.md#d027--sensor-forced-alignment-as-a-secondary-onhw-experiment).
+  The primary method (D012, D024–D026) does not change.
+- Merged branch `forced-alignment` (August 8–13 work) into a new branch
+  `forced-alignment-onhw`, cut from `handwriting-tokenizers-v1`. All code
+  merged without conflict. Doc conflicts were resolved as follows:
+  - DECISIONS: D004–D006 and D009–D011 restored as history, marked as scope
+    of D027 only. D007 keeps the current text.
+  - METHOD: the image method stays. A short section points to
+    [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md).
+  - EXPERIMENTS: the A0 aligner entry is placed in date order.
+  - PROGRESS: the August 8–13 entries are placed newest first. The branch's
+    August 1–2 copies were dropped; the current text of those entries was
+    rewritten on 2026-09-15 and is kept. The forced-alignment facts it removed
+    are in FORCED_ALIGNMENT.md and the A0 entry.
+  - The old tracked THESIS_PROJECT.md and PROJECT_HANDOFF_RTX.md stay removed,
+    as on the current line. Their versions remain in Git history.
+- Verification: `python -m unittest discover -s tests -t .` with
+  PYTHONHASHSEED=42 in the macOS `tva-thesis` environment (Python 3.11.15):
+  108 tests pass, 3 skipped because the ED archives are not on this machine.
+  pytest is not installed there, so unittest was used. git diff --check passes.
+- Not verified here: the A0 checkpoint and the boundary export are not on this
+  machine, so no alignment or scoring was run on real data.
+- Method review (Claude, same day): the approach suits a secondary experiment,
+  but the pair score is not yet validated. Main finding: 78 of the 192 pairs
+  that pass the 100-occurrence / 30-writer gate come from only 3–4 of the 501
+  training words. The review also covers 80 ms CTC frames, delayed strokes,
+  and force versus motion. Details, proposed fixes, and validation checks:
+  [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md#method-review--2026-11-15).
+  All are proposals that need user approval.
+- Next: on the RTX/WSL machine, run `score_continuity.py` on the A0 WI fold-0
+  export as it is and keep it as the baseline ranking. Then follow the
+  review's proposed order. No tokenizer is built or trained before approval.
 
 ## 2026-11-14 — Simple dataset token-distribution comparison
 
@@ -1494,6 +1536,233 @@ comparator; that milestone is recorded immediately below.
    small manually reviewed subset from each dataset.
 4. Freeze the first connectivity definition and build matched handwriting- and
    frequency-based Bigram vocabularies before recognition training.
+
+## 2026-08-13 — Corrected provisional force-continuity ranking
+
+- Complete-region comparison found contact preservation in 28.1% of 78,953
+  reliable boundaries, versus 37.2% in the centred 100 ms view. The complete
+  interval therefore finds additional force losses, but its duration is a
+  serious confound: reliable first boundaries have a 480 ms median candidate
+  region, compared with 240 ms for middle and final boundaries.
+- Added `score_continuity.py` and `tva/continuity_scoring.py`. They create the
+  first pair ranking without rerunning the recognition model.
+- The scorer uses the established agreement/non-padding/unclipped evidence,
+  subtracts expected contact rates for matching boundary-position and broad
+  duration groups, and balances pair residuals equally across writers.
+- The explicit development score uses 75% corrected 100 ms local contact and
+  25% corrected complete-region contact. It reports raw and corrected
+  components so the effect of the correction remains visible.
+- The tentative support gate is 100 reliable occurrences and 30 writers.
+  Frequency decides whether a pair is reliable enough to rank but does not
+  increase its continuity score.
+- Output includes a JSON method report and an auditable CSV with eligibility,
+  writer variability, alignment confidence, duration, fallback use, case, and
+  word-position proportions. The score is rejected for non-training splits.
+- Four focused scorer tests cover correction/ranking, support gates, atomic
+  output writing, and training-only enforcement. All 29 repository tests pass
+  in the `tva-thesis` environment.
+
+## 2026-08-13 — A0 accepted and complete-region features implemented
+
+- Completed A0 WI/RH fold-0 training. Its best validation CER was 17.33% at
+  epoch 275 and its best WER was 32.77% at epoch 293. These are worse than B0,
+  so A0 remains alignment-only rather than replacing the recognition baseline.
+- Exported all 19,907 training samples: 88,292 boundaries across 426 pairs and
+  42 writers. The agreement/non-padding/unclipped subset retained 78,953
+  boundaries (89.4%).
+- Reliable median timing offsets changed from B0's approximately -315/-300 ms
+  for `only`/`first` boundaries to -65/-47 ms with A0. The severe word-initial
+  concentration was therefore materially reduced without losing broad data or
+  writer coverage.
+- Added sensor features over the complete CTC candidate interval while keeping
+  the existing 50/100/150 ms midpoint features. Each region stores original
+  and actual duration, force/contact measurements, AF/AR/G magnitudes, motion
+  derivative energy, edge clipping, and fallback usage.
+- Empty candidate intervals now use a clearly marked 100 ms midpoint fallback;
+  their original zero duration remains recorded.
+- Extended the exporter schema and descriptive analyzer. New compact and full
+  pair/position region tables are written separately so region measurements do
+  not get mixed with fixed-window results.
+
+## 2026-08-09 — Unidirectional recurrent alignment experiment prepared
+
+- Full WI results confirmed a strong word-initial localization bias. Reliable
+  `only` and `first` boundaries both had a median centre time of 80 ms, median
+  blank duration of zero, and median offsets of about -315 and -300 ms from the
+  rough uniform references. The unfiltered and case-crossed summaries showed
+  the same pattern, so neither the reliability filter nor uppercase letters
+  explain it.
+- Added a simple UniLSTM decoder and `unilstm_b`/`unilstm_s` factory keys. A
+  focused test verifies that changing future decoder inputs cannot change its
+  earlier outputs.
+- Added `configs/thesis/a0_char_wi_rh_unidirectional.yaml`. It keeps all B0 WI
+  settings fixed except the recurrent direction and writes to a separate
+  alignment-model directory, so the completed B0 recognition baseline remains
+  untouched.
+- A0 removes whole-recording future recurrent context, but BLConv retains
+  centred convolutions and sequence-wide instance normalization. It is not
+  fully causal, so its timestamps require the same empirical position
+  diagnostic and are not assumed to be ground truth.
+- All 23 focused tests pass. A CPU smoke step also completed a forward pass,
+  CTC loss, backward pass, and optimizer update with the new decoder.
+
+## 2026-08-09 — CTC boundary timing-bias diagnostic
+
+- The full WI position report showed very different behaviour at word-initial
+  boundaries: `only` and `first` boundaries had a median CTC blank duration of
+  zero and preserved contact in about 92% of reliable occurrences, whereas
+  `middle` and `final` boundaries had longer blank regions and lower contact
+  preservation. This suggests that temporal localization, rather than only
+  handwriting, may influence the boundary measurements.
+- Added normalized boundary-centre timing and a simple evenly spaced reference,
+  plus signed relative offset, absolute relative error, centre time, and signed
+  millisecond offset. Negative signed offsets mean the estimate occurs earlier
+  than the reference.
+- The equal-spacing reference is documented as a rough sanity check, not a true
+  physical character boundary. Existing JSONL exports contain all required
+  fields, so no model inference or boundary re-export is needed.
+- The compact pair and position overviews now include these timing diagnostics,
+  and the CLI prints them beside the 100 ms position summary.
+- All 20 focused alignment and boundary-analysis tests pass, and the analyzer
+  completed successfully on the real local smoke export.
+
+## 2026-08-09 — Boundary-position and case diagnostics
+
+- Inspection of the full WI pair overview found a possible position confound:
+  supported pairs beginning with uppercase characters preserved contact more
+  often than supported lowercase pairs. Because uppercase characters normally
+  occur at the start of words, pair identity alone cannot explain this result.
+- Extended the existing analyzer to assign every occurrence one unambiguous
+  position: `only` for the sole boundary of a two-character word, otherwise
+  `first`, `middle`, or `final`.
+- Added Unicode-aware left-character case groups and position-by-case groups.
+  These are descriptive diagnostics and do not change the quality subset or
+  create a continuity score.
+- The analyzer now writes compact and full position-statistics CSV files in
+  addition to the existing JSON and pair tables. Existing boundary exports can
+  be reused; model inference and data re-export are not required.
+- All 19 focused tests pass. The updated analyzer also completed on the real
+  local smoke export and produced all five expected output files.
+
+## 2026-08-08 — Pair-level descriptive analysis
+
+- The complete WI/RH fold-0 training export finished successfully: all 19,907
+  requested samples completed, producing 88,292 boundaries across 426 distinct
+  case-sensitive character pairs. Pair counts sum exactly to the boundary
+  total, and the implied average word length is 5.435 characters.
+- Added a streaming analysis tool that verifies provenance, window consistency,
+  boundary-ID uniqueness, and agreement with the exporter summary before
+  calculating statistics.
+- Added global and per-pair counts, sample/writer coverage, alignment-quality
+  rates, contact-preservation rates, and descriptive distributions for all
+  alignment, force, and motion measurements at 50, 100, and 150 ms.
+- Results are reported for all occurrences and for an explicitly named
+  agreement/non-padding/unclipped subset. The subset intentionally uses no
+  probability or confidence-margin threshold and is not presented as the final
+  reliability definition.
+- The analysis writes a JSON report, a compact pair overview CSV, and a full
+  statistics CSV. No continuity score, ranking, or tokenizer merge is created
+  yet.
+- All 18 focused tests pass. The tool also completed against the real local
+  smoke export, verified all 12 rows, and produced the three expected analysis
+  files.
+
+## 2026-08-08 — Training-split boundary exporter
+
+- The inspected `gerade`, `immer`, and `Ich` examples confirmed that local
+  force features distinguish obvious contact losses while long CTC blank
+  regions alone do not. Unreliable forced anchors remain explicitly visible.
+- Added `export_boundaries.py` to run the established alignment and feature
+  pipeline across a selected fold and write one JSONL row per adjacent-character
+  occurrence. It defaults to the training split so tokenizer evidence does not
+  leak from validation data.
+- Every record contains checkpoint/sample provenance, CTC measurements,
+  alignment reliability, padding status, and nested 50/100/150 ms force and
+  motion features. No continuity score or acceptance threshold is imposed.
+- Added a progress sidecar and sample-safe `--resume` behavior. Existing output
+  requires an explicit `--resume` or `--overwrite`, preventing accidental loss
+  or duplication.
+- The scientific inference default is batch size one because padding unequal
+  words can affect bidirectional LSTM predictions. Larger batches remain an
+  explicit exploratory option.
+- All 15 focused tests pass. A real three-sample CPU smoke export produced 12
+  boundary rows, and a second run resumed without duplication. A separate
+  two-sample export was also extended to three samples using `--resume`.
+
+## 2026-08-08 — Midpoint boundary feature extractor
+
+- Manual plots showed why the complete CTC blank region is too broad: long
+  regions can contain pen lifts or internal strokes unrelated to the actual
+  adjacent-character boundary.
+- Adopted the midpoint between adjacent character emission anchors as the
+  initial boundary location and implemented 50, 100, and 150 ms local windows.
+- Added unweighted raw-force, relative-force, low-force-duration, AF/AR/G
+  magnitude, and motion-derivative features for every window.
+- The provisional low-force threshold is 10% of each recording's raw-force
+  90th percentile. It is saved with the features and remains subject to
+  training-fold validation.
+- Each boundary also stores both neighbouring character probabilities,
+  confidence margins, their minima, and local greedy agreement. No final
+  acceptance filter or continuity score has been hard-coded.
+- The runner prints a compact 100 ms summary and writes all window sizes into
+  the JSON artifact. Dashed black plot lines mark boundary midpoints.
+- Eleven focused tests pass, including safe handling of an alignment window
+  that reaches model padding. The complete runner/JSON/PNG path succeeds with
+  the local smoke checkpoint.
+
+## 2026-08-08 — Alignment diagnostics and visualization
+
+- Verified real WI/RH fold-0 alignments for `gerade`, `Juni`, `immer`, and
+  `Ich`. The repeated `mm` in `immer` was correctly separated by CTC blanks.
+- The examples showed that a good whole-path score can hide an uncertain
+  forced character, so the runner now reports character-level probability,
+  preferred class, competing probability, margin, and local greedy agreement.
+- Added approximate output-frame-to-model-input mapping using BLConv's 8x
+  temporal reduction, including explicit reporting of trailing samples that
+  do not form a complete output frame.
+- Added candidate boundary regions from the CTC blank frames between adjacent
+  character emission anchors. These are search regions, not claimed physical
+  boundaries.
+- Added synchronized PNG plots of normalized AF/AR/G magnitude, raw F values,
+  and model probabilities. Green anchors agree locally, red anchors are forced,
+  and orange spans are blank-frame regions.
+- Added reusable JSON artifacts with sample metadata, paths, confidence
+  diagnostics, approximate positions, and boundary regions.
+- Eight focused tests now pass, including mapping, confidence, and PNG creation.
+  An end-to-end Mac smoke run also produced a valid JSON/PNG pair; scientific
+  inspection must use the trained RTX checkpoint.
+
+## 2026-08-08 — Single-sample alignment runner
+
+- Added `align_sample.py` to connect a character configuration, checkpoint,
+  real dataset sample, model inference, greedy decoding, and constrained
+  Viterbi alignment in one readable command.
+- The runner prints sample metadata, the known label, greedy prediction,
+  timeline sizes, alignment scores, and one model-frame interval per target
+  character. An optional flag prints the complete frame-level token path.
+- Completed an end-to-end CPU check using the Mac WD smoke checkpoint and a
+  real processed validation sample. The run produced all six intervals for
+  `gerade`; its positions are only a software check because the smoke model was
+  trained for one epoch on 16 examples.
+- The next meaningful check uses the trained WI/RH fold-0 `best_cer.pth` on the
+  RTX machine.
+
+## 2026-08-08 — Core CTC Viterbi alignment
+
+- Created the `forced-alignment` development branch from the documented
+  baseline state.
+- Added a standalone target-constrained CTC Viterbi implementation in
+  `tva/ctc_alignment.py`.
+- The implementation returns the expanded CTC target, best state/token path,
+  total log score, and a half-open model-frame interval for each known target
+  token.
+- Added five focused unit tests covering an ordinary two-character alignment,
+  repeated characters, target-constrained advancement, insufficient frames,
+  and an invalid blank inside the target.
+- All five tests pass on the Mac `tva-thesis` environment.
+- The implementation currently stops at model-output frames. Loading real
+  checkpoints, mapping frames to raw IMU positions, visualization, and an
+  alignment-confidence definition are intentionally left for the next stage.
 
 ## 2026-08-02 — WI/RH fold-0 character baseline
 

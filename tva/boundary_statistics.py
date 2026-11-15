@@ -1,0 +1,877 @@
+'''Threshold-free summaries of exported handwriting boundary measurements.'''
+
+import csv
+import json
+import os
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from tqdm import tqdm
+
+__all__ = [
+    'SUBSET_AGREEMENT_FILTERED',
+    'analyze_boundary_jsonl',
+    'write_boundary_statistics',
+]
+
+
+RAW_ALIGNMENT_METRICS = (
+    'minimum_aligned_probability',
+    'minimum_confidence_margin',
+    'alignment_mean_log_score',
+    'blank_duration_ms',
+)
+
+DERIVED_TIMING_METRICS = (
+    'boundary_center_relative',
+    'uniform_reference_relative',
+    'boundary_relative_offset',
+    'boundary_absolute_relative_error',
+    'boundary_center_time_ms',
+    'boundary_time_offset_ms',
+)
+
+ALIGNMENT_METRICS = RAW_ALIGNMENT_METRICS + DERIVED_TIMING_METRICS
+
+WINDOW_METRICS = (
+    'force_min_relative',
+    'force_at_center_relative',
+    'force_drop_ratio',
+    'low_force_fraction',
+    'longest_low_force_ms',
+    'af_mean_magnitude',
+    'ar_mean_magnitude',
+    'gyro_mean_magnitude',
+    'motion_derivative_energy',
+)
+
+CANDIDATE_REGION_METRICS = (
+    'candidate_num_samples',
+    'candidate_duration_ms',
+    'actual_num_samples',
+    'actual_duration_ms',
+) + WINDOW_METRICS
+
+SUBSET_ALL = 'all'
+SUBSET_AGREEMENT_FILTERED = 'agreement_nonpadding_unclipped'
+SUBSETS = (SUBSET_ALL, SUBSET_AGREEMENT_FILTERED)
+
+POSITION_VALUES = ('only', 'first', 'middle', 'final')
+CASE_VALUES = ('uppercase', 'lowercase', 'other')
+POSITION_GROUPS = {
+    'boundary_position': POSITION_VALUES,
+    'left_character_case': CASE_VALUES,
+    'boundary_position_x_left_case': tuple(
+        f'{position}|{case}'
+        for position in POSITION_VALUES
+        for case in CASE_VALUES
+    ),
+}
+
+PROVENANCE_FIELDS = (
+    'schema_version',
+    'config',
+    'checkpoint',
+    'checkpoint_epoch',
+    'split',
+    'fold',
+    'downsampling_ratio',
+    'sample_rate_hz',
+    'low_force_threshold_fraction',
+    'empty_region_fallback_ms',
+)
+
+
+def _safe_rate(numerator: int, denominator: int) -> float | None:
+    return numerator / denominator if denominator else None
+
+
+def _distribution(values: list[float]) -> dict[str, float | int | None]:
+    '''Return exact descriptive statistics without selecting a threshold.'''
+    if not values:
+        return {
+            'count': 0,
+            'mean': None,
+            'std': None,
+            'min': None,
+            'p10': None,
+            'p25': None,
+            'median': None,
+            'p75': None,
+            'p90': None,
+            'max': None,
+        }
+
+    array = np.asarray(values, dtype=np.float64)
+    quantiles = np.quantile(array, [0.10, 0.25, 0.50, 0.75, 0.90])
+    return {
+        'count': len(array),
+        'mean': float(array.mean()),
+        'std': float(array.std()),
+        'min': float(array.min()),
+        'p10': float(quantiles[0]),
+        'p25': float(quantiles[1]),
+        'median': float(quantiles[2]),
+        'p75': float(quantiles[3]),
+        'p90': float(quantiles[4]),
+        'max': float(array.max()),
+    }
+
+
+def _boundary_timing_metrics(row: dict[str, Any]) -> dict[str, float]:
+    '''Compare an estimated boundary with a rough uniform word reference.'''
+    boundary_index = int(row['boundary_index'])
+    num_boundaries = int(row['num_boundaries_in_sample'])
+    raw_num_samples = int(row['raw_num_samples'])
+    sample_rate_hz = float(row['sample_rate_hz'])
+    center_input_sample = float(row['center_input_sample'])
+
+    if num_boundaries <= 0 or not 0 <= boundary_index < num_boundaries:
+        raise ValueError(
+            'Invalid boundary_index or num_boundaries_in_sample.'
+        )
+    if raw_num_samples <= 0:
+        raise ValueError('raw_num_samples must be positive.')
+    if sample_rate_hz <= 0:
+        raise ValueError('sample_rate_hz must be positive.')
+
+    # A word with B boundaries has B + 1 characters. This evenly spaced
+    # location is only a diagnostic reference; it is not a stroke annotation.
+    uniform_reference_relative = (
+        (boundary_index + 1) / (num_boundaries + 1)
+    )
+    boundary_center_relative = center_input_sample / raw_num_samples
+    boundary_relative_offset = (
+        boundary_center_relative - uniform_reference_relative
+    )
+    recording_duration_ms = raw_num_samples / sample_rate_hz * 1000
+
+    return {
+        'boundary_center_relative': boundary_center_relative,
+        'uniform_reference_relative': uniform_reference_relative,
+        'boundary_relative_offset': boundary_relative_offset,
+        'boundary_absolute_relative_error': abs(boundary_relative_offset),
+        'boundary_center_time_ms': center_input_sample / sample_rate_hz * 1000,
+        'boundary_time_offset_ms': (
+            boundary_relative_offset * recording_duration_ms
+        ),
+    }
+
+
+@dataclass
+class GroupAccumulator:
+    '''Measurements for one pair, window size, and transparent subset.'''
+
+    occurrence_count: int = 0
+    sample_indices: set[int] = field(default_factory=set)
+    writer_ids: set[str] = field(default_factory=set)
+    anchor_agreement_count: int = 0
+    padding_overlap_count: int = 0
+    window_clipped_count: int = 0
+    fallback_window_count: int = 0
+    no_low_force_count: int = 0
+    metrics: dict[str, list[float]] = field(
+        default_factory=lambda: defaultdict(list)
+    )
+
+    def add(
+        self,
+        row: dict[str, Any],
+        measurement: dict[str, Any],
+        feature_metrics: tuple[str, ...] = WINDOW_METRICS,
+    ) -> None:
+        self.occurrence_count += 1
+        self.sample_indices.add(int(row['sample_index']))
+        self.writer_ids.add(str(row['writer_id']))
+        self.anchor_agreement_count += int(
+            row['both_anchors_agree_with_greedy']
+        )
+        self.padding_overlap_count += int(row['overlaps_padding'])
+        self.window_clipped_count += int(
+            measurement['clipped_at_recording_edge']
+        )
+        self.fallback_window_count += int(
+            measurement.get('used_fallback_window', False)
+        )
+        self.no_low_force_count += int(
+            measurement['low_force_fraction'] == 0
+        )
+
+        for name in ALIGNMENT_METRICS:
+            self.metrics[name].append(float(row[name]))
+        for name in feature_metrics:
+            self.metrics[name].append(float(measurement[name]))
+
+    def nested_summary(
+        self,
+        total_writers: int,
+        feature_metrics: tuple[str, ...] = WINDOW_METRICS,
+    ) -> dict[str, Any]:
+        return {
+            'occurrence_count': self.occurrence_count,
+            'sample_count': len(self.sample_indices),
+            'writer_count': len(self.writer_ids),
+            'writer_coverage_fraction': _safe_rate(
+                len(self.writer_ids), total_writers
+            ),
+            'anchor_agreement_rate': _safe_rate(
+                self.anchor_agreement_count, self.occurrence_count
+            ),
+            'padding_overlap_rate': _safe_rate(
+                self.padding_overlap_count, self.occurrence_count
+            ),
+            'window_clipped_rate': _safe_rate(
+                self.window_clipped_count, self.occurrence_count
+            ),
+            'fallback_window_rate': _safe_rate(
+                self.fallback_window_count, self.occurrence_count
+            ),
+            'no_low_force_rate': _safe_rate(
+                self.no_low_force_count, self.occurrence_count
+            ),
+            'metrics': {
+                name: _distribution(self.metrics[name])
+                for name in ALIGNMENT_METRICS + feature_metrics
+            },
+        }
+
+    def flat_summary(
+        self,
+        identity: dict[str, str],
+        window_ms: int,
+        subset: str,
+        total_writers: int,
+        feature_metrics: tuple[str, ...] = WINDOW_METRICS,
+    ) -> dict[str, Any]:
+        nested = self.nested_summary(total_writers, feature_metrics)
+        row = {
+            **identity,
+            'window_ms': window_ms,
+            'subset': subset,
+            **{key: value for key, value in nested.items() if key != 'metrics'},
+        }
+        for metric_name, statistics in nested['metrics'].items():
+            for statistic_name, value in statistics.items():
+                if statistic_name == 'count':
+                    continue
+                row[f'{metric_name}_{statistic_name}'] = value
+        return row
+
+    def flat_region_summary(
+        self,
+        identity: dict[str, str],
+        subset: str,
+        total_writers: int,
+    ) -> dict[str, Any]:
+        '''Flatten one whole-region summary without a window-size column.'''
+        nested = self.nested_region_summary(total_writers)
+        row = {
+            **identity,
+            'subset': subset,
+            **{key: value for key, value in nested.items() if key != 'metrics'},
+        }
+        for metric_name, statistics in nested['metrics'].items():
+            for statistic_name, value in statistics.items():
+                if statistic_name == 'count':
+                    continue
+                row[f'{metric_name}_{statistic_name}'] = value
+        return row
+
+    def nested_region_summary(self, total_writers: int) -> dict[str, Any]:
+        '''Return a whole-region summary with region-specific field names.'''
+        nested = self.nested_summary(
+            total_writers,
+            CANDIDATE_REGION_METRICS,
+        )
+        nested['region_clipped_rate'] = nested.pop('window_clipped_rate')
+        return nested
+
+
+def _boundary_position(row: dict[str, Any]) -> str:
+    '''Give every boundary one mutually exclusive position within its word.'''
+    boundary_index = int(row['boundary_index'])
+    num_boundaries = int(row['num_boundaries_in_sample'])
+    if num_boundaries <= 0 or not 0 <= boundary_index < num_boundaries:
+        raise ValueError(
+            'Invalid boundary_index or num_boundaries_in_sample.'
+        )
+    if num_boundaries == 1:
+        return 'only'
+    if boundary_index == 0:
+        return 'first'
+    if boundary_index == num_boundaries - 1:
+        return 'final'
+    return 'middle'
+
+
+def _character_case(text: str) -> str:
+    '''Classify Unicode letters without assuming an English-only alphabet.'''
+    if text.isupper():
+        return 'uppercase'
+    if text.islower():
+        return 'lowercase'
+    return 'other'
+
+
+def _load_export_summary(input_path: Path) -> dict[str, Any] | None:
+    summary_path = input_path.with_name('summary.json')
+    if not summary_path.exists():
+        return None
+    with open(summary_path, 'r', encoding='utf-8') as file:
+        return json.load(file)
+
+
+def _validate_provenance(
+    expected: dict[str, Any],
+    row: dict[str, Any],
+    line_number: int,
+) -> None:
+    for field_name, expected_value in expected.items():
+        if row.get(field_name) != expected_value:
+            raise ValueError(
+                f'Inconsistent {field_name!r} at JSONL line {line_number}.'
+            )
+
+
+def analyze_boundary_jsonl(
+    input_path: str | Path,
+) -> tuple[
+    dict[str, Any],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    '''Return midpoint-window and whole-region descriptive summaries.'''
+    input_path = Path(input_path)
+    source_summary = _load_export_summary(input_path)
+    expected_rows = (
+        int(source_summary['exported_boundaries'])
+        if source_summary is not None
+        else None
+    )
+
+    groups: dict[tuple[str, int, str], GroupAccumulator] = defaultdict(
+        GroupAccumulator
+    )
+    global_groups: dict[tuple[int, str], GroupAccumulator] = defaultdict(
+        GroupAccumulator
+    )
+    position_groups: dict[
+        tuple[str, str, int, str], GroupAccumulator
+    ] = defaultdict(GroupAccumulator)
+    region_groups: dict[tuple[str, str], GroupAccumulator] = defaultdict(
+        GroupAccumulator
+    )
+    global_region_groups: dict[str, GroupAccumulator] = defaultdict(
+        GroupAccumulator
+    )
+    position_region_groups: dict[
+        tuple[str, str, str], GroupAccumulator
+    ] = defaultdict(GroupAccumulator)
+    pair_counts: Counter[str] = Counter()
+    sample_indices: set[int] = set()
+    writer_ids: set[str] = set()
+    boundary_ids: set[str] = set()
+    provenance: dict[str, Any] | None = None
+    window_sizes: tuple[int, ...] | None = None
+    has_candidate_regions: bool | None = None
+    row_count = 0
+
+    with open(input_path, 'r', encoding='utf-8') as file:
+        progress = tqdm(
+            file,
+            total=expected_rows,
+            desc='Analyzing boundaries',
+            unit='boundary',
+        )
+        for line_number, line in enumerate(progress, start=1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as error:
+                raise ValueError(
+                    f'Malformed JSON at line {line_number}.'
+                ) from error
+
+            if provenance is None:
+                provenance = {
+                    name: row.get(name) for name in PROVENANCE_FIELDS
+                }
+            else:
+                _validate_provenance(provenance, row, line_number)
+
+            row_windows = tuple(sorted(int(size) for size in row['windows_ms']))
+            if window_sizes is None:
+                window_sizes = row_windows
+            elif row_windows != window_sizes:
+                raise ValueError(
+                    f'Inconsistent window sizes at JSONL line {line_number}.'
+                )
+
+            row_has_candidate_region = 'candidate_region' in row
+            if has_candidate_regions is None:
+                has_candidate_regions = row_has_candidate_region
+            elif row_has_candidate_region != has_candidate_regions:
+                raise ValueError(
+                    'Inconsistent candidate-region features at JSONL line '
+                    f'{line_number}.'
+                )
+
+            boundary_id = str(row['boundary_id'])
+            if boundary_id in boundary_ids:
+                raise ValueError(f'Duplicate boundary ID {boundary_id!r}.')
+            boundary_ids.add(boundary_id)
+
+            pair = str(row['pair'])
+            position = _boundary_position(row)
+            row.update(_boundary_timing_metrics(row))
+            left_case = _character_case(str(row['left_character']))
+            position_descriptors = {
+                'boundary_position': position,
+                'left_character_case': left_case,
+                'boundary_position_x_left_case': (
+                    f'{position}|{left_case}'
+                ),
+            }
+            pair_counts[pair] += 1
+            sample_indices.add(int(row['sample_index']))
+            writer_ids.add(str(row['writer_id']))
+            row_count += 1
+
+            for window_ms in window_sizes:
+                window = row['windows_ms'][str(window_ms)]
+                groups[(pair, window_ms, SUBSET_ALL)].add(row, window)
+                global_groups[(window_ms, SUBSET_ALL)].add(row, window)
+                for group_type, group_value in position_descriptors.items():
+                    position_groups[
+                        (group_type, group_value, window_ms, SUBSET_ALL)
+                    ].add(row, window)
+
+                include_in_agreement_subset = (
+                    row['both_anchors_agree_with_greedy']
+                    and not row['overlaps_padding']
+                    and not window['clipped_at_recording_edge']
+                )
+                if include_in_agreement_subset:
+                    groups[
+                        (pair, window_ms, SUBSET_AGREEMENT_FILTERED)
+                    ].add(row, window)
+                    global_groups[
+                        (window_ms, SUBSET_AGREEMENT_FILTERED)
+                    ].add(row, window)
+                    for (
+                        group_type,
+                        group_value,
+                    ) in position_descriptors.items():
+                        position_groups[
+                            (
+                                group_type,
+                                group_value,
+                                window_ms,
+                                SUBSET_AGREEMENT_FILTERED,
+                            )
+                        ].add(row, window)
+
+            if row_has_candidate_region:
+                region = row['candidate_region']
+                region_groups[(pair, SUBSET_ALL)].add(
+                    row,
+                    region,
+                    CANDIDATE_REGION_METRICS,
+                )
+                global_region_groups[SUBSET_ALL].add(
+                    row,
+                    region,
+                    CANDIDATE_REGION_METRICS,
+                )
+                for group_type, group_value in position_descriptors.items():
+                    position_region_groups[
+                        (group_type, group_value, SUBSET_ALL)
+                    ].add(row, region, CANDIDATE_REGION_METRICS)
+
+                include_region_in_agreement_subset = (
+                    row['both_anchors_agree_with_greedy']
+                    and not row['overlaps_padding']
+                    and not region['clipped_at_recording_edge']
+                )
+                if include_region_in_agreement_subset:
+                    region_groups[
+                        (pair, SUBSET_AGREEMENT_FILTERED)
+                    ].add(row, region, CANDIDATE_REGION_METRICS)
+                    global_region_groups[
+                        SUBSET_AGREEMENT_FILTERED
+                    ].add(row, region, CANDIDATE_REGION_METRICS)
+                    for (
+                        group_type,
+                        group_value,
+                    ) in position_descriptors.items():
+                        position_region_groups[
+                            (
+                                group_type,
+                                group_value,
+                                SUBSET_AGREEMENT_FILTERED,
+                            )
+                        ].add(row, region, CANDIDATE_REGION_METRICS)
+
+    if row_count == 0 or provenance is None or window_sizes is None:
+        raise ValueError('Boundary JSONL contains no records.')
+    if expected_rows is not None and row_count != expected_rows:
+        raise ValueError(
+            f'Export summary expects {expected_rows} boundaries, but the '
+            f'JSONL contains {row_count}.'
+        )
+    if source_summary is not None:
+        for field_name in (
+            'config',
+            'checkpoint',
+            'checkpoint_epoch',
+            'split',
+            'fold',
+        ):
+            if (
+                field_name in source_summary
+                and source_summary[field_name] != provenance[field_name]
+            ):
+                raise ValueError(
+                    f'Export summary and JSONL disagree on {field_name!r}.'
+                )
+        if 'pair_counts' in source_summary:
+            expected_pair_counts = {
+                str(pair): int(count)
+                for pair, count in source_summary['pair_counts'].items()
+            }
+            if dict(pair_counts) != expected_pair_counts:
+                raise ValueError(
+                    'Export summary pair counts do not match the JSONL.'
+                )
+
+    total_writers = len(writer_ids)
+    pair_rows = []
+    for pair in sorted(pair_counts):
+        for window_ms in window_sizes:
+            for subset in SUBSETS:
+                group = groups[(pair, window_ms, subset)]
+                pair_rows.append(
+                    group.flat_summary(
+                        {'pair': pair}, window_ms, subset, total_writers
+                    )
+                )
+
+    position_rows = []
+    for group_type, group_values in POSITION_GROUPS.items():
+        for group_value in group_values:
+            for window_ms in window_sizes:
+                for subset in SUBSETS:
+                    group = position_groups[
+                        (group_type, group_value, window_ms, subset)
+                    ]
+                    position_rows.append(
+                        group.flat_summary(
+                            {
+                                'group_type': group_type,
+                                'group_value': group_value,
+                            },
+                            window_ms,
+                            subset,
+                            total_writers,
+                        )
+                    )
+
+    region_pair_rows = []
+    region_position_rows = []
+    if has_candidate_regions:
+        for pair in sorted(pair_counts):
+            for subset in SUBSETS:
+                region_pair_rows.append(
+                    region_groups[(pair, subset)].flat_region_summary(
+                        {'pair': pair}, subset, total_writers
+                    )
+                )
+
+        for group_type, group_values in POSITION_GROUPS.items():
+            for group_value in group_values:
+                for subset in SUBSETS:
+                    region_position_rows.append(
+                        position_region_groups[
+                            (group_type, group_value, subset)
+                        ].flat_region_summary(
+                            {
+                                'group_type': group_type,
+                                'group_value': group_value,
+                            },
+                            subset,
+                            total_writers,
+                        )
+                    )
+
+    pair_support = list(pair_counts.values())
+    summary = {
+        'schema_version': 3,
+        'input_jsonl': str(input_path),
+        'provenance': provenance,
+        'source_export_summary': source_summary,
+        'total_boundaries': row_count,
+        'samples_with_boundaries': len(sample_indices),
+        'total_writers': total_writers,
+        'unique_pairs': len(pair_counts),
+        'window_sizes_ms': list(window_sizes),
+        'has_candidate_region_features': bool(has_candidate_regions),
+        'subsets': {
+            SUBSET_ALL: 'Every exported boundary occurrence.',
+            SUBSET_AGREEMENT_FILTERED: (
+                'Both target-character anchors agree with the local model '
+                'choice, neither overlaps padding, and this window is not '
+                'clipped. No probability or margin threshold is applied.'
+            ),
+        },
+        'position_diagnostics': {
+            'boundary_position': {
+                'only': (
+                    'The word has exactly one boundary, so it is both first '
+                    'and final.'
+                ),
+                'first': 'First boundary in a word with multiple boundaries.',
+                'middle': 'Neither the first nor final boundary in the word.',
+                'final': 'Final boundary in a word with multiple boundaries.',
+            },
+            'left_character_case': list(CASE_VALUES),
+            'cross_group_separator': '|',
+            'uniform_boundary_reference': (
+                'For boundary index k in a word with B boundaries, the rough '
+                'reference is (k + 1) / (B + 1) of the recording. It assumes '
+                'equal character spacing and is a diagnostic, not ground '
+                'truth. Negative offsets mean the estimated boundary occurs '
+                'earlier than this reference.'
+            ),
+        },
+        'pair_occurrence_distribution': _distribution(pair_support),
+        'pairs_with_at_least': {
+            '40_occurrences': sum(count >= 40 for count in pair_support),
+            '100_occurrences': sum(count >= 100 for count in pair_support),
+            '500_occurrences': sum(count >= 500 for count in pair_support),
+        },
+        'global_statistics': {
+            str(window_ms): {
+                subset: global_groups[(window_ms, subset)].nested_summary(
+                    total_writers
+                )
+                for subset in SUBSETS
+            }
+            for window_ms in window_sizes
+        },
+        'candidate_region_statistics': (
+            {
+                subset: global_region_groups[subset].nested_region_summary(
+                    total_writers
+                )
+                for subset in SUBSETS
+            }
+            if has_candidate_regions
+            else None
+        ),
+    }
+    return (
+        summary,
+        pair_rows,
+        position_rows,
+        region_pair_rows,
+        region_position_rows,
+    )
+
+
+def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
+    temporary = path.with_name(path.name + '.tmp')
+    with open(temporary, 'w', encoding='utf-8') as file:
+        json.dump(payload, file, ensure_ascii=False, indent=2)
+    os.replace(temporary, path)
+
+
+def _atomic_write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    temporary = path.with_name(path.name + '.tmp')
+    with open(temporary, 'w', encoding='utf-8', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    os.replace(temporary, path)
+
+
+def _make_overview_rows(
+    rows: list[dict[str, Any]],
+    identity_columns: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    '''Keep identity plus the most interpretable descriptive columns.'''
+    columns = identity_columns + (
+        'window_ms',
+        'subset',
+        'occurrence_count',
+        'sample_count',
+        'writer_count',
+        'writer_coverage_fraction',
+        'anchor_agreement_rate',
+        'padding_overlap_rate',
+        'window_clipped_rate',
+        'no_low_force_rate',
+        'minimum_aligned_probability_median',
+        'minimum_confidence_margin_median',
+        'blank_duration_ms_median',
+        'boundary_center_relative_median',
+        'uniform_reference_relative_median',
+        'boundary_relative_offset_median',
+        'boundary_absolute_relative_error_median',
+        'boundary_center_time_ms_median',
+        'boundary_time_offset_ms_median',
+        'force_min_relative_p25',
+        'force_min_relative_median',
+        'force_min_relative_p75',
+        'low_force_fraction_median',
+        'longest_low_force_ms_median',
+        'motion_derivative_energy_p25',
+        'motion_derivative_energy_median',
+        'motion_derivative_energy_p75',
+    )
+    return [
+        {column: row[column] for column in columns}
+        for row in rows
+    ]
+
+
+def _make_region_overview_rows(
+    rows: list[dict[str, Any]],
+    identity_columns: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    '''Keep the most useful complete-region measurements.'''
+    columns = identity_columns + (
+        'subset',
+        'occurrence_count',
+        'sample_count',
+        'writer_count',
+        'writer_coverage_fraction',
+        'anchor_agreement_rate',
+        'padding_overlap_rate',
+        'region_clipped_rate',
+        'fallback_window_rate',
+        'no_low_force_rate',
+        'minimum_aligned_probability_median',
+        'minimum_confidence_margin_median',
+        'candidate_duration_ms_median',
+        'actual_duration_ms_median',
+        'force_min_relative_p25',
+        'force_min_relative_median',
+        'force_min_relative_p75',
+        'low_force_fraction_median',
+        'longest_low_force_ms_median',
+        'motion_derivative_energy_p25',
+        'motion_derivative_energy_median',
+        'motion_derivative_energy_p75',
+    )
+    return [
+        {column: row[column] for column in columns}
+        for row in rows
+    ]
+
+
+def write_boundary_statistics(
+    output_dir: str | Path,
+    summary: dict[str, Any],
+    pair_rows: list[dict[str, Any]],
+    position_rows: list[dict[str, Any]],
+    region_pair_rows: list[dict[str, Any]],
+    region_position_rows: list[dict[str, Any]],
+    *,
+    overwrite: bool = False,
+) -> tuple[
+    Path,
+    Path,
+    Path,
+    Path,
+    Path,
+    Path | None,
+    Path | None,
+    Path | None,
+    Path | None,
+]:
+    '''Write global, pair, and position/case analysis files.'''
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    summary_path = output_dir / 'analysis_summary.json'
+    pair_path = output_dir / 'pair_statistics.csv'
+    overview_path = output_dir / 'pair_overview.csv'
+    position_path = output_dir / 'position_statistics.csv'
+    position_overview_path = output_dir / 'position_overview.csv'
+    region_pair_path = output_dir / 'pair_region_statistics.csv'
+    region_pair_overview_path = output_dir / 'pair_region_overview.csv'
+    region_position_path = output_dir / 'position_region_statistics.csv'
+    region_position_overview_path = (
+        output_dir / 'position_region_overview.csv'
+    )
+
+    existing = [
+        path
+        for path in (
+            summary_path,
+            pair_path,
+            overview_path,
+            position_path,
+            position_overview_path,
+            region_pair_path,
+            region_pair_overview_path,
+            region_position_path,
+            region_position_overview_path,
+        )
+        if path.exists()
+    ]
+    if existing and not overwrite:
+        raise FileExistsError(
+            f'{existing[0]} already exists. Use --overwrite to replace the '
+            'previous analysis.'
+        )
+
+    _atomic_write_json(summary_path, summary)
+    _atomic_write_csv(pair_path, pair_rows)
+    _atomic_write_csv(
+        overview_path,
+        _make_overview_rows(pair_rows, ('pair',)),
+    )
+    _atomic_write_csv(position_path, position_rows)
+    _atomic_write_csv(
+        position_overview_path,
+        _make_overview_rows(
+            position_rows,
+            ('group_type', 'group_value'),
+        ),
+    )
+    if region_pair_rows and region_position_rows:
+        _atomic_write_csv(region_pair_path, region_pair_rows)
+        _atomic_write_csv(
+            region_pair_overview_path,
+            _make_region_overview_rows(region_pair_rows, ('pair',)),
+        )
+        _atomic_write_csv(region_position_path, region_position_rows)
+        _atomic_write_csv(
+            region_position_overview_path,
+            _make_region_overview_rows(
+                region_position_rows,
+                ('group_type', 'group_value'),
+            ),
+        )
+    else:
+        region_pair_path = None
+        region_pair_overview_path = None
+        region_position_path = None
+        region_position_overview_path = None
+    return (
+        summary_path,
+        pair_path,
+        overview_path,
+        position_path,
+        position_overview_path,
+        region_pair_path,
+        region_pair_overview_path,
+        region_position_path,
+        region_position_overview_path,
+    )
