@@ -139,6 +139,10 @@ def main(cfgs: argparse.Namespace) -> None:
     Args:
         cfgs: Configurations.
     '''
+    train_only = getattr(cfgs, 'train_only', False)
+    if train_only and cfgs.test:
+        raise ValueError('train_only cannot be combined with test mode.')
+
     # initialize the environment
     manager = RunManager(cfgs)
     seed_everything(cfgs.seed)
@@ -158,21 +162,23 @@ def main(cfgs: argparse.Namespace) -> None:
         tokenizer.size,
         cfgs.len_seq,
     ).to(cfgs.device)
-    dataset_test = HRDataset(
-        os.path.join(cfgs.dir_dataset, 'val.json'),
-        tokenizer,
-        model.ratio_ds,
-        cfgs.idx_fold,
-        cfgs.len_seq,
-        cache=cfgs.cache,
-        max_samples=getattr(cfgs, 'max_val_samples', 0),
-    )
-    dataloader_test = DataLoader(
-        dataset_test,
-        cfgs.size_batch,
-        num_workers=cfgs.num_worker,
-        collate_fn=fn_collate,
-    )
+    dataloader_test = None
+    if not train_only:
+        dataset_test = HRDataset(
+            os.path.join(cfgs.dir_dataset, 'val.json'),
+            tokenizer,
+            model.ratio_ds,
+            cfgs.idx_fold,
+            cfgs.len_seq,
+            cache=cfgs.cache,
+            max_samples=getattr(cfgs, 'max_val_samples', 0),
+        )
+        dataloader_test = DataLoader(
+            dataset_test,
+            cfgs.size_batch,
+            num_workers=cfgs.num_worker,
+            collate_fn=fn_collate,
+        )
     fn_loss = CTCLoss()
     epoch_start = 0
 
@@ -285,14 +291,15 @@ def main(cfgs: argparse.Namespace) -> None:
                 e,
                 amp_enabled,
             )
-            test(
-                dataloader_test,
-                model,
-                fn_loss,
-                manager,
-                ctc_decoder,
-                e,
-            )
+            if dataloader_test is not None:
+                test(
+                    dataloader_test,
+                    model,
+                    fn_loss,
+                    manager,
+                    ctc_decoder,
+                    e,
+                )
             manager.save_checkpoint(
                 model.state_dict(),
                 optimizer.state_dict(),
@@ -303,7 +310,7 @@ def main(cfgs: argparse.Namespace) -> None:
                 manager.check_step(e + 1, 'save'),
             )
 
-    if not cfgs.test:
+    if not cfgs.test and not train_only:
         manager.summarize_evaluation()
 
 

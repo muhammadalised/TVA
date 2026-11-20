@@ -1,8 +1,153 @@
 # Thesis Progress Log
 
 This file records completed work, important observations, and immediate next
-steps. Add new entries chronologically. Do not remove failed attempts; they are
-part of the research record.
+steps. Add new dated entries below the current snapshot, newest first.
+Preserve the older entries, including failed attempts.
+
+## Current status - updated 2026-11-19
+
+- OnHW WI/RH fold-0 Bigram v0 was evaluated at fixed epoch 299, seed 42.
+  The completed bigram trainings were compared with the existing B0 character
+  checkpoint on the same 5,292 recordings from 11 writers.
+- CER/WER were 15.80%/28.10% for characters, 16.74%/25.42% for frequency
+  ranking and 16.28%/25.53% for force ranking. Force reduced CER by 0.46
+  points relative to frequency. The paired writer interval includes zero.
+  [Evaluation record](FORCED_ALIGNMENT.md#2026-11-19--onhw-bigram-v0-recognition-pilot-completed)
+- Both 100-pair bigram vocabularies keep the character fallbacks and use the
+  Step 1 ranking evidence. The Step 4 assignments remain sensitive to gap
+  timing. Step 5 broader consistency work remains open.
+
+## 2026-11-19 — Bigram v0 recognition pilot completed
+
+- Checked all three checkpoints and reconciled per-recording errors against
+  original references. The existing B0 predictions reproduced exactly.
+- Saved configs, checkpoint and vocabulary hashes, paired predictions and
+  writer-bootstrap summaries to the local results directory.
+  [Evaluation artifacts](../results/thesis/bigram/wi_rh_fold0_bigram_v0_pilot/seed_42/evaluation_20261119/)
+
+## 2026-11-17 — Bigram v0 vocabularies built
+
+- Built and reloaded force-ranked and frequency-ranked vocabularies with the
+  existing greedy tokenizer. Independently checked selection and token counts
+  and reproduced the data files byte for byte with a second hash seed.
+- Both vocabularies and the provenance manifest are in the local results
+  directory. No held-out labels, inference or training were used.
+  [Run artifacts](../results/thesis/forced_alignment_review/wi_rh_fold0_20261117_bigram_v0/)
+
+## 2026-11-16 — Whole-force-event assignment pilot completed
+
+- The user approved Step 4. Added the standalone detector/matcher, fixed-case
+  runner and 18 focused tests. No dependency or production score changed.
+- Ran the 100 frozen recordings and all 547 word gaps, keeping 556 complete
+  recorded events. The 100 audited gaps give 45 candidates, 19 no-drop,
+  33 ambiguous and three unavailable cases.
+- The [alignment execution record](FORCED_ALIGNMENT.md#2026-11-16--step-4-pilot-completed-explicit-uncertainty-and-timing-sensitivity)
+  reports group counts and examples. Timing shifts change 50 associations
+  and 36 categories. Only 21/45 candidates versus 18/19 no-drop observations
+  retain their association in both shifts. No uncertainty-based exclusion
+  or new connectivity percentage was adopted.
+- Verification: 22 focused tests pass. Independent raw scans/sample-set
+  intersections reconcile 1,668 event, 1,641 gap and 1,534 overlap rows.
+  CSV fields, category accounting and input hashes match. Overwrite guard
+  passes. Plot-only clipping corrected additively; original exports remain.
+- [The experiment record](EXPERIMENTS.md#2026-11-16--whole-force-event-assignment-pilot)
+  links source snapshots, command, manifests and findings. No inference,
+  training, pair-score fitting or tokenizer construction ran.
+- Next: independent timing reference or an alignment-improvement proposal
+  before aggregation. Keep the old ranking. Steps 5-6 remain pending.
+
+## 2026-11-16 — Whole-event assignment proposal documented
+
+- At the user's request, added the simple rule and a concrete Step 4 pilot
+  design to [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md#proposed-rule-whole-drops-conservative-links).
+  This is a proposal; no implementation or new experiment was run.
+- Detect complete low-force runs using the existing threshold. Compare each
+  event against every gap in its recording. Keep edge crossings, competing
+  gaps, multiple drops, empty gaps and recording-edge events uncertain.
+- Preserve full event durations and IDs. Do not snap events to midpoints,
+  double-count them, or treat an uncertain gap as a connected join.
+- The proposed 100-recording pilot reports assignment coverage and changes
+  under declared -80/+80 ms gap shifts. It preserves the old score and sample.
+- No new pair-contact percentage is specified. Excluding ambiguous cases
+  could bias pair comparisons; coverage and missingness must be checked first.
+- Next: review the proposal. Independent physical timing/contact validation
+  remains open. Existing code, raw data, audit ledger and results are preserved.
+
+## 2026-11-16 — Fixed force-trace audit inspected and recorded
+
+- The user approved Step 3. Froze 100 cases before raw trace loading:
+  30 pair-balanced cases per rank band and 10 targeted cases, seeds 42/4201.
+  Sample coverage: 100 recordings, 96 pairs, 38 writers and all position groups.
+- Codex AI inspected all 25 four-case sheets with scores/groups hidden.
+  Earlier aggregate findings were known; the review is partially masked,
+  provisional and not independently human-verified.
+- [The 100-case ledger](FORCED_ALIGNMENT_TRACE_AUDIT_20261116.csv) preserves
+  individual visual notes, raw hashes, exact force counts and unresolved
+  physical assignments. The [alignment execution record](FORCED_ALIGNMENT.md#2026-11-16--step-3-fixed-trace-audit-completed-as-provisional-ai-review)
+  gives group-specific counts, failure examples and the frozen sample hash.
+- Among the 90 main cases, 16 local windows stay above threshold while the
+  wider region has sustained low force; 20 regions have multiple low runs.
+  Eight brief local runs across all 100 are fragments of 60-150 ms full-trace
+  events. A047's short region cuts two 80 ms events. A simple 30 ms local
+  rule would therefore conflate interval clipping with short sensor dips.
+- All 100 raw recordings reproduce saved force summaries. Frozen sample,
+  raw sources, old results and code hashes are preserved. No score change,
+  model inference or training occurred.
+- [The experiment record](EXPERIMENTS.md#2026-11-16--fixed-a0-force-trace-audit-provisional-ai-review)
+  links local plots, manifests and reproducible source. This audit does not
+  establish physical contact accuracy. Next: a concrete Step 4 proposal.
+
+## 2026-11-15 — Ranking stability checked across every word and writer
+
+- The user explicitly authorized Step 2. Recorded its exact population,
+  omission procedure, rank metrics and numerical checks before execution in
+  [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md#step-2-procedure-fixed-before-execution).
+- Completed 501 word-type and 42 writer omissions. Recomputed all correction
+  baselines and pair scores with the same model/export, weights and gates.
+  Fixed-set ranks keep the original 176 pairs; support losses are separate.
+- Broad order is stable: minimum Spearman correlations 0.996586 and 0.997636.
+  Fixed-set top-20 overlap never falls below 19/20 in either mode.
+- Some word effects are large. Removing drei moves dr from 61 to 116 and
+  below the gate. Removing Mittwoch moves still-eligible wo from 28 to 14.
+  Eligibility fails for 42 pairs in at least one word omission and for only
+  Ge/av in writer omissions; Ge/av begin at 101 occurrences.
+- [The experiment entry](EXPERIMENTS.md#2026-11-15--a0-ranking-stability-across-words-and-writers)
+  links all results and the reproducible local analysis. Ten scorer
+  comparisons agree within 3.33e-16; independent checks reconcile all
+  229,146 saved pair rows and every omission summary. Input hashes match.
+- Documentation verification: all new local links/anchors resolve and
+  git diff --check passes. Checked the summary support counts against the
+  baseline: Ge and av have 101 observations, not exactly the 100 gate.
+- These are fixed-model, single-omission diagnostics. They do not prove
+  physical continuity or new-word/writer model generalization. No score,
+  support gate, tokenizer or recognition condition was changed.
+- Next: Step 3 fixed trace audit. Its cases/review rules remain to be frozen.
+  Full test suite not rerun; no model inference or training occurred.
+
+## 2026-11-15 — Alignment validation plan and unchanged baseline reproduction
+
+- The user asked for a step-by-step plan and ongoing updates in
+  [FORCED_ALIGNMENT.md](FORCED_ALIGNMENT.md). Preserved the linked branch's
+  original method review there, with source revision and branch-specific
+  decision context. Added interpretation limits and six staged checks.
+- Reproduced the existing scorer in a new, separate local directory.
+  Both saved outputs match the original byte for byte. All 422 scored pairs,
+  176 eligibility flags and every CSV field reconcile.
+- Checked all 88,292 boundary records against training annotations and
+  verified complete unique boundary IDs. Retained 78,953 quality-filtered
+  boundaries across 42 writers. All source and prior-result hashes are unchanged.
+- The review's unfiltered support counts are confirmed. After the actual
+  filter, 62 of 176 eligible pairs occur in three or four words; a proposed
+  five-word gate would leave 114. No gate or score setting changed.
+- [The experiment record](EXPERIMENTS.md#2026-11-15--a0-force-baseline-reproduction-and-word-support-audit)
+  links the local manifest, exact command, checksums, word-support table and
+  limitations. No checkpoint inference, tokenizer fitting or training occurred.
+- Verification: saved artifact hashes reconcile; all new local links and
+  anchors resolve; the source review is preserved exactly; git diff --check
+  passes. No scoring/model code changed. The full test suite was not rerun.
+- Next: Step 2 stability across words and writers. The remaining diagnostics
+  are planned, not completed. Model timing and physical continuity are not
+  established by baseline reproduction.
 
 ## 2026-08-01 — Initial setup and dataset preparation
 
