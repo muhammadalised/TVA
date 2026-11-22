@@ -67,7 +67,7 @@ force export through the pair ranking, timing audits, Bigram v0 selection
 and recognition pilot. Its executed plots and tables include the seven
 evidence rows for the example and the final three-way CER/WER comparison.
 
-`align_sample.py` connects the alignment algorithm to a trained TVA character
+`tva/forced_alignment/align_sample.py` connects the alignment algorithm to a trained TVA character
 model and a real dataset sample. It deliberately processes only one sample so
 checkpoint loading, preprocessing, model inference, greedy decoding, and
 forced alignment remain easy to inspect.
@@ -75,7 +75,7 @@ forced alignment remain easy to inspect.
 Run WI/RH fold 0 with its best-CER checkpoint:
 
 ```bash
-python align_sample.py \
+python -m tva.forced_alignment.align_sample \
   --config configs/thesis/b0_char_wi_rh.yaml \
   --checkpoint results/thesis/baselines/B0_char_wi_rh/0/checkpoints/best_cer.pth \
   --split val \
@@ -86,7 +86,7 @@ python align_sample.py \
 Run WD/RH fold 0 with the retained final checkpoint:
 
 ```bash
-python align_sample.py \
+python -m tva.forced_alignment.align_sample \
   --config configs/thesis/b0_char_wd_rh.yaml \
   --checkpoint results/thesis/baselines/B0_char_wd_rh/0/checkpoints/latest.pth \
   --split val \
@@ -220,7 +220,7 @@ interrupted-export recovery, Unicode labels, and PNG creation.
 
 ## Training-split boundary export
 
-`export_boundaries.py` applies the same alignment and feature extraction to a
+`tva/forced_alignment/export_boundaries.py` applies the same alignment and feature extraction to a
 complete dataset split. The default split is `train`, because tokenizer
 statistics must be learned without looking at validation recordings. It writes
 one JSONL record per adjacent-character occurrence, plus a compact summary and
@@ -229,7 +229,7 @@ a progress file.
 Run the selected A0 WI/RH training-fold export on the RTX machine:
 
 ```bash
-python export_boundaries.py \
+python -m tva.forced_alignment.export_boundaries \
   --config configs/thesis/a0_char_wi_rh_unidirectional.yaml \
   --checkpoint results/thesis/alignment_models/A0_char_wi_rh_unidirectional/0/checkpoints/best_cer.pth \
   --device cuda \
@@ -264,12 +264,12 @@ continuity class or score is added at this stage.
 
 ## Pair-level descriptive analysis
 
-`analyze_boundaries.py` reads the completed JSONL export and calculates exact
+`tva/forced_alignment/analyze_boundaries.py` reads the completed JSONL export and calculates exact
 descriptive statistics globally and separately for every character pair. It is
 a CPU analysis and does not run the recognition model again:
 
 ```bash
-python analyze_boundaries.py \
+python -m tva.forced_alignment.analyze_boundaries \
   --input results/thesis/boundary_exports/a0_char_wi_rh_unidirectional/fold0/train/boundaries.jsonl \
   --overwrite
 ```
@@ -320,11 +320,11 @@ and must not be used as a training label by itself.
 
 ## Provisional corrected force-continuity ranking
 
-`score_continuity.py` reads the completed training JSONL directly. It does not
+`tva/forced_alignment/score_continuity.py` reads the completed training JSONL directly. It does not
 run the recognizer or require a GPU:
 
 ```bash
-python score_continuity.py \
+python -m tva.forced_alignment.score_continuity \
   --input results/thesis/boundary_exports/a0_char_wi_rh_unidirectional/fold0/train_region_v2/boundaries.jsonl \
   --overwrite
 ```
@@ -431,7 +431,7 @@ connectivity.** Validate before you build any tokenizer.
 ### Proposed validation before building tokenizers
 
 1. **Manual audit:** inspect about 100 boundaries with the existing PNG plots
-   (`align_sample.py`). Pick pairs from the top, middle, and bottom of the
+   (`tva/forced_alignment/align_sample.py`). Pick pairs from the top, middle, and bottom of the
    ranking. Record whether the pen is really down or up at each boundary.
    This gives a defensible accuracy number for the thesis.
 2. **Word-level consistency check:** for each word, compare the pen-lift
@@ -450,7 +450,7 @@ consistency check in item 2.
 
 ### Proposed order for the RTX laptop
 
-1. Run `score_continuity.py` on the existing A0 WI fold-0 export as it is,
+1. Run `tva/forced_alignment/score_continuity.py` on the existing A0 WI fold-0 export as it is,
    and save the result as the baseline ranking.
 2. After approval, add the distinct-word gate and the per-word balancing,
    then rerun. Report how the ranking changes.
@@ -485,7 +485,7 @@ in a separate directory. Do not overwrite the August outputs.
 - Status: completed on 2026-11-15; see the execution record below.
 - Verify the export metadata, input hashes, installed interpreter and code
   revision. Save the resolved scoring settings and existing Git changes.
-- Run the unchanged `score_continuity.py` on the existing training export.
+- Run the unchanged `tva/forced_alignment/score_continuity.py` on the existing training export.
 - Compare the saved ranking and method report with the August outputs.
   Check every score and eligibility flag, not only the top pairs.
 - Independently check boundary IDs, training annotation labels, writers and
@@ -884,9 +884,9 @@ conditions one at a time on one GPU.
 
 ```bash
 export PYTHONHASHSEED=42
-python train_bigram_v0.py char
-python train_bigram_v0.py frequency
-python train_bigram_v0.py force
+python -m tva.forced_alignment.train_bigram_v0 char
+python -m tva.forced_alignment.train_bigram_v0 frequency
+python -m tva.forced_alignment.train_bigram_v0 force
 ```
 
 The launcher reads the same B0 YAML for every condition and loads the
@@ -903,6 +903,105 @@ labels in every condition. The existing B0 sequence padding makes CTC targets
 feasible and adds frames to five character, three frequency and four force
 training recordings. The raw signals without sufficient CTC frames number
 three, two and three, respectively.
+
+#### Match the emitted vocabularies for WI and WD fold 0
+
+Use [train_force_tokenizers.ipynb](../train_force_tokenizers.ipynb) to run
+the vocabulary-building steps. The
+[config map](../configs/thesis/forced_alignment/README.md) shows the WI and
+WD YAMLs side by side and links to the builder and scorer.
+
+The November WI run used 160 output classes on both sides, including blank.
+Force training emitted 97 of its 100 selected bigrams. Frequency training
+emitted all 100. The new comparison matches both counts. Each vocabulary
+keeps the same 60 character and blank IDs and adds 100 bigrams that each
+appear in at least one encoded training label.
+
+Use the same within-fold candidate pool and quality gate for both rankings.
+Start with the top 100 for each. Keep the pairs the greedy encoder emits.
+Replace unused pairs in rank order, accepting a replacement only when all
+already selected pairs still appear in the encoded training labels. The
+builder checks full label round-trips, ID ranges and the emitted count
+before writing either vocabulary. Total training token counts can differ
+because the rankers choose different pairs.
+
+Export the WI and WD scores separately, using the final A0 epoch-299
+checkpoint for each split. The WI checkpoint already exists. The WD
+aligner trains on WD fold-0 training recordings with validation disabled.
+The builder checks provenance and requires a complete training export
+from the same dataset and fold. Both use the existing force score and
+support thresholds. WI fold 0 remains a development split that we have
+already evaluated. Rebuilding from epoch 299 also changes the source of
+its force ranking compared with the previous pilot.
+
+##### Verified WI build
+
+The 2026-11-22 WI run exported all 88,292 gap rows from epoch 299.
+Independent checks matched every row to its training annotation.
+The score retained 79,099 reliable boundaries and 175 eligible pairs.
+The raw top 100 force list had two unused pairs, `tw` and `gs`.
+The refill chose `ta` and `ua`. The frequency list needed no refill.
+
+| WI vocabulary | Output classes | Emitted bigram types | Training tokens |
+| --- | ---: | ---: | ---: |
+| Force | 160 | 100 | 75,450 |
+| Frequency | 160 | 100 | 70,841 |
+
+Both vocabularies round-trip all 19,907 training labels. Both launchers pass
+their dry run, and their resolved settings differ only in the vocabulary
+and output paths. The WD aligner and export passed a smoke test using four
+WD training recordings. The full WD build requires the checkpoint below.
+All 49 tests passed. The original WI files retain their saved hashes.
+[WI build summary](../results/thesis/forced_alignment_review/bigram_matched_fold0/wi/tokenizers/summary.json) ·
+[WI provenance](../results/thesis/forced_alignment_review/bigram_matched_fold0/wi/tokenizers/run_manifest.json)
+
+##### WD alignment and vocabulary setup
+
+From the TVA root in the `tva` environment, run the WD aligner once.
+Run the remaining commands after it writes `299.pth`.
+
+```bash
+export PYTHONHASHSEED=42
+TVA_WD_A0=results/thesis/alignment_models/A0_char_wd_rh_unidirectional
+test ! -e "$TVA_WD_A0/0/checkpoints/latest.pth" && \
+  python main.py --config configs/thesis/a0_char_wd_rh_unidirectional.yaml
+```
+
+```bash
+export PYTHONHASHSEED=42
+TVA_WD_A0=results/thesis/alignment_models/A0_char_wd_rh_unidirectional
+TVA_WD_DATA=data/tva/onhw_words500_wd_word_rh
+TVA_WD_MATCHED=results/thesis/forced_alignment_review/bigram_matched_fold0/wd
+
+OMP_NUM_THREADS=1 python -m tva.forced_alignment.export_boundaries \
+  --config configs/thesis/a0_char_wd_rh_unidirectional.yaml \
+  --checkpoint "$TVA_WD_A0/0/checkpoints/299.pth" \
+  --split train --device cuda --num-workers 4 \
+  --output "$TVA_WD_MATCHED/evidence/boundaries.jsonl" && \
+python -m tva.forced_alignment.score_continuity --input "$TVA_WD_MATCHED/evidence/boundaries.jsonl" && \
+python -m tva.forced_alignment.build_bigram_v0 --match-emitted \
+  --train "$TVA_WD_DATA/train.json" \
+  --char-vocab "$TVA_WD_DATA/tokenizers/char/0.json" \
+  --force-ranking "$TVA_WD_MATCHED/evidence/continuity_scores/pair_continuity_scores.csv" \
+  --output-dir "$TVA_WD_MATCHED/tokenizers"
+```
+
+##### Launch the matched recognition runs
+
+Run one command at a time on one GPU. Each uses seed 42 and trains for
+300 epochs without reading validation. Use the existing character baselines
+for reference. Score epoch 299 for each condition.
+
+```bash
+export PYTHONHASHSEED=42
+python main.py --config configs/thesis/forced_alignment/wi/frequency.yaml
+python main.py --config configs/thesis/forced_alignment/wi/force.yaml
+python main.py --config configs/thesis/forced_alignment/wd/frequency.yaml
+python main.py --config configs/thesis/forced_alignment/wd/force.yaml
+```
+
+The runs are saved under
+`results/thesis/bigram/bigram_matched_fold0/<setting>/seed_42/<condition>/0/`.
 
 #### 2026-11-19 — Proposed ED sentence recognition comparison
 
@@ -1066,7 +1165,7 @@ If the run directory is absent, rebuild it from the TVA root with the TVA
 Python environment and the saved Step 1 ranking:
 
 ```bash
-PYTHONHASHSEED=42 python build_bigram_v0.py \
+PYTHONHASHSEED=42 python -m tva.forced_alignment.build_bigram_v0 \
   --train data/tva/onhw_words500_wi_word_rh/train.json \
   --char-vocab data/tva/onhw_words500_wi_word_rh/tokenizers/char/0.json \
   --force-ranking results/thesis/forced_alignment_review/wi_rh_fold0_20261115_baseline/pair_continuity_scores.csv \
@@ -1076,7 +1175,7 @@ PYTHONHASHSEED=42 python build_bigram_v0.py \
 - The standalone builder writes both fold files, the full 176-pair selection
   ledger, summary and provenance manifest. The manifest records the command,
   code revision and SHA-256 hashes for the inputs, source files and outputs.
-  [Builder](../build_bigram_v0.py) · [Run artifacts](../results/thesis/forced_alignment_review/wi_rh_fold0_20261117_bigram_v0/)
+  [Builder](../tva/forced_alignment/build_bigram_v0.py) · [Run artifacts](../results/thesis/forced_alignment_review/wi_rh_fold0_20261117_bigram_v0/)
 - Verification loaded the saved vocabularies through the repository factory,
   checked contiguous IDs and round-tripped every training recording. An
   independent frequency count and segmentation reconciled both selections,
@@ -1092,17 +1191,19 @@ PYTHONHASHSEED=42 python build_bigram_v0.py \
 
 The user approved implementation of the whole-drop proposal. Added
 [force_gap_assignment.py](../tva/force_gap_assignment.py) and
-[assign_force_events.py](../assign_force_events.py), with
+[assign_force_events.py](../tva/forced_alignment/assign_force_events.py), with
 [18 focused tests](../tests/test_force_gap_assignment.py).
 The module detects full recorded low-force runs and builds the complete
 event/gap overlap table. The runner exports every category and compares
 the declared -80/0/+80 ms gap timings. It does not calculate a new pair score.
 
-Actual command (the output exists; repeat runs require a new directory):
+Original command, recorded before the command files moved under `tva/`:
 
 ```bash
 PYTHONHASHSEED=42 python assign_force_events.py --output-dir results/thesis/forced_alignment_review/wi_rh_fold0_20261116_assignment_pilot
 ```
+
+The module path for a new run is `python -m tva.forced_alignment.assign_force_events`.
 
 Used WSL TVA Python 3.11.15 and existing NumPy/Matplotlib. No dependency was
 added. This remains seed-42 A0 WI/RH fold-0 training evidence, checkpoint

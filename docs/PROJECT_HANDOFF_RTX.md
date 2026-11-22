@@ -155,14 +155,14 @@ Details:
 The following is implemented, tested, and pushed on `forced-alignment`:
 
 - target-constrained CTC Viterbi alignment: `tva/ctc_alignment.py`;
-- simple single-sample runner: `align_sample.py`;
+- simple single-sample runner: `tva/forced_alignment/align_sample.py`;
 - character confidence/margin and greedy-agreement diagnostics;
 - frame-to-raw-input approximate mapping (BLConv temporal reduction is 8x);
 - JSON and PNG inspection artifacts;
 - local midpoint and complete-region sensor features;
-- resumable train-split JSONL boundary exporter: `export_boundaries.py`;
-- pair/position descriptive analysis: `analyze_boundaries.py`;
-- corrected, writer-balanced force-continuity scorer: `score_continuity.py` and `tva/continuity_scoring.py`.
+- resumable train-split JSONL boundary exporter: `tva/forced_alignment/export_boundaries.py`;
+- pair/position descriptive analysis: `tva/forced_alignment/analyze_boundaries.py`;
+- corrected, writer-balanced force-continuity scorer: `tva/forced_alignment/score_continuity.py` and `tva/continuity_scoring.py`.
 
 The unit-test suite had **29 passing tests** at commit `52868fe`.
 
@@ -262,7 +262,7 @@ The YAML currently targets fold 0. Change `idx_fold`, result directory, and toke
 ### Inspect one aligned sample (IMU path)
 
 ```bash
-python align_sample.py \
+python -m tva.forced_alignment.align_sample \
   --config configs/thesis/a0_char_wi_rh_unidirectional.yaml \
   --checkpoint results/thesis/alignment_models/A0_char_wi_rh_unidirectional/0/checkpoints/best_cer.pth \
   --split val \
@@ -273,7 +273,7 @@ python align_sample.py \
 ### Export IMU boundaries (only when a new export is really needed)
 
 ```bash
-python export_boundaries.py \
+python -m tva.forced_alignment.export_boundaries \
   --config configs/thesis/a0_char_wi_rh_unidirectional.yaml \
   --checkpoint results/thesis/alignment_models/A0_char_wi_rh_unidirectional/0/checkpoints/best_cer.pth \
   --device cuda \
@@ -285,11 +285,11 @@ Use `--resume` only after an interrupted run with the same output schema. Older 
 ### Analyse and score an existing IMU export (CPU only)
 
 ```bash
-python analyze_boundaries.py \
+python -m tva.forced_alignment.analyze_boundaries \
   --input results/thesis/boundary_exports/a0_char_wi_rh_unidirectional/fold0/train_region_v2/boundaries.jsonl \
   --overwrite
 
-python score_continuity.py \
+python -m tva.forced_alignment.score_continuity \
   --input results/thesis/boundary_exports/a0_char_wi_rh_unidirectional/fold0/train_region_v2/boundaries.jsonl \
   --overwrite
 ```

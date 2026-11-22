@@ -1,4 +1,4 @@
-'''Build the train-only OnHW WI/RH fold-0 Bigram v0 comparison.'''
+'''Build train-only OnHW fold-0 bigram vocabularies and verify their targets.'''
 
 import argparse
 import csv
@@ -10,6 +10,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+import yaml
 
 from tva.tokenizers import get_tokenizer
 
@@ -57,6 +59,77 @@ def build_vocab(chars, pairs: list[str], labels: list[str], path: Path):
     return tokenizer, token_counts
 
 
+def emitted_pairs(chars, pairs: list[str], word_types: set[str]) -> set[str]:
+    tokenizer = get_tokenizer('bigram')
+    pair_ids = {pair: idx for idx, pair in enumerate(pairs, start=chars.size)}
+    tokenizer.vocab = chars.vocab | pair_ids
+    used_ids = {idx for text in word_types for idx in tokenizer.encode(text)}
+    return {pair for pair, idx in pair_ids.items() if idx in used_ids}
+
+
+def select_emitting_pairs(chars, order: list[str], word_types: set[str], limit: int):
+    """Keep active top-ranked pairs and refill without shadowing them."""
+    initial = order[:limit]
+    active = emitted_pairs(chars, initial, word_types)
+    selected = [pair for pair in initial if pair in active]
+    rejected = []
+    for pair in order[limit:]:
+        if len(selected) == limit:
+            break
+        trial = [*selected, pair]
+        if len(emitted_pairs(chars, trial, word_types)) == len(trial):
+            selected.append(pair)
+        else:
+            rejected.append(pair)
+    if len(selected) != limit:
+        raise ValueError(f'Only {len(selected)} pairs can be selected with this rule; need {limit}.')
+    return selected, {
+        'unused_in_initial_top_pairs': [pair for pair in initial if pair not in active],
+        'replacements': selected[len(active):],
+        'rejected_replacements': rejected,
+    }
+
+
+def matched_evidence(args, label_count: int, boundary_count: int, eligible_count: int) -> dict:
+    report_path = args.force_ranking.with_name('continuity_score_summary.json')
+    report = json.loads(report_path.read_bytes())
+    provenance = report['provenance']
+    config_path = Path(provenance['config'])
+    config = yaml.safe_load(config_path.read_bytes())
+    export_path = Path(report['input_jsonl'])
+    summary_path = export_path.with_name('summary.json')
+    export = json.loads(summary_path.read_bytes())
+    checkpoint = Path(provenance['checkpoint'])
+    if (
+        args.train.resolve() != (Path(config['dir_dataset']) / 'train.json').resolve()
+        or args.char_vocab.resolve() != (Path(config['dir_tokenizer']) / f'{FOLD}.json').resolve()
+        or config['arch_de'] != 'unilstm_b'
+        or provenance['fold'] != FOLD
+        or provenance['split'] != 'train'
+        or provenance['checkpoint_epoch'] != 299
+        or any(export[key] != provenance[key] for key in
+               ('config', 'checkpoint', 'checkpoint_epoch', 'fold', 'split'))
+        or export['requested_samples'] != label_count
+        or export['completed_samples'] != label_count
+        or export['exported_boundaries'] != boundary_count
+        or report['total_boundaries'] != boundary_count
+        or report['eligible_pairs'] != eligible_count
+    ):
+        raise ValueError('Expected a complete same-split A0 epoch-299 training export.')
+    expected_parameters = {'local_window_ms': 100, 'local_weight': 0.75,
+                           'region_weight': 0.25, 'min_occurrences': 100,
+                           'min_writers': 30, 'min_stratum_occurrences': 100}
+    if any(report['parameters'][key] != value for key, value in expected_parameters.items()):
+        raise ValueError('The matched pilot uses the existing force score and support gate.')
+    return {
+        'force_report': report_path,
+        'alignment_config': config_path,
+        'alignment_export_summary': summary_path,
+        'alignment_checkpoint': checkpoint,
+        'training_boundary_evidence': export_path,
+    }
+
+
 def build(args: argparse.Namespace) -> None:
     if args.output_dir.exists():
         raise FileExistsError(f'Output already exists: {args.output_dir}')
@@ -66,7 +139,7 @@ def build(args: argparse.Namespace) -> None:
         'char_vocab': args.char_vocab,
         'force_ranking': args.force_ranking,
         'builder': Path(__file__),
-        'tokenizer_code': Path(__file__).with_name('tva') / 'tokenizers.py',
+        'tokenizer_code': Path(__file__).with_name('tokenizers.py'),
     }
     sources = {name: path.read_bytes() for name, path in source_paths.items()}
     labels = [
@@ -100,14 +173,32 @@ def build(args: argparse.Namespace) -> None:
     )
     force_order = [row['pair'] for row in eligible]
     if (
-        len(set(force_order)) != ELIGIBLE_COUNT
-        or [int(row['rank']) for row in eligible] != list(range(1, ELIGIBLE_COUNT + 1))
+        len(force_order) < PAIR_LIMIT
+        or len(set(force_order)) != len(force_order)
+        or (not args.match_emitted and len(force_order) != ELIGIBLE_COUNT)
+        or [int(row['rank']) for row in eligible] != list(range(1, len(eligible) + 1))
         or any(pair not in frequencies for pair in force_order)
     ):
-        raise ValueError('Expected 176 uniquely ranked eligible pairs present in fold-0 text.')
+        raise ValueError('Expected a complete, unique ranking of eligible pairs in fold-0 text.')
     frequency_order = sorted(force_order, key=lambda pair: (-frequencies[pair], pair))
     frequency_ranks = {pair: idx for idx, pair in enumerate(frequency_order, start=1)}
-    selection = {'force': force_order[:PAIR_LIMIT], 'frequency': frequency_order[:PAIR_LIMIT]}
+    orders = {'force': force_order, 'frequency': frequency_order}
+    selection = {name: order[:PAIR_LIMIT] for name, order in orders.items()}
+    matching_details = {}
+    evidence_hashes = {}
+    if args.match_emitted:
+        evidence_paths = matched_evidence(
+            args, len(labels), sum(len(label) - 1 for label in labels), len(eligible)
+        )
+        for name, path in evidence_paths.items():
+            with path.open('rb') as file:
+                digest = hashlib.file_digest(file, 'sha256').hexdigest()
+            evidence_hashes[name] = {'path': str(path), 'sha256': digest}
+        word_types = set(labels)
+        for name, order in orders.items():
+            selection[name], matching_details[name] = select_emitting_pairs(
+                chars, order, word_types, PAIR_LIMIT
+            )
     common = set(selection['force']) & set(selection['frequency'])
     num_chars = sum(map(len, labels))
     report = {
@@ -123,6 +214,10 @@ def build(args: argparse.Namespace) -> None:
         'conditions': {},
         'examples': {},
     }
+
+    if args.match_emitted:
+        report['selection_policy'] = 'match-emitted'
+        report['refill'] = matching_details
 
     args.output_dir.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=args.output_dir.parent) as tmp:
@@ -145,6 +240,8 @@ def build(args: argparse.Namespace) -> None:
                     tokenizer.vocab[pair] in token_counts for pair in pairs
                 ),
             }
+            if args.match_emitted and report['conditions'][variant]['distinct_bigram_tokens_used'] != PAIR_LIMIT:
+                raise ValueError(f'{variant} must emit all {PAIR_LIMIT} bigrams.')
 
         for label in ('Mittwoch', 'Programm', 'drei', 'Chief', 'Haus'):
             if label in labels:
@@ -179,8 +276,10 @@ def build(args: argparse.Namespace) -> None:
                 raise ValueError(f'Input changed during the build: {path}')
             input_hashes[name] = {'path': str(path), 'sha256': sha256(sources[name])}
 
-        write_json(staging / 'run_manifest.json', {
-            'dataset': 'OnHW-Words500 WI/RH',
+        if args.match_emitted:
+            input_hashes.update(evidence_hashes)
+        manifest = {
+            'dataset': args.train.parent.name if args.match_emitted else 'OnHW-Words500 WI/RH',
             'fold': FOLD,
             'split': 'train',
             'frequency_counting': 'All adjacent positions across fold-0 recordings',
@@ -188,16 +287,49 @@ def build(args: argparse.Namespace) -> None:
             'segmentation': 'TVA BigramTokenizer greedy left-to-right',
             'git_revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
             'python': sys.version,
-            'command': [sys.executable, *sys.argv],
+            'command': [sys.executable, *sys.orig_argv[1:]],
             'inputs': input_hashes,
             'output_sha256': {
                 path.relative_to(staging).as_posix(): sha256(path.read_bytes())
                 for path in sorted(staging.rglob('*.json'))
             },
-        })
+        }
+        if args.match_emitted:
+            manifest['selection_policy'] = report['selection_policy']
+        write_json(staging / 'run_manifest.json', manifest)
         staging.rename(args.output_dir)
 
     print(json.dumps(report, ensure_ascii=False, indent=2))
+
+
+def verify_matched_vocabs(config: argparse.Namespace) -> None:
+    """Check the two built vocabularies before a matched run."""
+    vocab_dir = Path(config.dir_tokenizer)
+    if config.tokenizer != 'bigram' or vocab_dir.name not in ('frequency', 'force'):
+        raise ValueError('A matched run needs the force or frequency Bigram vocabulary.')
+    root = vocab_dir.parent
+    manifest = json.loads((root / 'run_manifest.json').read_bytes())
+    summary = json.loads((root / 'summary.json').read_bytes())
+    train = Path(config.dir_dataset) / 'train.json'
+    if (
+        manifest['dataset'] != train.parent.name
+        or manifest['fold'] != config.idx_fold
+        or manifest['split'] != 'train'
+        or manifest.get('selection_policy') != 'match-emitted'
+        or hashlib.sha256(train.read_bytes()).hexdigest() != manifest['inputs']['train']['sha256']
+    ):
+        raise ValueError('The matched vocabularies must come from this training split.')
+    for condition in ('frequency', 'force'):
+        relative = f'{condition}/{config.idx_fold}.json'
+        info = summary['conditions'][condition]
+        if (
+            info['vocab_size_including_blank'] != CHAR_VOCAB_SIZE + PAIR_LIMIT
+            or info['distinct_bigram_tokens_used'] != PAIR_LIMIT
+            or info['round_trips_passed'] != summary['recordings']
+            or hashlib.sha256((root / relative).read_bytes()).hexdigest()
+            != manifest['output_sha256'][relative]
+        ):
+            raise ValueError(f'Invalid matched vocabulary: {root / relative}')
 
 
 def parse_args() -> argparse.Namespace:
@@ -206,8 +338,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--char-vocab', type=Path, required=True, help='Fold-0 char vocabulary JSON.')
     parser.add_argument('--force-ranking', type=Path, required=True, help='Saved pair score CSV.')
     parser.add_argument('--output-dir', type=Path, required=True, help='New output directory.')
+    parser.add_argument('--match-emitted', action='store_true',
+                        help='Use same-split fixed-epoch evidence and require 100 emitted bigrams.')
     return parser.parse_args()
-
-
-if __name__ == '__main__':
-    build(parse_args())

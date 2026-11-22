@@ -39,6 +39,14 @@ For commercial reasons, our datasets will not be published. Alternatively, you c
 
 We use a MSCOCO-like structure for the training and evaluation of our dataset. After the OnHW dataset is downloaded, please convert the original dataset to the desired structure with the notebook `prepare_dataset.ipynb`. Please adjust the variables `dir_raw`, `dir_out`, and `writer_indep` accordingly.
 
+## Forced-alignment Bigram study
+
+Use [train_force_tokenizers.ipynb](train_force_tokenizers.ipynb) to build
+or check the matched force and frequency vocabularies for OnHW fold 0.
+The [WI and WD config map](configs/thesis/forced_alignment/README.md)
+links to the build settings, the two training YAMLs for each split,
+and the code used to produce the vocabularies.
+
 ## Usage
 
 ### Training

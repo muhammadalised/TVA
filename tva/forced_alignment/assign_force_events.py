@@ -379,7 +379,7 @@ def main():
         "branch": git("branch", "--show-current"), "git_status": git("status", "--porcelain=v1", "--untracked-files=all"),
         "python": sys.executable, "python_version": sys.version,
         "packages": {name: importlib.metadata.version(name) for name in ["numpy", "matplotlib"]},
-        "command": [sys.executable, *sys.argv], "input_sha256": inputs,
+        "command": [sys.executable, *sys.orig_argv[1:]], "input_sha256": inputs,
         "source_sha256": {str(p): sha(p) for p in sources},
         "procedure": {
             "force_threshold": "stored original 0.10 x recording 90th percentile, independently reconciled",

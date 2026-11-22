@@ -1,6 +1,7 @@
 import argparse
 import os
 import warnings
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -12,6 +13,7 @@ from torch.utils.data import DataLoader
 from tva.dataset import HRDataset, fn_collate
 from tva.decoder_ctc import BestPath
 from tva.evaluate import evaluate
+from tva.force_bigram import verify_matched_vocabs
 from tva.loss import CTCLoss
 from tva.tokenizers import get_tokenizer
 from tva.manager import RunManager
@@ -142,6 +144,11 @@ def main(cfgs: argparse.Namespace) -> None:
     train_only = getattr(cfgs, 'train_only', False)
     if train_only and cfgs.test:
         raise ValueError('train_only cannot be combined with test mode.')
+
+    if getattr(cfgs, 'verify_matched_bigrams', False):
+        verify_matched_vocabs(cfgs)
+        if not cfgs.test and not cfgs.checkpoint:
+            Path(cfgs.dir_work).mkdir(parents=True, exist_ok=False)
 
     # initialize the environment
     manager = RunManager(cfgs)

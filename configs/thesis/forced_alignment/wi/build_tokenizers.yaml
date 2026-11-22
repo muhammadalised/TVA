@@ -1,0 +1,6 @@
+# Open train_force_tokenizers.ipynb to use this configuration.
+aligner_config: configs/thesis/a0_char_wi_rh_unidirectional.yaml
+checkpoint: results/thesis/alignment_models/A0_char_wi_rh_unidirectional/0/checkpoints/299.pth
+dir_work: results/thesis/forced_alignment_review/bigram_matched_fold0/wi
+device: cuda
+num_workers: 4
