@@ -536,3 +536,208 @@ improvement before aggregation. Keep the old score; Steps 5-6 remain pending.
   a general recognition advantage from force ranking.
   [Run artifacts](../results/thesis/bigram/wi_rh_fold0_bigram_v0_pilot/seed_42/evaluation_20261119/) ·
   [Method and verification](FORCED_ALIGNMENT.md#2026-11-19--onhw-bigram-v0-recognition-pilot-completed)
+
+## 2026-11-21 — DHSD DTLR checkpoint diagnostic
+
+The user requested trying DTLR on DHSD. Created and executed
+[DHSD_DTLR_Check.ipynb](../../DTLR/DHSD_DTLR_Check.ipynb) using the existing
+WSL dtlr-poc kernel. This is an image-domain diagnostic, separate from the
+OnHW IMU forced-alignment work. It does not change that method, its scores,
+its tokenizer files or any recognition run.
+
+**Data and fixed sample.** Local DHSD v1.0.0 root:
+/mnt/c/Users/Ali/Downloads/DHSD-v1.0.0/nauman-riaz-DHSD-c64d620.
+[Publisher record](https://doi.org/10.5281/zenodo.18743313), CC BY 4.0.
+All 5,939 annotated images decode as 256x64 RGBA. All are opaque. The supplied
+4,745 training and 1,194 test files are disjoint and cover the full CSV, but
+all 37 writers occur in both sets: the supplied split is not writer-disjoint.
+The checks establish structural validity, not transcript correctness.
+
+Before inference, fix 12 random training images from sorted paths with seed 42.
+Then add seven distinct training images, one for each äöüÄÖÜß, using the same
+RNG and preferring writers not yet selected. There are 19 images from 18 writers:
+12 random images from 11 writers; seven targeted images from seven additional
+writers. No test image, prediction-based selection or later exclusion is used.
+A source-only overview was inspected before predictions were reviewed. Some
+crops are faint and possible case/punctuation differences remain. Labels are
+unchanged; no independent human reference audit or corrected reference is claimed.
+
+**Models and settings.** Strictly load the same three local checkpoints used
+in the ScaDS diagnostic, with native alphabets and saved decoder layouts:
+
+- German synthetic pretrained, epoch 20, 166 classes; SHA-256
+  840c39a672539b7a6f45b758801d668f27d95ace4f93fc334b42f74cfd6351de.
+- READ-finetuned, epoch 3043, 85 classes, saved single-linear decoder classifier;
+  SHA-256 3b04f884ef527321df798325987ac34def2990237ad7a8d7cbe2db23676ddea8.
+- IAM-finetuned, epoch 1799, 166 classes; SHA-256
+  d076f1276d973c2e3a945238738174b4ce9ebc87257633832bf32be00e473b8f.
+
+Use seed 42, batch one, score >0.3, NMS IoU 0.5, top-k 900, RGB conversion,
+deterministic test resize (short side up to 800, long side up to 1333) and
+ImageNet normalization. Do not crop, repair spelling, compose Unicode, replace
+class IDs or remove unsupported characters. Existing monotonic edit alignment,
+Otsu and dominant-core-v3 code is unchanged. There are 57 new forward passes
+and 763 saved boxes: German 287, READ 153, IAM 323. This is ordinary DTLR
+inference plus text alignment, not CTC forced alignment or model training.
+
+**Unchanged supplied-label results:**
+
+| Group | Model | Exact letters | Alignment (%) | Usable exact letter pairs | Pair usability (%) | Nonspace edits / reference characters | Text disagreement (%) |
+| --- | --- | --- | ---: | --- | ---: | --- | ---: |
+| random (12) | German pretrained | 116/194 | 59.79 | 70/172 | 40.70 | 79/196 | 40.31 |
+| random (12) | READ-finetuned | 33/194 | 17.01 | 6/172 | 3.49 | 162/196 | 82.65 |
+| random (12) | IAM-finetuned | 142/194 | 73.20 | 91/172 | 52.91 | 71/196 | 36.22 |
+| German-letter examples (7) | German pretrained | 59/98 | 60.20 | 32/85 | 37.65 | 40/100 | 40.00 |
+| German-letter examples (7) | READ-finetuned | 25/98 | 25.51 | 7/85 | 8.24 | 75/100 | 75.00 |
+| German-letter examples (7) | IAM-finetuned | 69/98 | 70.41 | 42/85 | 49.41 | 34/100 | 34.00 |
+
+Groups have different selection rules; do not pool them into a representative
+corpus score. Nonspace disagreement is case-sensitive edit distance/reference
+length after removing whitespace, not cleaned benchmark CER. None of the three
+models matches any of the 19 complete supplied transcripts after whitespace
+removal. Text alignment and component usability do not measure geometric box
+accuracy or verified ink-connection labels.
+
+Across all selected labels, special-letter matches are German 4/34 (ä 1/3,
+ö 2/6, ü 1/6), READ 1/34 (ü 1/6), IAM 0/34. All checkpoints match 0/16 ß
+occurrences. IAM has no ß class; READ lacks separate Ä and Ü classes. German
+pretrained has no native alphabet gaps on this sample but still fails ß. Keep
+all occurrences in the denominators. In the complete supplied training labels,
+ß appears 3,999 times across 3,380 of 4,745 images; this is a label count, not a
+verified visible-character count.
+
+IAM remains strongest on the random sample, with substantial remaining errors.
+Changing to DHSD does not establish a ready-to-use German evidence pipeline.
+DHSD words/phrases, preprocessing and label mix differ from ScaDS lines, so
+cross-pilot percentage differences cannot isolate corpus quality or transfer.
+Different model alphabets and training histories also prevent a causal style
+claim. No checkpoint, dataset or production evidence condition is adopted.
+
+**Outputs and reproducibility.**
+[outputs/dhsd_dtlr_checkpoint_check_20261121_v1/](../../DTLR/outputs/dhsd_dtlr_checkpoint_check_20261121_v1/)
+contains 35 local Git-ignored files: CSV/image inspection, fixed selection,
+resolved run/checkpoint manifests, detections, 57 metric rows, 795 pair rows,
+paired predictions, nine PNG/PDF figure pairs and an executed notebook snapshot.
+The notebook embeds all nine figures and every selected case. Source image,
+CSV, code and checkpoint hashes are stored in the manifests.
+
+- DTLR revision: 4a74692e16d11c9744fa71cd01ee5a982f6aa67b (iam-handwriting-bpe-unigram).
+- TVA revision: dfb95e375ffb5dc084ab45b6243bdfe3ef0bd604 (forced-alignment).
+- Existing uncommitted DTLR ScaDS notebook/docs work and TVA's untracked
+  TOKENIZER_COMPATIBILITY_AUDIT.md are preserved and recorded in the manifest.
+- dataset_inspection.json SHA-256:
+  e2734e62fd5c713879fa8b2b35cf33841c2e286fac33f471019773f97ff09283.
+- selection.json SHA-256:
+  4d5e14198ddb7d1ceb841c37884fd4f71afcfd27c9aca5ab7395388030cc5c5b.
+- manifest.json SHA-256:
+  ba736056ed9be8a231ab74fbdbfb3e9649633831478b6501a3f403dcb7b9789d.
+- line_metrics.csv SHA-256:
+  613a55077e539e9253df417bf425c9679d832755742fae9746c53b8dc6d53c81.
+- group_summary.json SHA-256:
+  1aa1c613a99fd6c5b0395a2fa8b1ce1947fc31728a578ed706cba3a24972c04d.
+- pair_diagnostics.json SHA-256:
+  21c41f65a07fb345d04f821617ba60465f8c0b1c6b5e3644562b7e203cba498f.
+- completion.json SHA-256:
+  727c7cd3bc41b8aa1b58a1fc5c431c7619af20e5d55b4d51316b17cd573a186d.
+- Notebook source SHA-256:
+  31b527476c330c596e0333e5ad11c27d5b6e777e01a3059ebbb83c65cd582b0b.
+
+**Verification.** All six code cells pass in the real dtlr-poc kernel
+(Python 3.11.0, torch 2.1.0+cu118, RTX 4060 Laptop GPU). An independent
+rolling-row edit-distance implementation confirms all 57 metric rows. Native
+class IDs, pair counts, summary denominators, selected image/CSV hashes and
+all nine embedded/exported PNGs reconcile; nine PDFs exist. Source-only and
+representative box/chart layouts were inspected. All 220 prior ScaDS notebook/
+output files retain identical hashes. A targeted cache check reruns the unchanged
+model, score, plot and completion cells with authenticated frozen inputs; it
+reuses all three prediction caches and preserves all 35 output files. The slow
+full-image audit is not repeated in that targeted check. The first execution
+attempt hit a runner output timeout during the full image audit, before inference;
+a rerun with progress monitoring completed. No training, dependency, model-library
+change, threshold tuning, source-data edit, full test suite or construction
+export was needed. Next: human reference/box review and a declared adaptation or
+image-alignment plan before any full German evidence extraction.
+
+## 2026-11-21 — A100 IAM-to-DHSD setup (software verification)
+
+The user requested a notebook/setup ready to clone and train over SSH on one
+A100. Added an isolated package under DTLR training/dhsd and
+[DHSD_A100_Training.ipynb](../../DTLR/DHSD_A100_Training.ipynb). The
+[setup guide](../../DTLR/training/dhsd/README.md) contains exact transfer,
+Conda/CUDA build, tmux, preparation, preflight, benchmark, training, resume and
+explicit final-evaluation commands. This is implementation validation, not a
+completed German training experiment or A100 benchmark.
+
+The launcher reuses DTLR's unmodified model and adapted CTC loss. It avoids the
+upstream loop's silent exception skipping and image-count iteration limit.
+Successful optimizer updates have an explicit budget. The pilot uses 1,000
+classifier updates then 19,000 network updates, batch four, seed 42, AdamW,
+head/network/backbone learning rates 1e-4/1e-5/1e-6, norm limit 0.01 and
+validation/save every 1,000 updates. Float32 with TF32 is the default; custom
+CUDA ops are not assumed AMP-safe. A100 extensions are built for architecture
+8.0 with the existing pinned Python 3.11.0 / torch 2.1.0+cu118 / CUDA 11.8 runtime.
+
+Writer-disjoint preparation replaces the publisher's overlapping split:
+27/5/5 writers and 4,354/805/780 images. Test writer IDs are 24,30,31,6,8;
+none appeared in the earlier 18-writer preview. Source CSV/image checksums,
+raw supplied labels and split definitions are frozen. No independent human
+label verification is claimed. Test labels/frequencies are not used for model
+alphabet construction: preserve all native IAM IDs and append declared German
+characters plus unsupported characters observed in training. For this release
+this appends ß and š, making 168 classes. New rows use seeded existing-row
+initialization; all original rows/IDs and decoder sharing are preserved.
+
+Native IAM is evaluated once on the same validation images. Checkpoint
+selection uses minimum raw validation CER; ties keep the earlier step and WER
+comes from the same checkpoint. Detection scoring remains score >0.3, NMS 0.5,
+top-k 900. The test set is never evaluated automatically. The companion
+notebook shows commands and reviews logs/validation boxes without auto-launching
+training. Lower text error does not validate box geometry or ink connectivity.
+
+Local verification used the RTX 4060 dtlr-poc environment. Thirteen focused tests
+pass. A four-update, batch-one, reduced-resolution smoke job covers two head
+and two network updates. Another job used batch two and two workers, stopped
+at step 2 and resumed to step 4. Its step-2 checkpoint stays byte-identical;
+model/optimizer/RNG resume, stage changes, finite parameters and strict 168-class
+checkpoint loading pass. A separate validation invocation reproduces the saved
+selected-checkpoint error counts/CER/WER. These four-image smoke scores are
+software checks, not a German recognition result. An initial preflight stopped
+before updates on unsupported training š; the corrected extension policy is
+covered by a test. All five notebook cells execute and both rendered figures
+were inspected. Shell syntax checks pass. Data preparation reproduces byte for
+byte in a clean clone. No upstream source, prior image result, OnHW artifact,
+source dataset or original checkpoint was changed. A100-specific compilation,
+production batch memory, throughput, convergence and full training remain pending.
+A final CUDA stop/resume job also recovered deliberately missing latest pointers
+and stale best metadata from complete step files, then reproduced the saved
+validation metrics. Session-specific validation files protect replayed attempts.
+
+Code-only local branch: codex/dhsd-a100-training; commit 87651f819daa15b20801d871cd1eef09d1060718, based on 4a74692e16d11c9744fa71cd01ee5a982f6aa67b through two setup commits. The cumulative change contains only the 15 new training/notebook files. A temporary Git index preserved the active branch and unrelated work; no GitHub/GitLab push occurred.
+
+Private transfer artifact:
+[dtlr-dhsd-a100-kit.tar](../../DTLR/outputs/dhsd_a100_setup_20261121_v2/dtlr-dhsd-a100-kit.tar),
+650,670,080 bytes. It includes a full-history Git bundle, original DHSD ZIP,
+original IAM checkpoint1799.pth, prepared manifests, START_HERE.sh and checksums.
+It contains no compiled RTX binaries or local smoke checkpoints. The starter
+was tested in a clean deployment directory: payload authentication, clone,
+data extraction and weight paths pass; all thirteen tests also pass from that
+clone. Original weights/data are included for private transfer, not publication.
+
+- Transfer archive SHA-256:
+  21cc6d3814488207105b8c23c726f509d50b6ef5b16d207d6d566dcf8317d323.
+- Initial IAM checkpoint SHA-256:
+  d076f1276d973c2e3a945238738174b4ce9ebc87257633832bf32be00e473b8f.
+- Prepared train/validation/test JSON SHA-256:
+  9b37c4a0eb558af162852a7ab0ee26a93d666d4ffa94464591c9e99d60d7be16;
+  434ef04f28d15b893f9ffe410c0b978615387484ba8d636a307e2d46101bfadc;
+  bde689a5bd1767dd9433ed70bc6e5be2ed1c3ff94ebbeb2a62b27cb1dde1c2a9.
+- Further code/asset hashes and bundle identity are in
+  [KIT_MANIFEST.json](../../DTLR/outputs/dhsd_a100_setup_20261121_v2/kit/KIT_MANIFEST.json).
+- [Verification limits](../../DTLR/training/dhsd/VERIFICATION.md) distinguish
+  local software checks from unrun A100/full-training work.
+
+Next: copy the private kit to the allocated A100, build the pinned runtime and
+native extensions, run the four-update preflight and 200-update production-size
+benchmark, inspect memory/speed, then launch the bounded pilot. The earlier
+6–12 GPU-hour estimate is not a measured A100 runtime. No adaptation gain is
+claimed by preparing this setup.

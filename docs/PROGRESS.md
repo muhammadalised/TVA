@@ -4,8 +4,18 @@ This file records completed work, important observations, and immediate next
 steps. Add new dated entries below the current snapshot, newest first.
 Preserve the older entries, including failed attempts.
 
-## Current status - updated 2026-11-19
+## Current status - updated 2026-11-21
 
+- An SSH/A100 IAM-to-DHSD training kit is prepared. It includes a cloneable
+  local Git bundle, original data/weights, fixed writer-disjoint splits,
+  staged training, resume support and a companion notebook. Local software
+  checks pass; A100 compilation, speed and full adaptation remain pending.
+  [Setup guide](../../DTLR/training/dhsd/README.md)
+- A separate DHSD image diagnostic is complete. On 12 fixed random training
+  images, IAM DTLR reaches 73.20% exact letter alignment and 52.91% usable
+  exact pairs; substantial errors and German special-letter failures remain.
+  This does not change the OnHW IMU method or adopt a German image corpus.
+  [DHSD experiment record](EXPERIMENTS.md#2026-11-21--dhsd-dtlr-checkpoint-diagnostic)
 - OnHW WI/RH fold-0 Bigram v0 was evaluated at fixed epoch 299, seed 42.
   The completed bigram trainings were compared with the existing B0 character
   checkpoint on the same 5,292 recordings from 11 writers.
@@ -16,6 +26,50 @@ Preserve the older entries, including failed attempts.
 - Both 100-pair bigram vocabularies keep the character fallbacks and use the
   Step 1 ranking evidence. The Step 4 assignments remain sensitive to gap
   timing. Step 5 broader consistency work remains open.
+
+## 2026-11-21 — Cloneable IAM-to-DHSD A100 setup prepared
+
+- Prepared [the training setup](../../DTLR/training/dhsd/README.md) and
+  [companion notebook](../../DTLR/DHSD_A100_Training.ipynb). A private transfer
+  archive contains the code bundle, original IAM checkpoint, original DHSD ZIP,
+  frozen prepared splits and checksums. Its starter authenticates and clones
+  the code without requiring a remote push or changing the current checkout.
+- The seed-42 split has 4,354/805/780 images from 27/5/5 disjoint writers.
+  Held-out test writers exclude the 18 writers shown in the earlier preview.
+  The native 166 IAM IDs remain intact; missing ß and training-observed š are
+  appended. No label is dropped or silently repaired. Default pilot budget:
+  1,000 classifier updates plus 19,000 network updates, batch four.
+- Thirteen tests, real reduced-resolution CUDA head/network updates, a two-worker
+  stop/resume job, strict trained-checkpoint reload and all five notebook cells
+  pass. Clean clone/materialization and byte-identical preparation also pass.
+  The initial preflight caught unsupported š before any update; this is retained
+  in the verification note. Smoke scores are not adaptation-performance evidence.
+- [The implementation record](EXPERIMENTS.md#2026-11-21--a100-iam-to-dhsd-setup-software-verification)
+  links provenance and limitations. A100-specific bootstrap, production memory/
+  speed and full 20,000-update training remain unverified. OnHW and prior image
+  results remain unchanged. Next: transfer the kit, build on the allocated A100,
+  run preflight and benchmark, then launch the pilot inside tmux.
+
+## 2026-11-21 — DTLR tested on a fixed DHSD sample
+
+- Created and executed [DHSD_DTLR_Check.ipynb](../../DTLR/DHSD_DTLR_Check.ipynb):
+  12 random training images plus seven German-letter examples, 19 images from
+  18 writers. Compared German pretrained, READ-finetuned and IAM-finetuned
+  checkpoints with matched settings and unchanged supplied labels.
+- Random-sample exact letter alignment / usable exact pair rates are
+  59.79%/40.70% German, 17.01%/3.49% READ and 73.20%/52.91% IAM. None of the
+  19 complete transcripts matches exactly under any checkpoint after removing
+  whitespace. All models fail all 16 selected ß occurrences; IAM lacks that class.
+- All 5,939 images decode. Supplied train/test files are disjoint, but all 37
+  writers occur in both sets. This is a development diagnostic, not independent
+  writer evaluation. Supplied labels and geometric boxes lack human validation.
+- All six code cells pass. Independent checks confirm 57 metric rows, pairs,
+  native classes, input hashes and nine figures. Targeted cache verification
+  preserves all 35 outputs; all 220 earlier ScaDS files are unchanged. No model
+  training, data cleaning, full evidence export or IMU method change occurred.
+- [The experiment record](EXPERIMENTS.md#2026-11-21--dhsd-dtlr-checkpoint-diagnostic)
+  retains protocol, counts, provenance and the initial runner timeout. Next:
+  human box/reference review before selecting an adaptation or alignment plan.
 
 ## 2026-11-19 — Bigram v0 recognition pilot completed
 
@@ -383,7 +437,7 @@ before starting the full WD/RH fold-0 B0 experiment.
   acceptance filter or continuity score has been hard-coded.
 - The runner prints a compact 100 ms summary and writes all window sizes into
   the JSON artifact. Dashed black plot lines mark boundary midpoints.
-- Eleven focused tests pass, including safe handling of an alignment window
+- Thirteen focused tests pass, including safe handling of an alignment window
   that reaches model padding. The complete runner/JSON/PNG path succeeds with
   the local smoke checkpoint.
 
