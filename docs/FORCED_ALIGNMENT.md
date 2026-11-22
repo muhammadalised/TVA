@@ -949,11 +949,38 @@ The refill chose `ta` and `ua`. The frequency list needed no refill.
 
 Both vocabularies round-trip all 19,907 training labels. Both launchers pass
 their dry run, and their resolved settings differ only in the vocabulary
-and output paths. The WD aligner and export passed a smoke test using four
-WD training recordings. The full WD build requires the checkpoint below.
+and output paths. The initial WD smoke test used four training recordings.
 All 49 tests passed. The original WI files retain their saved hashes.
 [WI build summary](../results/thesis/forced_alignment_review/bigram_matched_fold0/wi/tokenizers/summary.json) ·
 [WI provenance](../results/thesis/forced_alignment_review/bigram_matched_fold0/wi/tokenizers/run_manifest.json)
+
+##### Verified WD build
+
+The WD A0 run completed all 300 train-only epochs on 2026-11-22. Its
+`299.pth` matches `latest.pth` byte for byte. The final checkpoint SHA-256 is
+`36ec448b8a9c9a55b9cfb606db747cfbf37a02cb97866a959c3ba18729923213`.
+It records seed 42, fold 0 and training metrics only. The archived B0
+character checkpoint also contains epoch 299 and is available for reference.
+
+The export produced 88,386 gaps across 20,163 WD training recordings from
+53 writers. All rows matched their source annotations. The force scorer
+retained 78,546 reliable gaps and 160 eligible pairs. The force selection
+replaced unused `tw`, `ön` and `hs` with `nt`, `le` and `hä`.
+Frequency replaced unused `ua` with `ad`. The selected lists share 67
+bigrams.
+
+| WD vocabulary | Output classes | Emitted bigram types | Training tokens |
+| --- | ---: | ---: | ---: |
+| Force | 160 | 100 | 74,519 |
+| Frequency | 160 | 100 | 70,933 |
+
+An independent greedy segmentation reproduced the counts and round-tripped
+every training label. Both training configs passed preflight and differ only
+in vocabulary and run paths. The notebook displayed the completed WD
+vocabularies and the two launch commands. The build used only training
+recordings. Recognition training and evaluation are pending.
+[WD build summary](../results/thesis/forced_alignment_review/bigram_matched_fold0/wd/tokenizers/summary.json) ·
+[WD provenance](../results/thesis/forced_alignment_review/bigram_matched_fold0/wd/tokenizers/run_manifest.json)
 
 ##### WD alignment and vocabulary setup
 
