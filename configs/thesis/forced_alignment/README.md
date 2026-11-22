@@ -25,9 +25,12 @@ python main.py --config configs/thesis/forced_alignment/wi/force.yaml
 ```
 
 Use `wd` in the config path after the WD vocabulary build completes. The
-runs train for 300 epochs with validation disabled. Compare their final
-epoch-299 checkpoints. The launcher checks both vocabulary files against
-the build manifest and requires a fresh output directory for a new run.
+runs train for 300 epochs with batch size 32 and validation disabled.
+Compare their final epoch-299 checkpoints. The archived character
+baselines and original WI frequency run used batch size 64. Use a new
+batch-32 run when batch size must match. The launcher checks both
+vocabulary files against the build manifest and requires a fresh output
+directory for a new run.
 
 | Where to look | What it does |
 | --- | --- |

@@ -1016,8 +1016,11 @@ python -m tva.forced_alignment.build_bigram_v0 --match-emitted \
 ##### Launch the matched recognition runs
 
 Run one command at a time on one GPU. Each uses seed 42 and trains for
-300 epochs without reading validation. Use the existing character baselines
-for reference. Score epoch 299 for each condition.
+300 epochs with batch size 32 and validation disabled. The existing
+character baselines and the original WI frequency run used batch size 64
+and serve as historical references. A batch-matched comparison needs fresh
+batch-32 runs for every condition being compared. Score epoch 299 for each
+condition.
 
 ```bash
 export PYTHONHASHSEED=42
